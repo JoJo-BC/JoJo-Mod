@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         JoJo Flat-Chest & Male Avatar Compatibility Mod (BC R133+)
 // @namespace    https://jojo-bc.github.io/JoJo-Mod/
-// @version      1.3.3
+// @version      1.3.4
 // @description  Unlocks and maps flat-chest (FlatSmall / FlatMedium) clothes and restraints in Bondage Club (Glossy Bodystocking Vanilla & Echo with custom flat male pectoral PNGs, Pantyhose fullBody, etc.), 100% ModSDK & BCX compliant.
 // @author       JoJo-BC
 // @match        https://*.bondageprojects.elementfx.com/R*/*
@@ -24,17 +24,17 @@
 		window.CommonDrawAppearanceBuild = window.CommonDrawAppearanceBuild.__jojoOrigBuild;
 	}
 
-	if (window.__JoJoFlatModLoaded === "1.3.3") {
-		console.log("[JoJo-Mod] v1.3.3 already active, refreshing characters.");
+	if (window.__JoJoFlatModLoaded === "1.3.4") {
+		console.log("[JoJo-Mod] v1.3.4 already active, refreshing characters.");
 		if (typeof window.__JoJoFlatModRefreshAll === "function") {
 			window.__JoJoFlatModRefreshAll();
 		}
 		return;
 	}
-	window.__JoJoFlatModLoaded = "1.3.3";
+	window.__JoJoFlatModLoaded = "1.3.4";
 
 	const TAG = "[JoJo-Mod]";
-	const VERSION = "1.3.3";
+	const VERSION = "1.3.4";
 	const REPO_BASE_URL = "https://jojo-bc.github.io/JoJo-Mod/";
 
 	console.log(`${TAG} v${VERSION} initializing...`);
@@ -557,7 +557,8 @@
 			if (typeof window.InventoryAllow === "function") {
 				mod.hookFunction("InventoryAllow", 20, (args, next) => {
 					const [C, asset] = args;
-					if (asset && UNLOCKED_FLAT_NAMES.has(asset.Name)) {
+					const name = typeof asset === "string" ? asset : asset?.Name;
+					if (name && UNLOCKED_FLAT_NAMES.has(name)) {
 						return true;
 					}
 					return next(args);
@@ -574,13 +575,55 @@
 				});
 			}
 
+			if (typeof window.InventoryBlockedOrLimited === "function") {
+				mod.hookFunction("InventoryBlockedOrLimited", 20, (args, next) => {
+					const [C, Item] = args;
+					const name = Item?.Asset?.Name;
+					if (name && UNLOCKED_FLAT_NAMES.has(name)) {
+						return false;
+					}
+					return next(args);
+				});
+			}
+
 			if (typeof window.CharacterAppearanceGenderAllowed === "function") {
 				mod.hookFunction("CharacterAppearanceGenderAllowed", 20, (args, next) => {
 					const [asset] = args;
-					if (asset && UNLOCKED_FLAT_NAMES.has(asset.Name)) {
+					const name = asset?.Name;
+					if (name && UNLOCKED_FLAT_NAMES.has(name)) {
 						return true;
 					}
 					return next(args);
+				});
+			}
+
+			if (typeof window.AppearanceGetPreviewImageColor === "function") {
+				mod.hookFunction("AppearanceGetPreviewImageColor", 20, (args, next) => {
+					const [C, item, hover] = args;
+					const name = item?.Asset?.Name;
+					if (name && UNLOCKED_FLAT_NAMES.has(name)) {
+						if (item.Worn) return "pink";
+						if (hover) return "cyan";
+						return "white";
+					}
+					return next(args);
+				});
+			}
+
+			if (typeof window.DialogInventoryCreateItem === "function") {
+				mod.hookFunction("DialogInventoryCreateItem", 20, (args, next) => {
+					const dialogItem = next(args);
+					const asset = dialogItem?.Asset;
+					if (asset && UNLOCKED_FLAT_NAMES.has(asset.Name)) {
+						const fav =
+							typeof window.DialogGetFavoriteStateDetails === "function"
+								? window.DialogGetFavoriteStateDetails(args[0], asset)
+								: { UsableOrder: 1 };
+						dialogItem.SortOrder = `${fav.UsableOrder}${asset.Description}${
+							dialogItem.Craft?.Name ?? ""
+						}`;
+					}
+					return dialogItem;
 				});
 			}
 
@@ -637,7 +680,25 @@
 				DialogInventoryBuild(CurrentCharacter, CurrentCharacter.FocusGroup, false, false, true);
 			}
 
-			// If Wardrobe / Appearance screen is currently open, refresh grouped assets
+			// If Wardrobe / Appearance screen is currently open, refresh grouped assets and live DialogInventory
+			if (typeof window.DialogInventory !== "undefined" && Array.isArray(window.DialogInventory)) {
+				for (const item of window.DialogInventory) {
+					if (item && item.Asset && UNLOCKED_FLAT_NAMES.has(item.Asset.Name)) {
+						const fav =
+							typeof window.DialogGetFavoriteStateDetails === "function" &&
+							(window.CharacterAppearanceSelection || window.Player)
+								? window.DialogGetFavoriteStateDetails(
+										window.CharacterAppearanceSelection || window.Player,
+										item.Asset
+								  )
+								: { UsableOrder: 1 };
+						item.SortOrder = `${fav.UsableOrder}${item.Asset.Description}${
+							item.Craft?.Name ?? ""
+						}`;
+					}
+				}
+			}
+
 			if (
 				typeof window.CharacterAppearanceGroupedAssets !== "undefined" &&
 				typeof window.AssetGetAllAppearanceForCharacter === "function" &&
@@ -645,6 +706,20 @@
 			) {
 				const targetChar = window.CharacterAppearanceSelection || window.Player;
 				window.CharacterAppearanceGroupedAssets = window.AssetGetAllAppearanceForCharacter(targetChar);
+			}
+
+			if (
+				typeof window.CharacterAppearanceMode !== "undefined" &&
+				window.CharacterAppearanceMode === "Cloth" &&
+				typeof window.CharacterAppearanceSelectedGroup !== "undefined" &&
+				window.CharacterAppearanceSelectedGroup &&
+				typeof window.DialogInventoryBuild === "function"
+			) {
+				const targetChar = window.CharacterAppearanceSelection || window.Player;
+				window.DialogInventoryBuild(targetChar, window.CharacterAppearanceSelectedGroup, false, false, false);
+				if (typeof window.AppearancePreviewBuild === "function") {
+					window.AppearancePreviewBuild(targetChar, window.CharacterAppearanceSelectedGroup, false);
+				}
 			}
 		} catch (e) {
 			console.warn(TAG, "Error refreshing characters:", e);
