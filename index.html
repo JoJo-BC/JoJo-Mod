@@ -50,17 +50,11 @@
 			margin: 0 0 14px 0;
 			color: var(--muted);
 		}
-		.grid {
-			display: grid;
-			grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-			gap: 12px;
-			margin-top: 12px;
-		}
 		.btn {
 			display: inline-flex;
 			align-items: center;
 			justify-content: center;
-			padding: 13px 18px;
+			padding: 13px 20px;
 			border-radius: 10px;
 			font-weight: 600;
 			text-decoration: none;
@@ -88,9 +82,9 @@
 			background: #0b0d14;
 			border: 1px solid var(--border);
 			border-radius: 8px;
-			padding: 10px 12px;
+			padding: 12px 14px;
 			font-family: Consolas, monospace;
-			font-size: 0.88rem;
+			font-size: 0.9rem;
 			color: #f3b3f1;
 			overflow-x: auto;
 			display: block;
@@ -112,57 +106,48 @@
 			border: 1px solid rgba(217, 67, 212, 0.4);
 			margin-left: 8px;
 		}
+		.copy-btn {
+			margin-top: 10px;
+			font-size: 0.88rem;
+			padding: 8px 14px;
+		}
 	</style>
 </head>
 <body>
 	<div class="container">
 		<div class="card">
-			<h1>JoJo-Mod <span class="badge">BC R133+</span></h1>
-			<p>Unlocks and adapts clothes &amp; restraints for flat-chested / male avatars (<code>FlatSmall</code> &amp; <code>FlatMedium</code>) in Bondage Club.</p>
+			<h1>JoJo-Mod <span class="badge">v1.1.0 — BC R133+</span></h1>
+			<p>Unlocks and adapts clothes &amp; restraints for flat-chested / male avatars (<code>FlatSmall</code> &amp; <code>FlatMedium</code>) in Bondage Club (supports both Vanilla BC and Echo Clothing Expansion).</p>
 		</div>
 
 		<div class="card">
-			<h2>1. Direct Launch (No Extension Needed)</h2>
-			<p>Click your preferred Bondage Club server below to launch the game with <strong>JoJo-Mod</strong> automatically loaded via FUSAM:</p>
-			<div class="grid">
-				<a class="btn btn-primary" href="https://www.bondage-asia.com/club/R133/?fusam=https://jojo-bc.github.io/JoJo-Mod/jojo-mod.user.js&fusamType=script">
-					🌏 Asia Server (R133)
-				</a>
-				<a class="btn" href="https://www.bondageprojects.elementfx.com/R133/BondageClub/?fusam=https://jojo-bc.github.io/JoJo-Mod/jojo-mod.user.js&fusamType=script">
-					🌎 America Server (R133)
-				</a>
-				<a class="btn" href="https://www.bondageeurope.com/R133/BondageClub/?fusam=https://jojo-bc.github.io/JoJo-Mod/jojo-mod.user.js&fusamType=script">
-					🌍 Europe A Server (R133)
-				</a>
-				<a class="btn" href="https://www.bondage-europe.com/R133/BondageClub/?fusam=https://jojo-bc.github.io/JoJo-Mod/jojo-mod.user.js&fusamType=script">
-					🌍 Europe B Server (R133)
-				</a>
-			</div>
-		</div>
-
-		<div class="card">
-			<h2>2. Install in Violentmonkey / Tampermonkey</h2>
-			<p>If you use a userscript manager, click below to install <strong>JoJo-Mod</strong> permanently across all Bondage Club servers:</p>
+			<h2>Method 1 (Recommended): Install in Violentmonkey / Tampermonkey</h2>
+			<p>Click the button below to install <strong>JoJo-Mod</strong> in Violentmonkey or Tampermonkey. Once installed, it will load automatically every time you open Bondage Club on any server (Asia, Europe, America):</p>
 			<a class="btn btn-primary" href="https://jojo-bc.github.io/JoJo-Mod/jojo-mod.user.js">
-				⚡ Install jojo-mod.user.js
+				⚡ Install jojo-mod.user.js (1-Click)
 			</a>
 		</div>
 
 		<div class="card">
-			<h2>3. Load Inside an Already-Open Game (Bookmarklet / Console)</h2>
-			<p>Already in a chat room and don't want to reload the page? Drag this button to your browser's Bookmarks Bar and click it while in-game, or paste the command below in the browser Console (F12):</p>
+			<h2>Method 2 (No Extension Needed): Bookmarklet or Console</h2>
+			<p><strong>Note:</strong> Bondage Club's FUSAM loader restricts <code>?fusam=</code> URL parameters to <code>localhost</code> only. If you don't use Violentmonkey, you can load <strong>JoJo-Mod</strong> on any browser with 1 click using a Bookmarklet or the Console:</p>
+			<p><strong>Option A (Bookmarklet):</strong> Drag this purple button to your browser's Bookmarks Bar, then click it whenever you are in Bondage Club:</p>
 			<p>
-				<a class="btn" href="javascript:(function(){var s=document.createElement('script');s.src='https://jojo-bc.github.io/JoJo-Mod/jojo-mod.user.js?t='+Date.now();document.head.appendChild(s);})();">
-					🔖 Activate JoJo-Mod (Drag to Bookmarks)
+				<a class="btn btn-primary" href="javascript:(function(){var s=document.createElement('script');s.src='https://jojo-bc.github.io/JoJo-Mod/jojo-mod.user.js?t='+Date.now();document.head.appendChild(s);})();">
+					🔖 Activate JoJo-Mod (Drag to Bookmarks Bar)
 				</a>
 			</p>
-			<pre>import("https://jojo-bc.github.io/JoJo-Mod/jojo-mod.user.js?t=" + Date.now())</pre>
+			<p><strong>Option B (Console F12):</strong> Or copy and paste this line into the browser Console (F12):</p>
+			<pre id="console-cmd">import("https://jojo-bc.github.io/JoJo-Mod/jojo-mod.user.js?t=" + Date.now())</pre>
+			<button class="btn copy-btn" onclick="navigator.clipboard.writeText(document.getElementById('console-cmd').textContent); this.textContent='✅ Copied!'; setTimeout(()=>this.textContent='📋 Copy Console Command', 2000);">
+				📋 Copy Console Command
+			</button>
 		</div>
 
 		<div class="card">
 			<h2>Unlocked &amp; Adapted Items</h2>
 			<ul>
-				<li><strong>Glossy Bodystocking</strong> (<code>Suit / GlossyBodystocking</code> &amp; Echo <code>Suit / 马油袜</code>) — Unlocked for <code>FlatSmall</code> &amp; <code>FlatMedium</code> with custom/fallback layer mapping.</li>
+				<li><strong>Glossy Bodystocking</strong> (Vanilla <code>Suit / GlossyBodystocking</code> &amp; Echo <code>Suit / 马油袜</code> + <code>SuitLower / 马油袜下</code>) — Unlocked for <code>FlatSmall</code> &amp; <code>FlatMedium</code> (including Echo's <code>gmask</code> alpha mask).</li>
 				<li><strong>Pantyhose fullBody</strong> (<code>ItemArms / PantyhoseBody</code>) — Unlocked for <code>FlatSmall</code> &amp; <code>FlatMedium</code>.</li>
 				<li><strong>Crotchless Pantyhose fullBody</strong> (<code>ItemArms / PantyhoseBodyOpen</code>) — Unlocked for <code>FlatSmall</code> &amp; <code>FlatMedium</code>.</li>
 			</ul>
