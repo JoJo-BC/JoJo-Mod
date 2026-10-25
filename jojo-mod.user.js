@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         JoJo Flat-Chest & Male Avatar Compatibility Mod (BC R133+)
 // @namespace    https://jojo-bc.github.io/JoJo-Mod/
-// @version      1.3.0
+// @version      1.3.1
 // @description  Unlocks and maps flat-chest (FlatSmall / FlatMedium) clothes and restraints in Bondage Club (Glossy Bodystocking Vanilla & Echo with custom flat male pectoral PNGs, Pantyhose fullBody, etc.), 100% ModSDK & BCX compliant.
 // @author       JoJo-BC
 // @match        https://*.bondageprojects.elementfx.com/R*/*
@@ -24,17 +24,17 @@
 		window.CommonDrawAppearanceBuild = window.CommonDrawAppearanceBuild.__jojoOrigBuild;
 	}
 
-	if (window.__JoJoFlatModLoaded === "1.3.0") {
-		console.log("[JoJo-Mod] v1.3.0 already active, refreshing characters.");
+	if (window.__JoJoFlatModLoaded === "1.3.1") {
+		console.log("[JoJo-Mod] v1.3.1 already active, refreshing characters.");
 		if (typeof window.__JoJoFlatModRefreshAll === "function") {
 			window.__JoJoFlatModRefreshAll();
 		}
 		return;
 	}
-	window.__JoJoFlatModLoaded = "1.3.0";
+	window.__JoJoFlatModLoaded = "1.3.1";
 
 	const TAG = "[JoJo-Mod]";
-	const VERSION = "1.3.0";
+	const VERSION = "1.3.1";
 	const REPO_BASE_URL = "https://jojo-bc.github.io/JoJo-Mod/";
 
 	console.log(`${TAG} v${VERSION} initializing...`);
@@ -49,6 +49,10 @@
 		{ group: "Suit", name: "马油袜", fallbackToSmall: true, makeFreeInSession: true },
 		{ group: "SuitLower", name: "马油袜下", fallbackToSmall: true, makeFreeInSession: true },
 
+		// Clothing: Latex Top & Latex Pants
+		{ group: "Cloth", name: "LatexTop", fallbackToSmall: true, makeFreeInSession: true },
+		{ group: "ClothLower", name: "LatexPants1", fallbackToSmall: true, makeFreeInSession: true },
+
 		// Restraints: Bodyhose (Pantyhose fullBody & Crotchless Pantyhose fullBody)
 		{ group: "ItemArms", name: "PantyhoseBody", fallbackToSmall: true, makeFreeInSession: true },
 		{ group: "ItemArms", name: "PantyhoseBodyOpen", fallbackToSmall: true, makeFreeInSession: true },
@@ -61,6 +65,20 @@
 	 * When a path is NOT listed here, JoJo-Mod automatically falls back to the "_Small" sprite!
 	 */
 	const CUSTOM_PNG_MANIFEST = new Set([
+		"Assets/Female3DCG/Cloth/BackBoxTie/LatexTop_FlatMedium.png",
+		"Assets/Female3DCG/Cloth/BackBoxTie/LatexTop_FlatSmall.png",
+		"Assets/Female3DCG/Cloth/BackCuffs/LatexTop_FlatMedium.png",
+		"Assets/Female3DCG/Cloth/BackCuffs/LatexTop_FlatSmall.png",
+		"Assets/Female3DCG/Cloth/BackElbowTouch/LatexTop_FlatMedium.png",
+		"Assets/Female3DCG/Cloth/BackElbowTouch/LatexTop_FlatSmall.png",
+		"Assets/Female3DCG/Cloth/LatexTop_FlatMedium.png",
+		"Assets/Female3DCG/Cloth/LatexTop_FlatSmall.png",
+		"Assets/Female3DCG/Cloth/OverTheHead/LatexTop_FlatMedium.png",
+		"Assets/Female3DCG/Cloth/OverTheHead/LatexTop_FlatSmall.png",
+		"Assets/Female3DCG/Cloth/Yoked/LatexTop_FlatMedium.png",
+		"Assets/Female3DCG/Cloth/Yoked/LatexTop_FlatSmall.png",
+		"Assets/Female3DCG/ClothLower/LatexPants1_FlatMedium.png",
+		"Assets/Female3DCG/ClothLower/LatexPants1_FlatSmall.png",
 		"Assets/Female3DCG/Suit/BackBoxTie/GlossyBodystocking_FlatMedium_A3.png",
 		"Assets/Female3DCG/Suit/BackBoxTie/GlossyBodystocking_FlatMedium_BaseColor.png",
 		"Assets/Female3DCG/Suit/BackBoxTie/GlossyBodystocking_FlatMedium_BodyHue.png",

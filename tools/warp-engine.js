@@ -380,6 +380,34 @@ function buildPoseWarp(pose, targetSize) {
 	};
 }
 
+function sampleBilinearRGBA(srcPixels, sx, sy) {
+	if (sx < 0 || sx >= 499 || sy < 0 || sy >= 461) return { r: 0, g: 0, b: 0, a: 0 };
+	const x0 = Math.floor(sx);
+	const x1 = x0 + 1;
+	const y0 = Math.floor(sy);
+	const y1 = y0 + 1;
+	const fx = sx - x0;
+	const fy = sy - y0;
+
+	const i00 = (y0 * 500 + x0) * 4;
+	const i10 = (y0 * 500 + x1) * 4;
+	const i01 = (y1 * 500 + x0) * 4;
+	const i11 = (y1 * 500 + x1) * 4;
+
+	const interp = (c) => {
+		const v0 = srcPixels[i00 + c] * (1 - fx) + srcPixels[i10 + c] * fx;
+		const v1 = srcPixels[i01 + c] * (1 - fx) + srcPixels[i11 + c] * fx;
+		return Math.round(v0 * (1 - fy) + v1 * fy);
+	};
+
+	return {
+		r: interp(0),
+		g: interp(1),
+		b: interp(2),
+		a: interp(3),
+	};
+}
+
 function sampleBilinear(srcPixels, sx, sy) {
 	if (sx < 0 || sx >= 499 || sy < 0 || sy >= 999) return 0;
 	const x0 = Math.floor(sx);
@@ -587,8 +615,42 @@ function mapCoord2D(x, y, warp) {
 	return res;
 }
 
+function isRgbaSprite(pixels) {
+	for (let i = 0; i < pixels.length; i += 16) {
+		if (pixels[i + 3] > 10) {
+			if (pixels[i] !== 255 || pixels[i + 1] !== 255 || pixels[i + 2] !== 255) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 function warpLayer2D(srcPixels, warp, layerName) {
 	const out = Buffer.alloc(srcPixels.length);
+	const isColor = isRgbaSprite(srcPixels);
+
+	if (isColor || layerName === "SingleSprite") {
+		for (let y = 0; y < 462; y++) {
+			for (let x = 0; x < 500; x++) {
+				const bodyA = warp.dBodyAlpha(x, y);
+				if (bodyA === 0) continue;
+
+				const mapped = mapCoord2D(x, y, warp);
+				if (!mapped) continue;
+
+				const c = sampleBilinearRGBA(srcPixels, mapped[0], mapped[1]);
+				if (c.a > 0) {
+					const idx = (y * 500 + x) * 4;
+					out[idx] = c.r;
+					out[idx + 1] = c.g;
+					out[idx + 2] = c.b;
+					out[idx + 3] = c.a;
+				}
+			}
+		}
+		return out;
+	}
 
 	if (layerName === "BaseColor") {
 		for (let y = 0; y < 462; y++) {
@@ -826,6 +888,9 @@ module.exports = {
 	buildPoseWarp,
 	generatePoseFlatLayers,
 	loadPart,
+	mapCoord2D,
+	sampleBilinear,
+	sampleBilinearRGBA,
 	REF_DIR,
 	OUT_ASSETS_DIR,
 	MOD_DIR,

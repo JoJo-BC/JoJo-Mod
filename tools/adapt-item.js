@@ -91,20 +91,20 @@ async function adaptItem(itemSpec) {
 		const singleFile = path.join(refGroupDir, `${itemName}_Small.png`);
 		if (fs.existsSync(singleFile)) {
 			isSingleSprite = true;
-			availableLayers = [""];
+			availableLayers = ["SingleSprite"];
 		}
 	}
 
 	if (availableLayers.length === 0) {
 		console.log(`Searching online for ${group}/${itemName}_Small...`);
-		// Attempt to download BaseColor and single sprite
+		// Attempt to download single sprite first
 		try {
 			await downloadFile(
 				`${BASE_BC_URL}${group}/${itemName}_Small.png`,
 				path.join(refGroupDir, `${itemName}_Small.png`)
 			);
 			isSingleSprite = true;
-			availableLayers = [""];
+			availableLayers = ["SingleSprite"];
 			console.log(`Downloaded ${itemName}_Small.png`);
 		} catch (_) {
 			// Try multi-layer download
@@ -125,7 +125,7 @@ async function adaptItem(itemSpec) {
 		process.exit(1);
 	}
 
-	console.log(`Detected layers for ${itemName}: ${isSingleSprite ? "[Single Sprite]" : availableLayers.join(", ")}`);
+	console.log(`Detected layers for ${itemName}: ${isSingleSprite ? "[Single Sprite RGBA]" : availableLayers.join(", ")}`);
 
 	let totalCreated = 0;
 	const outGroupDir = path.join(OUT_ASSETS_DIR, group);
@@ -138,14 +138,17 @@ async function adaptItem(itemSpec) {
 
 		const rawLayers = {};
 		for (const l of availableLayers) {
-			const suffix = l ? `_${l}` : "";
+			const suffix = isSingleSprite ? "" : `_${l}`;
 			let srcPath = path.join(refGroupDir, pose, `${itemName}_Small${suffix}.png`);
 			if (!fs.existsSync(srcPath)) {
-				// Fallback to standing reference if pose-specific reference doesn't exist
-				srcPath = path.join(refGroupDir, `${itemName}_Small${suffix}.png`);
+				try {
+					await downloadFile(`${BASE_BC_URL}${group}/${pose}${itemName}_Small${suffix}.png`, srcPath);
+				} catch (_) {
+					srcPath = path.join(refGroupDir, `${itemName}_Small${suffix}.png`);
+				}
 			}
 			if (fs.existsSync(srcPath)) {
-				rawLayers[l || "BaseColor"] = parsePng(fs.readFileSync(srcPath)).pixels;
+				rawLayers[l] = parsePng(fs.readFileSync(srcPath)).pixels;
 			}
 		}
 
@@ -154,15 +157,16 @@ async function adaptItem(itemSpec) {
 		for (const [layerKey, px] of Object.entries(fsLayers)) {
 			const suffix = isSingleSprite ? "" : `_${layerKey}`;
 			const outPath = path.join(poseOutDir, `${itemName}_FlatSmall${suffix}.png`);
-			fs.writeFileSync(outPath, encodePng(500, 1000, px));
+			const height = px.length / (500 * 4);
+			fs.writeFileSync(outPath, encodePng(500, height, px));
 			totalCreated++;
 		}
 		console.log(`   -> Generated FlatSmall (${Object.keys(fsLayers).length} layers)`);
 
-		// 2. Generate FlatMedium (for silhouette layers)
+		// 2. Generate FlatMedium
 		const { outLayers: fmLayers } = generatePoseFlatLayers(pose, "FlatMedium", rawLayers);
 		const mediumLayers = isSingleSprite
-			? ["BaseColor"]
+			? ["SingleSprite"]
 			: ["BaseColor", "EdgeLine", "EdgeShade", "A3", "D1", "D2", "BodyHue"].filter(
 					(k) => fmLayers[k]
 			  );
@@ -170,7 +174,8 @@ async function adaptItem(itemSpec) {
 		for (const layerKey of mediumLayers) {
 			const suffix = isSingleSprite ? "" : `_${layerKey}`;
 			const outPath = path.join(poseOutDir, `${itemName}_FlatMedium${suffix}.png`);
-			fs.writeFileSync(outPath, encodePng(500, 1000, fmLayers[layerKey]));
+			const height = fmLayers[layerKey].length / (500 * 4);
+			fs.writeFileSync(outPath, encodePng(500, height, fmLayers[layerKey]));
 			totalCreated++;
 		}
 		console.log(`   -> Generated FlatMedium (${mediumLayers.length} silhouette layers)`);
