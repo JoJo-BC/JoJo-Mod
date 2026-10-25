@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         JoJo Flat-Chest & Male Avatar Compatibility Mod (BC R133+)
 // @namespace    https://jojo-bc.github.io/JoJo-Mod/
-// @version      1.3.1
+// @version      1.3.2
 // @description  Unlocks and maps flat-chest (FlatSmall / FlatMedium) clothes and restraints in Bondage Club (Glossy Bodystocking Vanilla & Echo with custom flat male pectoral PNGs, Pantyhose fullBody, etc.), 100% ModSDK & BCX compliant.
 // @author       JoJo-BC
 // @match        https://*.bondageprojects.elementfx.com/R*/*
@@ -24,17 +24,17 @@
 		window.CommonDrawAppearanceBuild = window.CommonDrawAppearanceBuild.__jojoOrigBuild;
 	}
 
-	if (window.__JoJoFlatModLoaded === "1.3.1") {
-		console.log("[JoJo-Mod] v1.3.1 already active, refreshing characters.");
+	if (window.__JoJoFlatModLoaded === "1.3.2") {
+		console.log("[JoJo-Mod] v1.3.2 already active, refreshing characters.");
 		if (typeof window.__JoJoFlatModRefreshAll === "function") {
 			window.__JoJoFlatModRefreshAll();
 		}
 		return;
 	}
-	window.__JoJoFlatModLoaded = "1.3.1";
+	window.__JoJoFlatModLoaded = "1.3.2";
 
 	const TAG = "[JoJo-Mod]";
-	const VERSION = "1.3.1";
+	const VERSION = "1.3.2";
 	const REPO_BASE_URL = "https://jojo-bc.github.io/JoJo-Mod/";
 
 	console.log(`${TAG} v${VERSION} initializing...`);
@@ -283,6 +283,7 @@
 	const FALLBACK_ASSET_NAMES = new Set(
 		UNLOCKED_FLAT_ASSETS.filter((a) => a.fallbackToSmall).map((a) => a.name)
 	);
+	const UNLOCKED_FLAT_NAMES = new Set(UNLOCKED_FLAT_ASSETS.map((a) => a.name));
 
 	// Chest-only layers that share the same torso position across upright poses (BackElbowTouch, BackBoxTie, etc.)
 	const UPRIGHT_CHEST_LAYERS = new Set([
@@ -304,6 +305,7 @@
 	 */
 	function toCanonicalManifestPath(cleanSrc) {
 		let p = cleanSrc.replace("_FlatMedium", "_FlatSmall");
+		try { p = decodeURIComponent(p); } catch (_) {}
 		if (p.includes("/Suit/") && p.includes("马油袜_FlatSmall_")) {
 			p = p.replace("马油袜_FlatSmall_", "GlossyBodystocking_FlatSmall_");
 			for (const [echoCode, vanillaName] of Object.entries(ECHO_LAYER_ALIASES)) {
@@ -325,11 +327,14 @@
 		if (typeof src !== "string" || !src) return src;
 		// Already remapped to our GitHub Pages repository -> do NOT remap a second time!
 		if (src.startsWith(REPO_BASE_URL)) return src;
-		if (!src.includes("_FlatSmall") && !src.includes("_FlatMedium")) return src;
 
-		const assetsIdx = src.indexOf("Assets/Female3DCG/");
+		let decoded = src;
+		try { decoded = decodeURIComponent(src); } catch (_) {}
+		if (!decoded.includes("_FlatSmall") && !decoded.includes("_FlatMedium")) return src;
+
+		const assetsIdx = decoded.indexOf("Assets/Female3DCG/");
 		const cleanSrc =
-			assetsIdx !== -1 ? src.slice(assetsIdx) : src.startsWith("./") ? src.slice(2) : src;
+			assetsIdx !== -1 ? decoded.slice(assetsIdx) : decoded.startsWith("./") ? decoded.slice(2) : decoded;
 		const canonical = toCanonicalManifestPath(cleanSrc);
 
 		// 1. Direct match in custom repository manifest (covers both FlatSmall & FlatMedium, Vanilla & Echo!)
@@ -401,6 +406,7 @@
 				if (typeof asset.SelfBondage === "number" && asset.SelfBondage > 0) {
 					asset.SelfBondage = 0;
 				}
+				asset.BuyGroup = null;
 			}
 			if (Array.isArray(asset.Layer)) {
 				for (const layer of asset.Layer) {
@@ -410,6 +416,15 @@
 				}
 			}
 			unlockedCount++;
+		}
+
+		// Auto-grant ownership into Player.Inventory so Wardrobe / Appearance never removes them
+		if (typeof Player !== "undefined" && Array.isArray(Player.Inventory)) {
+			for (const item of UNLOCKED_FLAT_ASSETS) {
+				if (!Player.Inventory.some((i) => i.Group === item.group && i.Name === item.name)) {
+					Player.Inventory.push({ Group: item.group, Name: item.name });
+				}
+			}
 		}
 
 		if (unlockedCount > 0) {
@@ -542,6 +557,37 @@
 				});
 			}
 
+			// 6. Ensure unlocked flat items are always available & selectable in Wardrobe
+			if (typeof window.InventoryAllow === "function") {
+				mod.hookFunction("InventoryAllow", 20, (args, next) => {
+					const [C, asset] = args;
+					if (asset && UNLOCKED_FLAT_NAMES.has(asset.Name)) {
+						return true;
+					}
+					return next(args);
+				});
+			}
+
+			if (typeof window.InventoryAvailable === "function") {
+				mod.hookFunction("InventoryAvailable", 20, (args, next) => {
+					const [C, Name] = args;
+					if (UNLOCKED_FLAT_NAMES.has(Name)) {
+						return true;
+					}
+					return next(args);
+				});
+			}
+
+			if (typeof window.CharacterAppearanceGenderAllowed === "function") {
+				mod.hookFunction("CharacterAppearanceGenderAllowed", 20, (args, next) => {
+					const [asset] = args;
+					if (asset && UNLOCKED_FLAT_NAMES.has(asset.Name)) {
+						return true;
+					}
+					return next(args);
+				});
+			}
+
 			sdkHooksInstalled = true;
 			console.log(TAG, "Registered 100% ModSDK-compliant hooks (Priority 20, BCX & Echo compatible).");
 			return true;
@@ -593,6 +639,16 @@
 				typeof DialogInventoryBuild === "function"
 			) {
 				DialogInventoryBuild(CurrentCharacter, CurrentCharacter.FocusGroup, false, false, true);
+			}
+
+			// If Wardrobe / Appearance screen is currently open, refresh grouped assets
+			if (
+				typeof window.CharacterAppearanceGroupedAssets !== "undefined" &&
+				typeof window.AssetGetAllAppearanceForCharacter === "function" &&
+				(window.CharacterAppearanceSelection || (typeof Player !== "undefined" && Player))
+			) {
+				const targetChar = window.CharacterAppearanceSelection || window.Player;
+				window.CharacterAppearanceGroupedAssets = window.AssetGetAllAppearanceForCharacter(targetChar);
 			}
 		} catch (e) {
 			console.warn(TAG, "Error refreshing characters:", e);
