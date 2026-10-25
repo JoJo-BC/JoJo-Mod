@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         JoJo Flat-Chest & Male Avatar Compatibility Mod (BC R133+)
 // @namespace    https://jojo-bc.github.io/JoJo-Mod/
-// @version      1.3.2
+// @version      1.3.3
 // @description  Unlocks and maps flat-chest (FlatSmall / FlatMedium) clothes and restraints in Bondage Club (Glossy Bodystocking Vanilla & Echo with custom flat male pectoral PNGs, Pantyhose fullBody, etc.), 100% ModSDK & BCX compliant.
 // @author       JoJo-BC
 // @match        https://*.bondageprojects.elementfx.com/R*/*
@@ -24,17 +24,17 @@
 		window.CommonDrawAppearanceBuild = window.CommonDrawAppearanceBuild.__jojoOrigBuild;
 	}
 
-	if (window.__JoJoFlatModLoaded === "1.3.2") {
-		console.log("[JoJo-Mod] v1.3.2 already active, refreshing characters.");
+	if (window.__JoJoFlatModLoaded === "1.3.3") {
+		console.log("[JoJo-Mod] v1.3.3 already active, refreshing characters.");
 		if (typeof window.__JoJoFlatModRefreshAll === "function") {
 			window.__JoJoFlatModRefreshAll();
 		}
 		return;
 	}
-	window.__JoJoFlatModLoaded = "1.3.2";
+	window.__JoJoFlatModLoaded = "1.3.3";
 
 	const TAG = "[JoJo-Mod]";
-	const VERSION = "1.3.2";
+	const VERSION = "1.3.3";
 	const REPO_BASE_URL = "https://jojo-bc.github.io/JoJo-Mod/";
 
 	console.log(`${TAG} v${VERSION} initializing...`);
@@ -418,13 +418,9 @@
 			unlockedCount++;
 		}
 
-		// Auto-grant ownership into Player.Inventory so Wardrobe / Appearance never removes them
+		// Clean up any invalid entries in Player.Inventory (must have .Asset to avoid DialogInventoryBuild crash)
 		if (typeof Player !== "undefined" && Array.isArray(Player.Inventory)) {
-			for (const item of UNLOCKED_FLAT_ASSETS) {
-				if (!Player.Inventory.some((i) => i.Group === item.group && i.Name === item.name)) {
-					Player.Inventory.push({ Group: item.group, Name: item.name });
-				}
-			}
+			Player.Inventory = Player.Inventory.filter((i) => i && i.Asset);
 		}
 
 		if (unlockedCount > 0) {
