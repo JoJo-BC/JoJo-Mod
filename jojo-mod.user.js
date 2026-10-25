@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         JoJo Flat-Chest & Male Avatar Compatibility Mod (BC R133+)
 // @namespace    https://jojo-bc.github.io/JoJo-Mod/
-// @version      1.0.0
-// @description  Unlocks and maps flat-chest (FlatSmall / FlatMedium) clothes and restraints in Bondage Club (Glossy Bodystocking, Pantyhose fullBody, etc.), loading custom PNGs from JoJo-Mod repository with automatic fallback to Vanilla _Small sprites.
+// @version      1.1.0
+// @description  Unlocks and maps flat-chest (FlatSmall / FlatMedium) clothes and restraints in Bondage Club (Glossy Bodystocking Vanilla & Echo, Pantyhose fullBody, etc.), loading custom PNGs from JoJo-Mod repository with automatic fallback to _Small sprites.
 // @author       JoJo-BC
 // @match        https://*.bondageprojects.elementfx.com/R*/*
 // @match        https://*.bondage-europe.com/R*/*
@@ -26,7 +26,10 @@
 	window.__JoJoFlatModLoaded = true;
 
 	const TAG = "[JoJo-Mod]";
+	const VERSION = "1.1.0";
 	const REPO_BASE_URL = "https://jojo-bc.github.io/JoJo-Mod/";
+
+	console.log(`${TAG} v${VERSION} initializing...`);
 
 	/**
 	 * Assets unlocked for FlatSmall / FlatMedium avatars.
@@ -47,7 +50,7 @@
 	 * Manifest of custom PNG files hosted in https://jojo-bc.github.io/JoJo-Mod/assets/
 	 * Paths are relative to BC root (e.g. "Assets/Female3DCG/ItemArms/PantyhoseBody_FlatSmall.png").
 	 * When a path is listed here, JoJo-Mod loads it from the GitHub Pages repository.
-	 * When a path is NOT listed here, JoJo-Mod automatically falls back to the Vanilla "_Small" sprite!
+	 * When a path is NOT listed here, JoJo-Mod automatically falls back to the "_Small" sprite!
 	 */
 	const CUSTOM_PNG_MANIFEST = new Set([
 		// No custom PNGs in assets/ yet (using automatic Vanilla _Small fallback)
@@ -63,7 +66,7 @@
 	 * Priority:
 	 *   1. Exact match in CUSTOM_PNG_MANIFEST -> loads from REPO_BASE_URL + "assets/" + normalizedPath
 	 *   2. If _FlatMedium isn't in manifest but _FlatSmall IS in manifest -> loads _FlatSmall from repo
-	 *   3. If asset is in FALLBACK_ASSET_NAMES -> rewrites _FlatSmall / _FlatMedium to Vanilla _Small
+	 *   3. If asset is in FALLBACK_ASSET_NAMES -> rewrites _FlatSmall / _FlatMedium to _Small
 	 * @param {string} src
 	 * @returns {string}
 	 */
@@ -71,7 +74,6 @@
 		if (typeof src !== "string" || !src) return src;
 		if (!src.includes("_FlatSmall") && !src.includes("_FlatMedium")) return src;
 
-		// Normalize any leading "./"
 		const cleanSrc = src.startsWith("./") ? src.slice(2) : src;
 
 		// 1. Direct match in custom repository manifest
@@ -87,7 +89,7 @@
 			}
 		}
 
-		// 3. Check if this URL belongs to one of our unlocked assets for Vanilla _Small fallback
+		// 3. Check if this URL belongs to one of our unlocked assets for _Small fallback
 		const fileName = cleanSrc.slice(cleanSrc.lastIndexOf("/") + 1);
 		for (const assetName of FALLBACK_ASSET_NAMES) {
 			if (
@@ -101,6 +103,16 @@
 		}
 
 		return src;
+	}
+
+	/**
+	 * Remaps an array of TextureAlphaMask objects (important for Echo's gmask & Vanilla's bmask).
+	 */
+	function remapMaskArray(masks) {
+		if (!Array.isArray(masks)) return masks;
+		return masks.map((m) =>
+			m && typeof m.Url === "string" ? { ...m, Url: remapImageUrl(m.Url) } : m
+		);
 	}
 
 	/**
@@ -138,32 +150,92 @@
 		return unlockedCount > 0;
 	}
 
+	let rawHooksInstalled = false;
+	let sdkHooksInstalled = false;
+
 	/**
-	 * Installs non-destructive hooks on BC's R133 drawing & fetch pipeline.
+	 * Installs hooks via bcModSdk at Priority 20 (higher than Echo's Priority 10/0),
+	 * so _FlatMedium / _FlatSmall is converted to _Small BEFORE Echo's @sugarch/bc-image-mapping
+	 * looks up the path in its CDN manifest (and before Echo resolves gmask!).
 	 */
-	let hooksInstalled = false;
-	function installDrawHooks() {
-		if (hooksInstalled) return true;
-		if (
-			typeof CommonDrawAppearanceBuild !== "function" ||
-			typeof DrawGetImage !== "function"
-		) {
+	function installSdkHooks() {
+		if (sdkHooksInstalled) return true;
+		if (!window.bcModSdk || typeof window.bcModSdk.registerMod !== "function") {
 			return false;
 		}
+		try {
+			const mod = window.bcModSdk.registerMod(
+				{
+					name: "JoJoFlatMod",
+					fullName: "JoJo Flat-Chest & Male Avatar Compatibility Mod",
+					version: VERSION,
+					repository: REPO_BASE_URL,
+				},
+				{ allowReplace: true }
+			);
 
-		// 1. Hook CommonFetch so cross-origin PNGs from jojo-bc.github.io load cleanly in R133 ImageCache
-		if (typeof CommonFetch === "function" && !CommonFetch.__jojoModHooked) {
-			const origCommonFetch = CommonFetch;
-			window.CommonFetch = function (url, ...rest) {
-				if (typeof url === "string" && url.startsWith(REPO_BASE_URL)) {
-					return fetch(url, { mode: "cors", credentials: "omit" });
+			// Priority 20 runs BEFORE Echo's Priority 10 hooks!
+			for (const fnName of ["DrawImageEx", "DrawImageResize", "GLDrawImage", "DrawGetImage"]) {
+				if (typeof window[fnName] === "function") {
+					mod.hookFunction(fnName, 20, (args, next) => {
+						args[0] = remapImageUrl(args[0]);
+						if (fnName === "GLDrawImage" && args[4] && Array.isArray(args[4].TextureAlphaMask)) {
+							args[4] = {
+								...args[4],
+								TextureAlphaMask: remapMaskArray(args[4].TextureAlphaMask),
+							};
+						}
+						if (fnName === "DrawImageEx" && args[4] && Array.isArray(args[4].TextureAlphaMask)) {
+							args[4] = {
+								...args[4],
+								TextureAlphaMask: remapMaskArray(args[4].TextureAlphaMask),
+							};
+						}
+						return next(args);
+					});
 				}
-				return origCommonFetch.call(this, url, ...rest);
-			};
-			window.CommonFetch.__jojoModHooked = true;
-		}
+			}
 
-		// 2. Hook CommonDrawAppearanceBuild to remap layer URLs & TextureAlphaMask URLs before WebGL/2D/CacheWarmer
+			if (typeof window.CommonDrawMarkDrawnAsset === "function") {
+				mod.hookFunction("CommonDrawMarkDrawnAsset", 20, (args, next) => {
+					args[1] = remapImageUrl(args[1]);
+					return next(args);
+				});
+			}
+
+			if (typeof window.GLDrawLoadTextureAlphaMask === "function") {
+				mod.hookFunction("GLDrawLoadTextureAlphaMask", 20, (args, next) => {
+					args[5] = remapMaskArray(args[5]);
+					return next(args);
+				});
+			}
+
+			if (typeof window.CommonFetch === "function") {
+				mod.hookFunction("CommonFetch", 20, (args, next) => {
+					const url = args[0];
+					if (typeof url === "string" && url.startsWith(REPO_BASE_URL)) {
+						return fetch(url, { mode: "cors", credentials: "omit" });
+					}
+					return next(args);
+				});
+			}
+
+			sdkHooksInstalled = true;
+			console.log(TAG, "Registered high-priority (20) ModSDK hooks (Echo compatible).");
+			return true;
+		} catch (e) {
+			console.warn(TAG, "ModSDK registration error (using fallback hooks):", e);
+			return false;
+		}
+	}
+
+	/**
+	 * Installs hook on CommonDrawAppearanceBuild (works even without ModSDK).
+	 */
+	function installRawHooks() {
+		if (rawHooksInstalled) return true;
+		if (typeof CommonDrawAppearanceBuild !== "function") return false;
+
 		if (!CommonDrawAppearanceBuild.__jojoModHooked) {
 			const origBuild = CommonDrawAppearanceBuild;
 			window.CommonDrawAppearanceBuild = function (C, callbacks) {
@@ -175,11 +247,7 @@
 							if (opts && Array.isArray(opts.TextureAlphaMask)) {
 								opts = {
 									...opts,
-									TextureAlphaMask: opts.TextureAlphaMask.map((m) =>
-										m && typeof m.Url === "string"
-											? { ...m, Url: remapImageUrl(m.Url) }
-											: m
-									),
+									TextureAlphaMask: remapMaskArray(opts.TextureAlphaMask),
 								};
 							}
 							return fn.call(this, mappedSrc, x, y, opts, ...more);
@@ -198,39 +266,24 @@
 			window.CommonDrawAppearanceBuild.__jojoModHooked = true;
 		}
 
-		// 3. Hook direct image loaders (DrawGetImage, GLDrawImage, DrawImageEx) as safety net
-		for (const fnName of ["DrawGetImage", "GLDrawImage", "DrawImageEx"]) {
-			if (typeof window[fnName] === "function" && !window[fnName].__jojoModHooked) {
-				const origFn = window[fnName];
-				window[fnName] = function (src, ...rest) {
-					return origFn.call(this, remapImageUrl(src), ...rest);
-				};
-				window[fnName].__jojoModHooked = true;
-			}
-		}
-
-		// 4. Hook CommonDrawMarkDrawnAsset so R133's 30-min cache warmer keeps the mapped URL alive
-		if (
-			typeof CommonDrawMarkDrawnAsset === "function" &&
-			!CommonDrawMarkDrawnAsset.__jojoModHooked
-		) {
-			const origMark = CommonDrawMarkDrawnAsset;
-			window.CommonDrawMarkDrawnAsset = function (C, src) {
-				return origMark.call(this, C, remapImageUrl(src));
-			};
-			window.CommonDrawMarkDrawnAsset.__jojoModHooked = true;
-		}
-
-		hooksInstalled = true;
-		console.log(TAG, "R133 drawing & image-mapping hooks installed.");
+		rawHooksInstalled = true;
 		return true;
 	}
 
 	/**
-	 * Forces a canvas rebuild on all currently visible characters (useful when loaded mid-session).
+	 * Clears any cached 404 entries for _FlatSmall / _FlatMedium in R133 ImageCache and refreshes characters.
 	 */
 	function refreshAllCharacters() {
 		try {
+			for (const cacheObj of [window.GLDrawImageCache, window.DrawImageCache]) {
+				if (cacheObj && cacheObj.cache instanceof Map) {
+					for (const key of [...cacheObj.cache.keys()]) {
+						if (typeof key === "string" && (key.includes("_FlatSmall") || key.includes("_FlatMedium"))) {
+							cacheObj.cache.delete(key);
+						}
+					}
+				}
+			}
 			if (typeof CharacterRefresh === "function" && typeof Player !== "undefined" && Player) {
 				CharacterRefresh(Player, false, false);
 			}
@@ -247,17 +300,23 @@
 	}
 	window.__JoJoFlatModRefreshAll = refreshAllCharacters;
 
-	// Bootstrap loop: waits until BC's Asset array and drawing functions are ready
 	function tryInit() {
-		const drawOk = installDrawHooks();
+		const rawOk = installRawHooks();
+		installSdkHooks();
 		const assetsOk = unlockFlatAssets();
-		if (drawOk && assetsOk) {
+		if (rawOk && assetsOk) {
 			refreshAllCharacters();
-			// Re-run unlockFlatAssets once more after 5s in case Echo loads custom assets slightly later
+			// Re-run after 3s and 7s to catch Echo / ModSDK if they finish loading after us
 			setTimeout(() => {
+				installSdkHooks();
 				unlockFlatAssets();
 				refreshAllCharacters();
-			}, 5000);
+			}, 3000);
+			setTimeout(() => {
+				installSdkHooks();
+				unlockFlatAssets();
+				refreshAllCharacters();
+			}, 7000);
 			return true;
 		}
 		return false;
