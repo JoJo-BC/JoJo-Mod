@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         JoJo Flat-Chest & Male Avatar Compatibility Mod (BC R133+)
 // @namespace    https://jojo-bc.github.io/JoJo-Mod/
-// @version      1.2.0
+// @version      1.2.1
 // @description  Unlocks and maps flat-chest (FlatSmall / FlatMedium) clothes and restraints in Bondage Club (Glossy Bodystocking Vanilla & Echo with custom flat male pectoral PNGs, Pantyhose fullBody, etc.), 100% ModSDK & BCX compliant.
 // @author       JoJo-BC
 // @match        https://*.bondageprojects.elementfx.com/R*/*
@@ -24,17 +24,17 @@
 		window.CommonDrawAppearanceBuild = window.CommonDrawAppearanceBuild.__jojoOrigBuild;
 	}
 
-	if (window.__JoJoFlatModLoaded === "1.2.0") {
-		console.log("[JoJo-Mod] v1.2.0 already active, refreshing characters.");
+	if (window.__JoJoFlatModLoaded === "1.2.1") {
+		console.log("[JoJo-Mod] v1.2.1 already active, refreshing characters.");
 		if (typeof window.__JoJoFlatModRefreshAll === "function") {
 			window.__JoJoFlatModRefreshAll();
 		}
 		return;
 	}
-	window.__JoJoFlatModLoaded = "1.2.0";
+	window.__JoJoFlatModLoaded = "1.2.1";
 
 	const TAG = "[JoJo-Mod]";
-	const VERSION = "1.2.0";
+	const VERSION = "1.2.1";
 	const REPO_BASE_URL = "https://jojo-bc.github.io/JoJo-Mod/";
 
 	console.log(`${TAG} v${VERSION} initializing...`);
@@ -133,9 +133,13 @@
 	 */
 	function remapImageUrl(src) {
 		if (typeof src !== "string" || !src) return src;
+		// Already remapped to our GitHub Pages repository -> do NOT remap a second time!
+		if (src.startsWith(REPO_BASE_URL)) return src;
 		if (!src.includes("_FlatSmall") && !src.includes("_FlatMedium")) return src;
 
-		const cleanSrc = src.startsWith("./") ? src.slice(2) : src;
+		const assetsIdx = src.indexOf("Assets/Female3DCG/");
+		const cleanSrc =
+			assetsIdx !== -1 ? src.slice(assetsIdx) : src.startsWith("./") ? src.slice(2) : src;
 		const canonical = toCanonicalManifestPath(cleanSrc);
 
 		// 1. Direct match in custom repository manifest (covers both FlatSmall & FlatMedium, Vanilla & Echo!)
@@ -334,8 +338,14 @@
 			// 5. Allow cross-origin fetch for custom PNGs hosted on jojo-bc.github.io
 			if (typeof window.CommonFetch === "function") {
 				mod.hookFunction("CommonFetch", 20, (args, next) => {
-					const url = args[0];
-					if (typeof url === "string" && url.startsWith(REPO_BASE_URL)) {
+					const reqOrUrl = args[0];
+					const url =
+						typeof reqOrUrl === "string"
+							? reqOrUrl
+							: reqOrUrl && typeof reqOrUrl.url === "string"
+							? reqOrUrl.url
+							: "";
+					if (url.startsWith(REPO_BASE_URL)) {
 						return fetch(url, { mode: "cors", credentials: "omit" });
 					}
 					return next(args);
@@ -359,8 +369,19 @@
 			for (const cacheObj of [window.GLDrawImageCache, window.DrawImageCache]) {
 				if (cacheObj && cacheObj.cache instanceof Map) {
 					for (const key of [...cacheObj.cache.keys()]) {
-						if (typeof key === "string" && (key.includes("_FlatSmall") || key.includes("_FlatMedium"))) {
-							cacheObj.cache.delete(key);
+						if (
+							typeof key === "string" &&
+							(key.startsWith(REPO_BASE_URL) ||
+								key.includes("_FlatSmall") ||
+								key.includes("_FlatMedium") ||
+								key.includes("GlossyBodystocking") ||
+								key.includes("马油袜"))
+						) {
+							if (typeof cacheObj.delete === "function") {
+								cacheObj.delete(key);
+							} else {
+								cacheObj.cache.delete(key);
+							}
 						}
 					}
 				}
