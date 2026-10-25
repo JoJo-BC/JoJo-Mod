@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         JoJo Flat-Chest & Male Avatar Compatibility Mod (BC R133+)
 // @namespace    https://jojo-bc.github.io/JoJo-Mod/
-// @version      1.1.2
-// @description  Unlocks and maps flat-chest (FlatSmall / FlatMedium) clothes and restraints in Bondage Club (Glossy Bodystocking Vanilla & Echo, Pantyhose fullBody, etc.), 100% ModSDK & BCX compliant.
+// @version      1.2.0
+// @description  Unlocks and maps flat-chest (FlatSmall / FlatMedium) clothes and restraints in Bondage Club (Glossy Bodystocking Vanilla & Echo with custom flat male pectoral PNGs, Pantyhose fullBody, etc.), 100% ModSDK & BCX compliant.
 // @author       JoJo-BC
 // @match        https://*.bondageprojects.elementfx.com/R*/*
 // @match        https://*.bondage-europe.com/R*/*
@@ -24,17 +24,17 @@
 		window.CommonDrawAppearanceBuild = window.CommonDrawAppearanceBuild.__jojoOrigBuild;
 	}
 
-	if (window.__JoJoFlatModLoaded === "1.1.2") {
-		console.log("[JoJo-Mod] v1.1.2 already active, refreshing characters.");
+	if (window.__JoJoFlatModLoaded === "1.2.0") {
+		console.log("[JoJo-Mod] v1.2.0 already active, refreshing characters.");
 		if (typeof window.__JoJoFlatModRefreshAll === "function") {
 			window.__JoJoFlatModRefreshAll();
 		}
 		return;
 	}
-	window.__JoJoFlatModLoaded = "1.1.2";
+	window.__JoJoFlatModLoaded = "1.2.0";
 
 	const TAG = "[JoJo-Mod]";
-	const VERSION = "1.1.2";
+	const VERSION = "1.2.0";
 	const REPO_BASE_URL = "https://jojo-bc.github.io/JoJo-Mod/";
 
 	console.log(`${TAG} v${VERSION} initializing...`);
@@ -61,13 +61,70 @@
 	 * When a path is NOT listed here, JoJo-Mod automatically falls back to the "_Small" sprite!
 	 */
 	const CUSTOM_PNG_MANIFEST = new Set([
-		// No custom PNGs in assets/ yet (using automatic Vanilla _Small fallback)
+		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatSmall_A2.png",
+		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatSmall_A3.png",
+		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatSmall_A4.png",
+		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatSmall_BaseColor.png",
+		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatSmall_BodyHue.png",
+		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatSmall_C1.png",
+		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatSmall_C10.png",
+		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatSmall_C11.png",
+		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatSmall_C12.png",
+		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatSmall_C2.png",
+		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatSmall_C3.png",
+		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatSmall_C4.png",
+		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatSmall_C5.png",
+		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatSmall_C6.png",
+		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatSmall_C7.png",
+		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatSmall_C8.png",
+		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatSmall_C9.png",
+		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatSmall_D1.png",
+		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatSmall_D2.png",
+		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatSmall_D3.png",
+		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatSmall_D4.png",
+		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatSmall_D5.png",
+		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatSmall_D6.png",
+		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatSmall_D7.png",
+		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatSmall_EdgeLine.png",
+		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatSmall_EdgeShade.png",
 	]);
 
 	// Fast lookup set of asset names that allow automatic _FlatSmall / _FlatMedium -> _Small fallback
 	const FALLBACK_ASSET_NAMES = new Set(
 		UNLOCKED_FLAT_ASSETS.filter((a) => a.fallbackToSmall).map((a) => a.name)
 	);
+
+	// Chest-only layers that share the same torso position across upright poses (BackElbowTouch, BackBoxTie, etc.)
+	const UPRIGHT_CHEST_LAYERS = new Set([
+		"BodyHue", "A2", "C3", "C4", "C5", "C6", "C7", "D3", "D4", "D5", "D6"
+	]);
+
+	// Echo layer name aliases (Echo Suit/马油袜 -> Vanilla Suit/GlossyBodystocking)
+	const ECHO_LAYER_ALIASES = {
+		Z1: "BodyHue",
+		A1: "BaseColor",
+		B1: "EdgeLine",
+		B2: "EdgeShade",
+	};
+
+	/**
+	 * Normalizes a Suit/马油袜 or Suit/GlossyBodystocking path to canonical _FlatSmall path for manifest lookup.
+	 * @param {string} cleanSrc
+	 * @returns {string}
+	 */
+	function toCanonicalManifestPath(cleanSrc) {
+		let p = cleanSrc.replace("_FlatMedium", "_FlatSmall");
+		if (p.includes("/Suit/") && p.includes("马油袜_FlatSmall_")) {
+			p = p.replace("马油袜_FlatSmall_", "GlossyBodystocking_FlatSmall_");
+			for (const [echoCode, vanillaName] of Object.entries(ECHO_LAYER_ALIASES)) {
+				if (p.endsWith(`_${echoCode}.png`)) {
+					p = p.slice(0, -(echoCode.length + 5)) + `_${vanillaName}.png`;
+					break;
+				}
+			}
+		}
+		return p;
+	}
 
 	/**
 	 * Remaps an image URL if it targets _FlatSmall or _FlatMedium for a supported asset.
@@ -79,17 +136,22 @@
 		if (!src.includes("_FlatSmall") && !src.includes("_FlatMedium")) return src;
 
 		const cleanSrc = src.startsWith("./") ? src.slice(2) : src;
+		const canonical = toCanonicalManifestPath(cleanSrc);
 
-		// 1. Direct match in custom repository manifest
-		if (CUSTOM_PNG_MANIFEST.has(cleanSrc)) {
-			return REPO_BASE_URL + "assets/" + cleanSrc;
+		// 1. Direct match in custom repository manifest (covers both FlatSmall & FlatMedium, Vanilla & Echo!)
+		if (CUSTOM_PNG_MANIFEST.has(canonical)) {
+			return REPO_BASE_URL + "assets/" + canonical;
 		}
 
-		// 2. If avatar is FlatMedium and we have a custom _FlatSmall PNG in manifest, use it for both
-		if (cleanSrc.includes("_FlatMedium")) {
-			const asFlatSmall = cleanSrc.replace("_FlatMedium", "_FlatSmall");
-			if (CUSTOM_PNG_MANIFEST.has(asFlatSmall)) {
-				return REPO_BASE_URL + "assets/" + asFlatSmall;
+		// 2. Upright restraint poses (BackElbowTouch, BackBoxTie, BackCuffs, OverTheHead, Yoked):
+		// Use our custom flat-chest PNGs for all chest-only layers so the chest stays flat when bound!
+		const poseMatch = canonical.match(
+			/^Assets\/Female3DCG\/Suit\/(BackElbowTouch|BackBoxTie|BackCuffs|OverTheHead|Yoked)\/GlossyBodystocking_FlatSmall_([A-Za-z0-9]+)\.png$/
+		);
+		if (poseMatch && UPRIGHT_CHEST_LAYERS.has(poseMatch[2])) {
+			const standingChestPath = `Assets/Female3DCG/Suit/GlossyBodystocking_FlatSmall_${poseMatch[2]}.png`;
+			if (CUSTOM_PNG_MANIFEST.has(standingChestPath)) {
+				return REPO_BASE_URL + "assets/" + standingChestPath;
 			}
 		}
 
@@ -303,14 +365,14 @@
 					}
 				}
 			}
-			if (typeof CharacterRefresh === "function" && typeof Player !== "undefined" && Player) {
-				CharacterRefresh(Player, false, false);
+			if (typeof Player !== "undefined" && Player) {
+				if (typeof CharacterRefresh === "function") CharacterRefresh(Player, false, false);
+				if (typeof CharacterLoadCanvas === "function") CharacterLoadCanvas(Player);
 			}
 			if (typeof ChatRoomCharacter !== "undefined" && Array.isArray(ChatRoomCharacter)) {
 				for (const C of ChatRoomCharacter) {
-					if (typeof CharacterRefresh === "function") {
-						CharacterRefresh(C, false, false);
-					}
+					if (typeof CharacterRefresh === "function") CharacterRefresh(C, false, false);
+					if (typeof CharacterLoadCanvas === "function") CharacterLoadCanvas(C);
 				}
 			}
 			if (
