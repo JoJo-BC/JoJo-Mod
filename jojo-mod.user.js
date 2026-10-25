@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         JoJo Flat-Chest & Male Avatar Compatibility Mod (BC R133+)
 // @namespace    https://jojo-bc.github.io/JoJo-Mod/
-// @version      1.3.4
-// @description  Unlocks and maps flat-chest (FlatSmall / FlatMedium) clothes and restraints in Bondage Club (Glossy Bodystocking Vanilla & Echo with custom flat male pectoral PNGs, Pantyhose fullBody, etc.), 100% ModSDK & BCX compliant.
+// @version      1.3.5
+// @description  Unlocks and maps flat-chest (FlatSmall / FlatMedium) clothes and restraints in Bondage Club (Glossy Bodystocking Vanilla & Echo with custom flat male pectoral PNGs, Pantyhose fullBody, Latex Top & Pants, etc.), 100% ModSDK & BCX compliant.
 // @author       JoJo-BC
 // @match        https://*.bondageprojects.elementfx.com/R*/*
 // @match        https://*.bondage-europe.com/R*/*
@@ -24,17 +24,17 @@
 		window.CommonDrawAppearanceBuild = window.CommonDrawAppearanceBuild.__jojoOrigBuild;
 	}
 
-	if (window.__JoJoFlatModLoaded === "1.3.4") {
-		console.log("[JoJo-Mod] v1.3.4 already active, refreshing characters.");
+	if (window.__JoJoFlatModLoaded === "1.3.5") {
+		console.log("[JoJo-Mod] v1.3.5 already active, refreshing characters.");
 		if (typeof window.__JoJoFlatModRefreshAll === "function") {
 			window.__JoJoFlatModRefreshAll();
 		}
 		return;
 	}
-	window.__JoJoFlatModLoaded = "1.3.4";
+	window.__JoJoFlatModLoaded = "1.3.5";
 
 	const TAG = "[JoJo-Mod]";
-	const VERSION = "1.3.4";
+	const VERSION = "1.3.5";
 	const REPO_BASE_URL = "https://jojo-bc.github.io/JoJo-Mod/";
 
 	console.log(`${TAG} v${VERSION} initializing...`);
@@ -418,6 +418,16 @@
 			unlockedCount++;
 		}
 
+		// Ensure all unlocked assets are present in CharacterAppearanceAssets so Wardrobe arrow buttons (< and >) work
+		if (typeof CharacterAppearanceAssets !== "undefined" && Array.isArray(CharacterAppearanceAssets)) {
+			for (const item of UNLOCKED_FLAT_ASSETS) {
+				const asset = AssetGet("Female3DCG", item.group, item.name);
+				if (asset && !CharacterAppearanceAssets.includes(asset)) {
+					CharacterAppearanceAssets.push(asset);
+				}
+			}
+		}
+
 		// Clean up any invalid entries in Player.Inventory (must have .Asset to avoid DialogInventoryBuild crash)
 		if (typeof Player !== "undefined" && Array.isArray(Player.Inventory)) {
 			Player.Inventory = Player.Inventory.filter((i) => i && i.Asset);
@@ -627,6 +637,98 @@
 				});
 			}
 
+			// 7. Ensure unlocked flat items always appear in the 3x3 Wardrobe DialogInventory
+			if (typeof window.DialogInventoryBuild === "function") {
+				mod.hookFunction("DialogInventoryBuild", 25, (args, next) => {
+					const res = next(args);
+					const C = args[0] || window.CharacterAppearanceSelection || (typeof Player !== "undefined" ? Player : null);
+					if (C && C.FocusGroup && Array.isArray(window.DialogInventory)) {
+						for (const unl of UNLOCKED_FLAT_ASSETS) {
+							if (unl.group === C.FocusGroup.Name) {
+								const asset = AssetGet("Female3DCG", unl.group, unl.name);
+								if (!asset) continue;
+								let invItem = window.DialogInventory.find((i) => i && i.Asset && i.Asset.Name === unl.name);
+								const worn = Array.isArray(C.Appearance) && C.Appearance.some((a) => a && a.Asset && a.Asset.Name === unl.name && a.Asset.Group.Name === unl.group);
+								if (!invItem) {
+									invItem = {
+										Asset: asset,
+										Worn: worn,
+										Icons: [],
+										SortOrder: `1${asset.Description}`,
+									};
+									window.DialogInventory.push(invItem);
+								} else {
+									invItem.SortOrder = `1${asset.Description}`;
+								}
+							}
+						}
+					}
+					return res;
+				});
+			}
+
+			// 8. Hook AppearanceClick: Direct instant equip when clicking an unlocked item in the 3x3 wardrobe grid
+			if (typeof window.AppearanceClick === "function") {
+				mod.hookFunction("AppearanceClick", 25, (args, next) => {
+					const C = window.CharacterAppearanceSelection || (typeof Player !== "undefined" ? Player : null);
+					if (
+						window.CharacterAppearanceMode === "Cloth" &&
+						C &&
+						C.FocusGroup &&
+						Array.isArray(window.DialogInventory)
+					) {
+						let X = 1250;
+						let Y = 125;
+						const offset = window.DialogInventoryOffset || 0;
+						const numPerPage = window.CharacterAppearanceNumClothPerPage || 9;
+						const mx = typeof MouseX !== "undefined" ? MouseX : 0;
+						const my = typeof MouseY !== "undefined" ? MouseY : 0;
+						for (let I = offset; I < window.DialogInventory.length && I < offset + numPerPage; I++) {
+							if (mx >= X && mx < X + 225 && my >= Y && my < Y + 275) {
+								const item = window.DialogInventory[I];
+								if (item && item.Asset && UNLOCKED_FLAT_NAMES.has(item.Asset.Name)) {
+									const currentItem = typeof InventoryGet === "function" ? InventoryGet(C, C.FocusGroup.Name) : null;
+									const worn = !!currentItem && currentItem.Asset.Name === item.Asset.Name;
+									if (worn && currentItem.Asset.Extended && typeof DialogExtendItem === "function") {
+										DialogExtendItem(currentItem);
+									} else {
+										if (typeof CharacterAppearanceSetItem === "function") {
+											CharacterAppearanceSetItem(C, C.FocusGroup.Name, item.Asset);
+										}
+										if (typeof CharacterRefresh === "function") CharacterRefresh(C);
+										if (typeof DialogInventoryBuild === "function") DialogInventoryBuild(C, false, false);
+										if (typeof AppearancePreviewBuild === "function") AppearancePreviewBuild(C, true);
+										if (typeof AppearanceMenuBuild === "function") AppearanceMenuBuild(C);
+									}
+									return;
+								}
+							}
+							X += 250;
+							if (X > 1800) {
+								X = 1250;
+								Y += 300;
+							}
+						}
+					}
+					return next(args);
+				});
+			}
+
+			// 9. Hook CharacterAppearanceNextItem so the < and > arrow buttons also cycle through our unlocked items
+			if (typeof window.CharacterAppearanceNextItem === "function") {
+				mod.hookFunction("CharacterAppearanceNextItem", 25, (args, next) => {
+					if (typeof CharacterAppearanceAssets !== "undefined" && Array.isArray(CharacterAppearanceAssets)) {
+						for (const unl of UNLOCKED_FLAT_ASSETS) {
+							const a = AssetGet("Female3DCG", unl.group, unl.name);
+							if (a && !CharacterAppearanceAssets.includes(a)) {
+								CharacterAppearanceAssets.push(a);
+							}
+						}
+					}
+					return next(args);
+				});
+			}
+
 			sdkHooksInstalled = true;
 			console.log(TAG, "Registered 100% ModSDK-compliant hooks (Priority 20, BCX & Echo compatible).");
 			return true;
@@ -708,17 +810,18 @@
 				window.CharacterAppearanceGroupedAssets = window.AssetGetAllAppearanceForCharacter(targetChar);
 			}
 
+			const targetChar = window.CharacterAppearanceSelection || (typeof Player !== "undefined" ? Player : null);
 			if (
+				targetChar &&
+				targetChar.FocusGroup &&
 				typeof window.CharacterAppearanceMode !== "undefined" &&
-				window.CharacterAppearanceMode === "Cloth" &&
-				typeof window.CharacterAppearanceSelectedGroup !== "undefined" &&
-				window.CharacterAppearanceSelectedGroup &&
-				typeof window.DialogInventoryBuild === "function"
+				window.CharacterAppearanceMode === "Cloth"
 			) {
-				const targetChar = window.CharacterAppearanceSelection || window.Player;
-				window.DialogInventoryBuild(targetChar, window.CharacterAppearanceSelectedGroup, false, false, false);
+				if (typeof window.DialogInventoryBuild === "function") {
+					window.DialogInventoryBuild(targetChar, false, false);
+				}
 				if (typeof window.AppearancePreviewBuild === "function") {
-					window.AppearancePreviewBuild(targetChar, window.CharacterAppearanceSelectedGroup, false);
+					window.AppearancePreviewBuild(targetChar, true);
 				}
 			}
 		} catch (e) {
@@ -726,6 +829,36 @@
 		}
 	}
 	window.__JoJoFlatModRefreshAll = refreshAllCharacters;
+
+	/**
+	 * Emergency helper callable from browser console: JoJoEquip("LatexTop", "Cloth")
+	 */
+	window.JoJoEquip = function (itemName = "LatexTop", groupName = "Cloth") {
+		const C = window.CharacterAppearanceSelection || (typeof Player !== "undefined" ? Player : null);
+		if (!C) {
+			console.warn(TAG, "No active character found.");
+			return false;
+		}
+		const a = typeof AssetGet === "function" ? AssetGet("Female3DCG", groupName, itemName) : null;
+		if (!a) {
+			console.warn(TAG, `Asset ${groupName}/${itemName} not found.`);
+			return false;
+		}
+		if (typeof CharacterAppearanceSetItem === "function") {
+			CharacterAppearanceSetItem(C, groupName, a);
+		}
+		if (typeof CharacterRefresh === "function") {
+			CharacterRefresh(C);
+		}
+		if (C.FocusGroup && typeof DialogInventoryBuild === "function") {
+			DialogInventoryBuild(C, false, false);
+		}
+		if (C.FocusGroup && typeof AppearancePreviewBuild === "function") {
+			AppearancePreviewBuild(C, true);
+		}
+		console.log(TAG, `Equipped ${groupName}/${itemName} successfully!`);
+		return true;
+	};
 
 	function tryInit() {
 		if (!window.bcModSdk) {
