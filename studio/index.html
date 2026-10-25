@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>JoJo-Studio — BC Item Studio &amp; Visualizer (Flat-Chest)</title>
+	<style>
+		:root {
+			--bg: #0b0d14;
+			--panel: #131722;
+			--panel-hover: #1b2030;
+			--border: #262c42;
+			--accent: #d943d4;
+			--accent-hover: #f05ceb;
+			--text: #e6e9f4;
+			--muted: #8e98b5;
+			--canvas-bg: #1c202e;
+		}
+		* { box-sizing: border-box; }
+		body {
+			margin: 0;
+			padding: 0;
+			font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+			background: var(--bg);
+			color: var(--text);
+			display: flex;
+			height: 100vh;
+			overflow: hidden;
+		}
+
+		/* Left Sidebar - Controls */
+		.sidebar {
+			width: 340px;
+			background: var(--panel);
+			border-right: 1px solid var(--border);
+			display: flex;
+			flex-direction: column;
+			flex-shrink: 0;
+			overflow-y: auto;
+		}
+		.sidebar-header {
+			padding: 16px 20px;
+			border-bottom: 1px solid var(--border);
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+		}
+		.sidebar-header h1 {
+			margin: 0;
+			font-size: 1.15rem;
+			font-weight: 700;
+			color: #fff;
+			display: flex;
+			align-items: center;
+			gap: 8px;
+		}
+		.badge {
+			font-size: 0.72rem;
+			padding: 2px 8px;
+			border-radius: 999px;
+			background: rgba(217, 67, 212, 0.2);
+			color: #f78ef3;
+			border: 1px solid rgba(217, 67, 212, 0.4);
+		}
+		.section {
+			padding: 16px 20px;
+			border-bottom: 1px solid var(--border);
+		}
+		.section-title {
+			font-size: 0.8rem;
+			text-transform: uppercase;
+			letter-spacing: 0.05em;
+			color: var(--muted);
+			font-weight: 700;
+			margin-bottom: 12px;
+		}
+		label {
+			display: block;
+			font-size: 0.85rem;
+			color: var(--text);
+			margin-bottom: 6px;
+			font-weight: 500;
+		}
+		select, input[type="text"] {
+			width: 100%;
+			padding: 8px 12px;
+			background: #090a10;
+			border: 1px solid var(--border);
+			border-radius: 8px;
+			color: #fff;
+			font-size: 0.9rem;
+			outline: none;
+			margin-bottom: 12px;
+		}
+		select:focus, input[type="text"]:focus {
+			border-color: var(--accent);
+		}
+
+		/* Color picker row */
+		.color-row {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			margin-bottom: 12px;
+		}
+		input[type="color"] {
+			border: none;
+			width: 38px;
+			height: 38px;
+			border-radius: 8px;
+			background: transparent;
+			cursor: pointer;
+			padding: 0;
+		}
+		.color-presets {
+			display: flex;
+			gap: 6px;
+			margin-bottom: 12px;
+			flex-wrap: wrap;
+		}
+		.preset-btn {
+			width: 24px;
+			height: 24px;
+			border-radius: 6px;
+			border: 1px solid #444;
+			cursor: pointer;
+			transition: transform 0.1s;
+		}
+		.preset-btn:hover {
+			transform: scale(1.15);
+		}
+
+		/* Layer list */
+		.layer-list {
+			display: flex;
+			flex-direction: column;
+			gap: 6px;
+			max-height: 220px;
+			overflow-y: auto;
+			padding-right: 4px;
+		}
+		.layer-item {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			padding: 6px 10px;
+			background: #0d0f17;
+			border-radius: 6px;
+			font-size: 0.82rem;
+			border: 1px solid #1c2132;
+		}
+		.layer-item label {
+			margin: 0;
+			cursor: pointer;
+			display: flex;
+			align-items: center;
+			gap: 6px;
+		}
+
+		/* Drop Zone */
+		.drop-zone {
+			border: 2px dashed var(--border);
+			border-radius: 10px;
+			padding: 16px;
+			text-align: center;
+			font-size: 0.82rem;
+			color: var(--muted);
+			cursor: pointer;
+			transition: all 0.15s ease;
+		}
+		.drop-zone:hover, .drop-zone.dragover {
+			border-color: var(--accent);
+			background: rgba(217, 67, 212, 0.05);
+			color: #fff;
+		}
+
+		/* Buttons */
+		.btn {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			gap: 6px;
+			width: 100%;
+			padding: 10px 14px;
+			border-radius: 8px;
+			font-size: 0.88rem;
+			font-weight: 600;
+			cursor: pointer;
+			border: 1px solid var(--border);
+			background: #1b2030;
+			color: #fff;
+			transition: all 0.15s ease;
+			margin-bottom: 8px;
+			text-decoration: none;
+		}
+		.btn:hover {
+			background: #252c42;
+			border-color: var(--accent);
+		}
+		.btn-primary {
+			background: var(--accent);
+			border-color: var(--accent);
+		}
+		.btn-primary:hover {
+			background: var(--accent-hover);
+		}
+
+		/* Main Canvas Viewport */
+		.viewport {
+			flex: 1;
+			background: #08090e;
+			display: flex;
+			flex-direction: column;
+			position: relative;
+			overflow: hidden;
+		}
+		.viewport-toolbar {
+			height: 48px;
+			background: var(--panel);
+			border-bottom: 1px solid var(--border);
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			padding: 0 20px;
+		}
+		.zoom-controls {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+		}
+		.zoom-btn {
+			background: #1c2132;
+			border: 1px solid var(--border);
+			color: #fff;
+			padding: 4px 10px;
+			border-radius: 6px;
+			cursor: pointer;
+			font-size: 0.82rem;
+		}
+		.zoom-btn:hover {
+			background: #272e45;
+		}
+
+		.canvas-container {
+			flex: 1;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			overflow: auto;
+			padding: 20px;
+		}
+		#mainCanvas {
+			background: repeating-conic-gradient(#171a26 0% 25%, #10131c 0% 50%) 50% / 20px 20px;
+			border: 1px solid var(--border);
+			border-radius: 10px;
+			box-shadow: 0 12px 36px rgba(0,0,0,0.6);
+			transform-origin: center center;
+			transition: transform 0.1s ease-out;
+		}
+		.status-text {
+			font-size: 0.8rem;
+			color: var(--muted);
+		}
+	</style>
+</head>
+<body>
+
+	<!-- Sidebar -->
+	<aside class="sidebar">
+		<div class="sidebar-header">
+			<h1>JoJo-Studio <span class="badge">v1.3</span></h1>
+			<a href="../index.html" style="color:var(--muted); text-decoration:none; font-size:0.82rem;">← Mod Home</a>
+		</div>
+
+		<!-- Configuration Section -->
+		<div class="section">
+			<div class="section-title">Avatar &amp; Posa</div>
+			<label for="poseSelect">Posa Braccia</label>
+			<select id="poseSelect">
+				<option value="Standing">Standing (In piedi)</option>
+				<option value="Yoked">Yoked (Braccia a T / Giogo)</option>
+				<option value="OverTheHead">OverTheHead (Mani in alto)</option>
+				<option value="BackBoxTie">BackBoxTie (Box Tie dietro)</option>
+				<option value="BackCuffs">BackCuffs (Manette dietro)</option>
+				<option value="BackElbowTouch">BackElbowTouch (Gomiti uniti)</option>
+			</select>
+
+			<label for="sizeSelect">Taglia Corpo Maschile</label>
+			<select id="sizeSelect">
+				<option value="FlatSmall">FlatSmall (Corpo maschile Tex)</option>
+				<option value="FlatMedium">FlatMedium (Flat medio)</option>
+			</select>
+
+			<label>Manichino Corpo Base</label>
+			<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+				<span style="font-size:0.85rem; color:var(--muted);">Mostra Manichino Guida</span>
+				<input type="checkbox" id="showMannequin" checked style="width:18px; height:18px; cursor:pointer;">
+			</div>
+		</div>
+
+		<!-- Clothing & Tint Section -->
+		<div class="section">
+			<div class="section-title">Colore Vestito (Simulazione BC)</div>
+			<label>Tinta BaseColor</label>
+			<div class="color-row">
+				<input type="color" id="tintColor" value="#4b3a37">
+				<input type="text" id="tintHex" value="#4b3a37" style="margin:0; width:110px;">
+			</div>
+			<div class="color-presets">
+				<div class="preset-btn" style="background:#4b3a37;" title="Nero / Marrone scuro" onclick="setTint('#4b3a37')"></div>
+				<div class="preset-btn" style="background:#151515;" title="Nero vinile" onclick="setTint('#151515')"></div>
+				<div class="preset-btn" style="background:#ffffff;" title="Bianco" onclick="setTint('#ffffff')"></div>
+				<div class="preset-btn" style="background:#d943d4;" title="Rosa / Magenta" onclick="setTint('#d943d4')"></div>
+				<div class="preset-btn" style="background:#2463eb;" title="Blu elettrico" onclick="setTint('#2463eb')"></div>
+				<div class="preset-btn" style="background:#dc2626;" title="Rosso vivo" onclick="setTint('#dc2626')"></div>
+				<div class="preset-btn" style="background:#16a34a;" title="Verde smeraldo" onclick="setTint('#16a34a')"></div>
+			</div>
+		</div>
+
+		<!-- Layer Visibility Inspector -->
+		<div class="section">
+			<div class="section-title">Ispettore Livelli</div>
+			<div class="layer-list" id="layerList">
+				<!-- Dynamically filled -->
+			</div>
+		</div>
+
+		<!-- Custom Drop Zone -->
+		<div class="section">
+			<div class="section-title">Test Disegno Personalizzato</div>
+			<div class="drop-zone" id="dropZone">
+				📁 Trascina qui un tuo PNG disegnato<br>per testarlo sul manichino al volo!
+			</div>
+			<input type="file" id="fileInput" accept="image/png" style="display:none;">
+		</div>
+
+		<!-- Actions -->
+		<div class="section" style="border:none;">
+			<button class="btn btn-primary" onclick="exportComposite()">
+				💾 Scarica PNG Composito (500x1000)
+			</button>
+			<button class="btn" onclick="copyConsoleCmd()">
+				📋 Copia Comando Console BC
+			</button>
+			<a class="btn" href="../templates/GUIDA_DISEGNO.md" target="_blank">
+				📖 Apri Guida al Disegno
+			</a>
+		</div>
+	</aside>
+
+	<!-- Main Viewport -->
+	<main class="viewport">
+		<div class="viewport-toolbar">
+			<div class="status-text" id="statusText">Pronto. Dimensioni canvas: 500 × 1000 px</div>
+			<div class="zoom-controls">
+				<button class="zoom-btn" onclick="setZoom(0.6)">60%</button>
+				<button class="zoom-btn" onclick="setZoom(0.8)">80%</button>
+				<button class="zoom-btn" onclick="setZoom(1.0)">100% (Reale)</button>
+				<button class="zoom-btn" onclick="setZoom(1.4)">140%</button>
+			</div>
+		</div>
+
+		<div class="canvas-container">
+			<canvas id="mainCanvas" width="500" height="1000"></canvas>
+		</div>
+	</main>
+
+	<script>
+		const canvas = document.getElementById("mainCanvas");
+		const ctx = canvas.getContext("2d");
+		let currentZoom = 0.8;
+
+		const poseSelect = document.getElementById("poseSelect");
+		const sizeSelect = document.getElementById("sizeSelect");
+		const showMannequinCheckbox = document.getElementById("showMannequin");
+		const tintColor = document.getElementById("tintColor");
+		const tintHex = document.getElementById("tintHex");
+		const statusText = document.getElementById("statusText");
+		const layerList = document.getElementById("layerList");
+		const dropZone = document.getElementById("dropZone");
+		const fileInput = document.getElementById("fileInput");
+
+		let customDroppedImage = null;
+
+		const LAYERS_INFO = [
+			{ id: "BodyHue", label: "BodyHue (Fondo pelle)", defaultOn: true, blend: "source-over" },
+			{ id: "BaseColor", label: "BaseColor (Sagoma tinta)", defaultOn: true, blend: "source-over", isTinted: true },
+			{ id: "EdgeShade", label: "EdgeShade (Ombre bordi)", defaultOn: true, blend: "source-over" },
+			{ id: "A2", label: "A2 (Ombra pettorale)", defaultOn: true, blend: "source-over" },
+			{ id: "A3", label: "A3 (Ombra braccia)", defaultOn: true, blend: "source-over" },
+			{ id: "C1", label: "C1..C12 (Punti luce vinile)", defaultOn: true, blend: "source-over" },
+			{ id: "D1", label: "D1..D7 (Riflessi & pieghe)", defaultOn: true, blend: "source-over" },
+			{ id: "EdgeLine", label: "EdgeLine (Linee contorno)", defaultOn: true, blend: "source-over" },
+		];
+
+		const layerState = {};
+		LAYERS_INFO.forEach(l => layerState[l.id] = l.defaultOn);
+
+		function initLayerUI() {
+			layerList.innerHTML = "";
+			LAYERS_INFO.forEach(l => {
+				const item = document.createElement("div");
+				item.className = "layer-item";
+				item.innerHTML = `
+					<label>
+						<input type="checkbox" id="chk_${l.id}" ${layerState[l.id] ? "checked" : ""}>
+						<span>${l.label}</span>
+					</label>
+				`;
+				item.querySelector("input").addEventListener("change", (e) => {
+					layerState[l.id] = e.target.checked;
+					render();
+				});
+				layerList.appendChild(item);
+			});
+		}
+
+		function setZoom(z) {
+			currentZoom = z;
+			canvas.style.transform = `scale(${z})`;
+			statusText.textContent = `Zoom: ${Math.round(z * 100)}% | Canvas: 500 × 1000 px`;
+		}
+		setZoom(0.8);
+
+		function setTint(hex) {
+			tintColor.value = hex;
+			tintHex.value = hex;
+			render();
+		}
+		tintColor.addEventListener("input", (e) => {
+			tintHex.value = e.target.value;
+			render();
+		});
+		tintHex.addEventListener("change", (e) => {
+			tintColor.value = e.target.value;
+			render();
+		});
+
+		poseSelect.addEventListener("change", render);
+		sizeSelect.addEventListener("change", render);
+		showMannequinCheckbox.addEventListener("change", render);
+
+		// Image cache to avoid re-fetching
+		const imgCache = new Map();
+		function loadImage(src) {
+			if (imgCache.has(src)) return Promise.resolve(imgCache.get(src));
+			return new Promise((resolve) => {
+				const img = new Image();
+				img.crossOrigin = "anonymous";
+				img.onload = () => {
+					imgCache.set(src, img);
+					resolve(img);
+				};
+				img.onerror = () => resolve(null);
+				img.src = src;
+			});
+		}
+
+		function hexToRgb(hex) {
+			const c = hex.replace("#", "");
+			return {
+				r: parseInt(c.substring(0, 2), 16) || 0,
+				g: parseInt(c.substring(2, 4), 16) || 0,
+				b: parseInt(c.substring(4, 6), 16) || 0,
+			};
+		}
+
+		async function render() {
+			const pose = poseSelect.value;
+			const size = sizeSelect.value;
+			const poseSubdir = pose === "Standing" ? "" : pose + "/";
+
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+			// 1. Render Mannequin
+			if (showMannequinCheckbox.checked) {
+				const manSrc = `../templates/mannequins/mannequin_${size}_${pose}.png`;
+				const manImg = await loadImage(manSrc);
+				if (manImg) {
+					ctx.drawImage(manImg, 0, 0);
+				}
+			}
+
+			// 2. Render Bodystocking Layers
+			const basePath = `../assets/Assets/Female3DCG/Suit/${poseSubdir}GlossyBodystocking_${size}_`;
+
+			// Helper to draw tinted BaseColor
+			if (layerState["BaseColor"]) {
+				const baseImg = await loadImage(basePath + "BaseColor.png");
+				if (baseImg) {
+					const off = document.createElement("canvas");
+					off.width = 500;
+					off.height = 1000;
+					const offCtx = off.getContext("2d");
+					offCtx.drawImage(baseImg, 0, 0);
+
+					const tint = hexToRgb(tintColor.value);
+					const imgData = offCtx.getImageData(0, 0, 500, 1000);
+					const d = imgData.data;
+					for (let i = 0; i < d.length; i += 4) {
+						if (d[i + 3] > 0) {
+							d[i] = Math.round((d[i] * tint.r) / 255);
+							d[i + 1] = Math.round((d[i + 1] * tint.g) / 255);
+							d[i + 2] = Math.round((d[i + 2] * tint.b) / 255);
+						}
+					}
+					offCtx.putImageData(imgData, 0, 0);
+					ctx.drawImage(off, 0, 0);
+				}
+			}
+
+			// BodyHue
+			if (layerState["BodyHue"]) {
+				const img = await loadImage(basePath + "BodyHue.png");
+				if (img) ctx.drawImage(img, 0, 0);
+			}
+
+			// EdgeShade
+			if (layerState["EdgeShade"]) {
+				const img = await loadImage(basePath + "EdgeShade.png");
+				if (img) ctx.drawImage(img, 0, 0);
+			}
+
+			// A2 / A3
+			if (layerState["A2"]) {
+				const img = await loadImage(basePath + "A2.png");
+				if (img) ctx.drawImage(img, 0, 0);
+			}
+			if (layerState["A3"]) {
+				const img = await loadImage(basePath + "A3.png");
+				if (img) ctx.drawImage(img, 0, 0);
+			}
+
+			// Highlights C1..C12
+			if (layerState["C1"]) {
+				for (let c = 1; c <= 12; c++) {
+					const img = await loadImage(basePath + `C${c}.png`);
+					if (img) ctx.drawImage(img, 0, 0);
+				}
+			}
+
+			// Accents D1..D7
+			if (layerState["D1"]) {
+				for (let d = 1; d <= 7; d++) {
+					const img = await loadImage(basePath + `D${d}.png`);
+					if (img) ctx.drawImage(img, 0, 0);
+				}
+			}
+
+			// EdgeLine (Contours)
+			if (layerState["EdgeLine"]) {
+				const img = await loadImage(basePath + "EdgeLine.png");
+				if (img) ctx.drawImage(img, 0, 0);
+			}
+
+			// 3. Render Custom Dropped PNG (if any)
+			if (customDroppedImage) {
+				ctx.drawImage(customDroppedImage, 0, 0);
+			}
+		}
+
+		// Drag & Drop handlers
+		dropZone.addEventListener("click", () => fileInput.click());
+		dropZone.addEventListener("dragover", (e) => {
+			e.preventDefault();
+			dropZone.classList.add("dragover");
+		});
+		dropZone.addEventListener("dragleave", () => dropZone.classList.remove("dragover"));
+		dropZone.addEventListener("drop", (e) => {
+			e.preventDefault();
+			dropZone.classList.remove("dragover");
+			if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+				handleCustomFile(e.dataTransfer.files[0]);
+			}
+		});
+		fileInput.addEventListener("change", (e) => {
+			if (e.target.files && e.target.files[0]) {
+				handleCustomFile(e.target.files[0]);
+			}
+		});
+
+		function handleCustomFile(file) {
+			const reader = new FileReader();
+			reader.onload = (evt) => {
+				const img = new Image();
+				img.onload = () => {
+					customDroppedImage = img;
+					dropZone.innerHTML = `✅ Caricato: <strong>${file.name}</strong><br><span style="font-size:0.75rem; color:#888;">Clicca per cambiare</span>`;
+					render();
+				};
+				img.src = evt.target.result;
+			};
+			reader.readAsDataURL(file);
+		}
+
+		function exportComposite() {
+			const link = document.createElement("a");
+			link.download = `jojo_${sizeSelect.value}_${poseSelect.value}.png`;
+			link.href = canvas.toDataURL("image/png");
+			link.click();
+		}
+
+		function copyConsoleCmd() {
+			const cmd = 'import("https://jojo-bc.github.io/JoJo-Mod/jojo-mod.user.js?t=" + Date.now())';
+			navigator.clipboard.writeText(cmd).then(() => {
+				alert("Comando copiato negli appunti! Incollalo nella console del browser (F12) per testare su Bondage Club.");
+			});
+		}
+
+		initLayerUI();
+		render();
+	</script>
+</body>
+</html>
