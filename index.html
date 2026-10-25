@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>JoJo-Mod — Bondage Club R133 Flat-Chest & Male Avatar Addon</title>
+	<style>
+		:root {
+			--bg: #0f111a;
+			--card: #181b28;
+			--border: #2a2f45;
+			--accent: #d943d4;
+			--accent-hover: #f05ceb;
+			--text: #e6e9f4;
+			--muted: #9aa2c0;
+			--btn-server: #23283d;
+		}
+		* { box-sizing: border-box; }
+		body {
+			margin: 0;
+			padding: 32px 16px;
+			font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+			background: var(--bg);
+			color: var(--text);
+			line-height: 1.5;
+		}
+		.container {
+			max-width: 780px;
+			margin: 0 auto;
+		}
+		.card {
+			background: var(--card);
+			border: 1px solid var(--border);
+			border-radius: 14px;
+			padding: 24px;
+			margin-bottom: 20px;
+			box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+		}
+		h1 {
+			margin: 0 0 8px 0;
+			font-size: 1.75rem;
+			color: #fff;
+		}
+		h2 {
+			margin: 0 0 12px 0;
+			font-size: 1.2rem;
+			color: #fff;
+		}
+		p {
+			margin: 0 0 14px 0;
+			color: var(--muted);
+		}
+		.grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+			gap: 12px;
+			margin-top: 12px;
+		}
+		.btn {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			padding: 13px 18px;
+			border-radius: 10px;
+			font-weight: 600;
+			text-decoration: none;
+			color: #fff;
+			background: var(--btn-server);
+			border: 1px solid var(--border);
+			transition: all 0.15s ease;
+			cursor: pointer;
+			text-align: center;
+		}
+		.btn:hover {
+			border-color: var(--accent);
+			background: #2c324d;
+			transform: translateY(-1px);
+		}
+		.btn-primary {
+			background: var(--accent);
+			border-color: var(--accent);
+			color: #fff;
+		}
+		.btn-primary:hover {
+			background: var(--accent-hover);
+		}
+		code, pre {
+			background: #0b0d14;
+			border: 1px solid var(--border);
+			border-radius: 8px;
+			padding: 10px 12px;
+			font-family: Consolas, monospace;
+			font-size: 0.88rem;
+			color: #f3b3f1;
+			overflow-x: auto;
+			display: block;
+		}
+		ul {
+			margin: 8px 0 0 0;
+			padding-left: 20px;
+			color: var(--muted);
+		}
+		li { margin-bottom: 6px; }
+		.badge {
+			display: inline-block;
+			padding: 3px 9px;
+			border-radius: 999px;
+			font-size: 0.78rem;
+			font-weight: 600;
+			background: rgba(217, 67, 212, 0.18);
+			color: #f58cf1;
+			border: 1px solid rgba(217, 67, 212, 0.4);
+			margin-left: 8px;
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<div class="card">
+			<h1>JoJo-Mod <span class="badge">BC R133+</span></h1>
+			<p>Unlocks and adapts clothes &amp; restraints for flat-chested / male avatars (<code>FlatSmall</code> &amp; <code>FlatMedium</code>) in Bondage Club.</p>
+		</div>
+
+		<div class="card">
+			<h2>1. Direct Launch (No Extension Needed)</h2>
+			<p>Click your preferred Bondage Club server below to launch the game with <strong>JoJo-Mod</strong> automatically loaded via FUSAM:</p>
+			<div class="grid">
+				<a class="btn btn-primary" href="https://www.bondage-asia.com/club/R133/?fusam=https://jojo-bc.github.io/JoJo-Mod/jojo-mod.user.js&fusamType=script">
+					🌏 Asia Server (R133)
+				</a>
+				<a class="btn" href="https://www.bondageprojects.elementfx.com/R133/BondageClub/?fusam=https://jojo-bc.github.io/JoJo-Mod/jojo-mod.user.js&fusamType=script">
+					🌎 America Server (R133)
+				</a>
+				<a class="btn" href="https://www.bondageeurope.com/R133/BondageClub/?fusam=https://jojo-bc.github.io/JoJo-Mod/jojo-mod.user.js&fusamType=script">
+					🌍 Europe A Server (R133)
+				</a>
+				<a class="btn" href="https://www.bondage-europe.com/R133/BondageClub/?fusam=https://jojo-bc.github.io/JoJo-Mod/jojo-mod.user.js&fusamType=script">
+					🌍 Europe B Server (R133)
+				</a>
+			</div>
+		</div>
+
+		<div class="card">
+			<h2>2. Install in Violentmonkey / Tampermonkey</h2>
+			<p>If you use a userscript manager, click below to install <strong>JoJo-Mod</strong> permanently across all Bondage Club servers:</p>
+			<a class="btn btn-primary" href="https://jojo-bc.github.io/JoJo-Mod/jojo-mod.user.js">
+				⚡ Install jojo-mod.user.js
+			</a>
+		</div>
+
+		<div class="card">
+			<h2>3. Load Inside an Already-Open Game (Bookmarklet / Console)</h2>
+			<p>Already in a chat room and don't want to reload the page? Drag this button to your browser's Bookmarks Bar and click it while in-game, or paste the command below in the browser Console (F12):</p>
+			<p>
+				<a class="btn" href="javascript:(function(){var s=document.createElement('script');s.src='https://jojo-bc.github.io/JoJo-Mod/jojo-mod.user.js?t='+Date.now();document.head.appendChild(s);})();">
+					🔖 Activate JoJo-Mod (Drag to Bookmarks)
+				</a>
+			</p>
+			<pre>import("https://jojo-bc.github.io/JoJo-Mod/jojo-mod.user.js?t=" + Date.now())</pre>
+		</div>
+
+		<div class="card">
+			<h2>Unlocked &amp; Adapted Items</h2>
+			<ul>
+				<li><strong>Glossy Bodystocking</strong> (<code>Suit / GlossyBodystocking</code> &amp; Echo <code>Suit / 马油袜</code>) — Unlocked for <code>FlatSmall</code> &amp; <code>FlatMedium</code> with custom/fallback layer mapping.</li>
+				<li><strong>Pantyhose fullBody</strong> (<code>ItemArms / PantyhoseBody</code>) — Unlocked for <code>FlatSmall</code> &amp; <code>FlatMedium</code>.</li>
+				<li><strong>Crotchless Pantyhose fullBody</strong> (<code>ItemArms / PantyhoseBodyOpen</code>) — Unlocked for <code>FlatSmall</code> &amp; <code>FlatMedium</code>.</li>
+			</ul>
+		</div>
+	</div>
+</body>
+</html>
