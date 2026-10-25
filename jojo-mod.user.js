@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         JoJo Flat-Chest & Male Avatar Compatibility Mod (BC R133+)
 // @namespace    https://jojo-bc.github.io/JoJo-Mod/
-// @version      1.1.1
+// @version      1.1.2
 // @description  Unlocks and maps flat-chest (FlatSmall / FlatMedium) clothes and restraints in Bondage Club (Glossy Bodystocking Vanilla & Echo, Pantyhose fullBody, etc.), 100% ModSDK & BCX compliant.
 // @author       JoJo-BC
 // @match        https://*.bondageprojects.elementfx.com/R*/*
@@ -24,17 +24,17 @@
 		window.CommonDrawAppearanceBuild = window.CommonDrawAppearanceBuild.__jojoOrigBuild;
 	}
 
-	if (window.__JoJoFlatModLoaded === "1.1.1") {
-		console.log("[JoJo-Mod] v1.1.1 already active, refreshing characters.");
+	if (window.__JoJoFlatModLoaded === "1.1.2") {
+		console.log("[JoJo-Mod] v1.1.2 already active, refreshing characters.");
 		if (typeof window.__JoJoFlatModRefreshAll === "function") {
 			window.__JoJoFlatModRefreshAll();
 		}
 		return;
 	}
-	window.__JoJoFlatModLoaded = "1.1.1";
+	window.__JoJoFlatModLoaded = "1.1.2";
 
 	const TAG = "[JoJo-Mod]";
-	const VERSION = "1.1.1";
+	const VERSION = "1.1.2";
 	const REPO_BASE_URL = "https://jojo-bc.github.io/JoJo-Mod/";
 
 	console.log(`${TAG} v${VERSION} initializing...`);
@@ -138,8 +138,13 @@
 			if (asset.Gender === "F") {
 				asset.Gender = undefined;
 			}
-			if (item.makeFreeInSession && typeof asset.Value === "number" && asset.Value > 0) {
-				asset.Value = 0;
+			if (item.makeFreeInSession) {
+				if (typeof asset.Value === "number" && asset.Value > 0) {
+					asset.Value = 0;
+				}
+				if (typeof asset.SelfBondage === "number" && asset.SelfBondage > 0) {
+					asset.SelfBondage = 0;
+				}
 			}
 			if (Array.isArray(asset.Layer)) {
 				for (const layer of asset.Layer) {
@@ -307,6 +312,14 @@
 						CharacterRefresh(C, false, false);
 					}
 				}
+			}
+			if (
+				typeof CurrentCharacter !== "undefined" &&
+				CurrentCharacter &&
+				CurrentCharacter.FocusGroup &&
+				typeof DialogInventoryBuild === "function"
+			) {
+				DialogInventoryBuild(CurrentCharacter, CurrentCharacter.FocusGroup, false, false, true);
 			}
 		} catch (e) {
 			console.warn(TAG, "Error refreshing characters:", e);
