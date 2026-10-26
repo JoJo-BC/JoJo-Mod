@@ -25,50 +25,118 @@ fs.mkdirSync(PREVIEW_DIR, { recursive: true });
 
 const vanillaPanty = parsePng(fs.readFileSync(path.join(REF_DIR, "ItemArms", "PantyhoseBody_Small.png")));
 
-function create400x800Mask(size) {
-  const mask = Buffer.alloc(400 * 800);
-
-  // 1. Copy base vanilla pantyhose silhouette (400x800)
-  for (let i = 0; i < 400 * 800; i++) {
-    mask[i] = vanillaPanty.pixels[i * 4 + 3];
-  }
-
-  // 2. Sculpt chest:
-  if (size === "FlatSmall" || size === "FlatMedium") {
-    // Flatten masculine chest (chest in 400x800 is y = 60..180)
-    for (let y = 60; y <= 180; y++) {
-      const progress = (y - 60) / 120;
-      const targetLeft = 118 + progress * 14;
-      const targetRight = 282 - progress * 14;
-      for (let x = 0; x < 400; x++) {
-        const idx = y * 400 + x;
-        if (x < targetLeft && mask[idx] > 0) mask[idx] = 0;
-        if (x > targetRight && mask[idx] > 0) mask[idx] = 0;
-      }
-    }
-  } else if (size === "Normal" || size === "Large" || size === "XLarge") {
-    // Expand for female breasts from BodyUpper (offset by X=50, Y=200)
-    const upperPath = path.join(REF_DIR, "BodyUpper", `${size}_White.png`);
-    if (fs.existsSync(upperPath)) {
-      const upper = parsePng(fs.readFileSync(upperPath));
-      for (let y = 60; y <= 200; y++) {
-        const srcY = y + 200;
-        for (let x = 70; x < 330; x++) {
-          const srcX = x + 50;
-          const idx = (srcY * 500 + srcX) * 4 + 3;
-          if (upper.pixels[idx] > 20) {
-            mask[y * 400 + x] = 255;
-          }
+function getMannequinCanvas(upperSize, legSizes) {
+  const canvas = Buffer.alloc(500 * 1000);
+  function stamp(img, offsetX, offsetY) {
+    for (let y = 0; y < img.height; y++) {
+      const dstY = y + offsetY;
+      if (dstY >= 1000) continue;
+      for (let x = 0; x < img.width; x++) {
+        const dstX = x + offsetX;
+        if (dstX >= 500) continue;
+        if (img.pixels[(y * img.width + x) * 4 + 3] > 15) {
+          canvas[dstY * 500 + dstX] = 255;
         }
       }
     }
   }
 
-  // Collar cut at y < 10
-  for (let y = 0; y < 10; y++) {
+  // 1. Upper Body
+  const uPath = path.join(REF_DIR, "BodyUpper", `${upperSize}_White.png`);
+  if (fs.existsSync(uPath)) stamp(parsePng(fs.readFileSync(uPath)), 0, 0);
+
+  // 2. Arms in BackElbowTouch
+  const armSize = (upperSize === "FlatSmall" || upperSize === "FlatMedium") ? upperSize : "Small";
+  const aLeft = path.join(REF_DIR, "Override", "EchoV2", "ArmsLeft", "BackElbowTouch", `${armSize}_White.png`);
+  const aRight = path.join(REF_DIR, "Override", "EchoV2", "ArmsRight", "BackElbowTouch", `${armSize}_White.png`);
+  if (fs.existsSync(aLeft)) stamp(parsePng(fs.readFileSync(aLeft)), 0, 0);
+  if (fs.existsSync(aRight)) stamp(parsePng(fs.readFileSync(aRight)), 0, 0);
+
+  // 3. Legs in LegsClosed (starts at Top: 462 on 500x1000 canvas)
+  for (const ls of legSizes) {
+    const lPath = path.join(REF_DIR, "BodyLower", "LegsClosed", `${ls}_White.png`);
+    if (fs.existsSync(lPath)) stamp(parsePng(fs.readFileSync(lPath)), 0, 462);
+  }
+
+  return canvas;
+}
+
+function create400x800Mask(size) {
+  let upperSize = size;
+  let legSizes = ["Normal"];
+  if (size === "FlatMedium") {
+    legSizes = ["Normal", "Large"];
+  } else if (size === "FlatSmall") {
+    legSizes = ["Small", "Normal"];
+  } else if (size === "Small") {
+    legSizes = ["Small", "Normal"];
+  } else if (size === "Normal") {
+    legSizes = ["Normal", "Large"];
+  } else if (size === "Large") {
+    legSizes = ["Large"];
+  } else if (size === "XLarge") {
+    legSizes = ["XLarge"];
+  }
+
+  const manCanvas = getMannequinCanvas(upperSize, legSizes);
+
+  // 1. Raw min and max X for each row y (0..799)
+  const rawMin = new Int32Array(800).fill(999);
+  const rawMax = new Int32Array(800).fill(-1);
+
+  // BodyUpper starts at y_ia = 14 (canvasY = 214)
+  for (let y = 14; y < 800; y++) {
+    // Check vanilla panty
     for (let x = 0; x < 400; x++) {
-      mask[y * 400 + x] = 0;
+      if (vanillaPanty.pixels[(y * 400 + x) * 4 + 3] > 20) {
+        if (x < rawMin[y]) rawMin[y] = x;
+        if (x > rawMax[y]) rawMax[y] = x;
+      }
     }
+
+    // Check mannequin in 400x800 coordinates (canvasX = x + 50, canvasY = y + 200)
+    const cY = y + 200;
+    if (cY < 1000) {
+      for (let x = 0; x < 400; x++) {
+        const cX = x + 50;
+        if (manCanvas[cY * 500 + cX] > 15) {
+          if (x < rawMin[y]) rawMin[y] = x;
+          if (x > rawMax[y]) rawMax[y] = x;
+        }
+      }
+    }
+  }
+
+  // 2. Smooth minX and maxX with 5-tap moving window + 2px safety padding
+  const left = new Int32Array(800).fill(999);
+  const right = new Int32Array(800).fill(-1);
+
+  for (let y = 14; y < 770; y++) {
+    if (rawMin[y] > rawMax[y]) continue;
+    let minL = 999, maxR = -1;
+    for (let dy = -2; dy <= 2; dy++) {
+      const ny = y + dy;
+      if (ny >= 14 && ny < 800 && rawMin[ny] <= rawMax[ny]) {
+        if (rawMin[ny] < minL) minL = rawMin[ny];
+        if (rawMax[ny] > maxR) maxR = rawMax[ny];
+      }
+    }
+    if (minL <= maxR) {
+      left[y] = Math.max(0, minL - 2);
+      right[y] = Math.min(399, maxR + 2);
+    }
+  }
+
+  // 3. Build mask buffer (400x800) with anti-aliasing on outer boundary
+  const mask = Buffer.alloc(400 * 800);
+  for (let y = 14; y < 770; y++) {
+    if (left[y] > right[y]) continue;
+    for (let x = left[y]; x <= right[y]; x++) {
+      mask[y * 400 + x] = 255;
+    }
+    // Feather outer 1px for clean anti-aliasing against background
+    mask[y * 400 + left[y]] = 160;
+    mask[y * 400 + right[y]] = 160;
   }
 
   return mask;
@@ -204,7 +272,7 @@ function generate400x800Layers(size) {
     { xRatio: 0.28, y: 620, sigmaX: 0.11, sigmaY: 30, peak: 70 },  // Right shin
   ];
 
-  for (let y = 10; y < 760; y++) {
+  for (let y = 14; y < 770; y++) {
     const { left, right, width, center } = smoothBounds[y];
     if (left === -1 || width < 10) continue;
 
