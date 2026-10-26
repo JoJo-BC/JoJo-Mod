@@ -474,7 +474,7 @@
 
 			// 1. Render Mannequin
 			if (showMannequinCheckbox.checked) {
-				const manSrc = `../templates/mannequins/mannequin_${size}_${pose}.png`;
+				const manSrc = `../templates/mannequins/mannequin_${size}_${pose}.png?v=1.3.5`;
 				const manImg = await loadImage(manSrc);
 				if (manImg) {
 					ctx.drawImage(manImg, 0, 0);
