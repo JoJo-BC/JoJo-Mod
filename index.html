@@ -3,17 +3,18 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>JoJo-Mod — Bondage Club R133 Flat-Chest & Male Avatar Addon</title>
+	<title>JoJo-Mod — Bondage Club R133+ Flat-Chest &amp; Male Avatar Addon</title>
 	<style>
 		:root {
-			--bg: #0f111a;
-			--card: #181b28;
-			--border: #2a2f45;
+			--bg: #0b0d14;
+			--card: #131722;
+			--card-sub: #191e2e;
+			--border: #262c42;
 			--accent: #d943d4;
 			--accent-hover: #f05ceb;
 			--text: #e6e9f4;
-			--muted: #9aa2c0;
-			--btn-server: #23283d;
+			--muted: #8e98b5;
+			--code-bg: #07080d;
 		}
 		* { box-sizing: border-box; }
 		body {
@@ -25,8 +26,56 @@
 			line-height: 1.5;
 		}
 		.container {
-			max-width: 780px;
+			max-width: 840px;
 			margin: 0 auto;
+		}
+		.header {
+			margin-bottom: 24px;
+		}
+		.header h1 {
+			margin: 0 0 6px 0;
+			font-size: 2rem;
+			color: #fff;
+			display: flex;
+			align-items: center;
+			gap: 10px;
+		}
+		.badge {
+			font-size: 0.8rem;
+			padding: 3px 10px;
+			border-radius: 999px;
+			background: rgba(217, 67, 212, 0.2);
+			color: #f78ef3;
+			border: 1px solid rgba(217, 67, 212, 0.4);
+			font-weight: 600;
+		}
+		.header p {
+			margin: 0 0 16px 0;
+			font-size: 1.05rem;
+			color: var(--muted);
+		}
+		.nav-pills {
+			display: flex;
+			gap: 10px;
+			flex-wrap: wrap;
+		}
+		.pill {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+			padding: 7px 14px;
+			border-radius: 8px;
+			background: var(--card);
+			border: 1px solid var(--border);
+			color: #fff;
+			text-decoration: none;
+			font-size: 0.88rem;
+			font-weight: 500;
+			transition: all 0.15s ease;
+		}
+		.pill:hover {
+			border-color: var(--accent);
+			background: #1e2436;
 		}
 		.card {
 			background: var(--card);
@@ -36,34 +85,62 @@
 			margin-bottom: 20px;
 			box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 		}
-		h1 {
-			margin: 0 0 8px 0;
-			font-size: 1.75rem;
-			color: #fff;
-		}
 		h2 {
-			margin: 0 0 12px 0;
-			font-size: 1.2rem;
+			margin: 0 0 14px 0;
+			font-size: 1.25rem;
 			color: #fff;
+			display: flex;
+			align-items: center;
+			gap: 8px;
 		}
 		p {
-			margin: 0 0 14px 0;
+			margin: 0 0 12px 0;
 			color: var(--muted);
+		}
+		.activation-grid {
+			display: flex;
+			flex-direction: column;
+			gap: 14px;
+			margin-top: 14px;
+		}
+		.activation-option {
+			background: var(--card-sub);
+			border: 1px solid var(--border);
+			border-radius: 10px;
+			padding: 16px;
+		}
+		.activation-title {
+			font-weight: 700;
+			color: #fff;
+			font-size: 0.95rem;
+			margin-bottom: 6px;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+		}
+		.activation-tag {
+			font-size: 0.72rem;
+			padding: 2px 8px;
+			border-radius: 4px;
+			background: rgba(255, 255, 255, 0.08);
+			color: #ccc;
 		}
 		.btn {
 			display: inline-flex;
 			align-items: center;
 			justify-content: center;
-			padding: 13px 20px;
-			border-radius: 10px;
+			gap: 8px;
+			padding: 11px 18px;
+			border-radius: 8px;
 			font-weight: 600;
 			text-decoration: none;
 			color: #fff;
-			background: var(--btn-server);
+			background: #23283d;
 			border: 1px solid var(--border);
 			transition: all 0.15s ease;
 			cursor: pointer;
 			text-align: center;
+			font-size: 0.9rem;
 		}
 		.btn:hover {
 			border-color: var(--accent);
@@ -73,95 +150,327 @@
 		.btn-primary {
 			background: var(--accent);
 			border-color: var(--accent);
-			color: #fff;
 		}
 		.btn-primary:hover {
 			background: var(--accent-hover);
 		}
 		code, pre {
-			background: #0b0d14;
+			background: var(--code-bg);
 			border: 1px solid var(--border);
 			border-radius: 8px;
-			padding: 12px 14px;
+			padding: 10px 14px;
 			font-family: Consolas, monospace;
-			font-size: 0.9rem;
+			font-size: 0.86rem;
 			color: #f3b3f1;
 			overflow-x: auto;
 			display: block;
+			margin: 8px 0;
 		}
-		ul {
-			margin: 8px 0 0 0;
-			padding-left: 20px;
+		.tools-grid {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 14px;
+		}
+		@media (max-width: 650px) {
+			.tools-grid { grid-template-columns: 1fr; }
+		}
+		.tool-box {
+			background: var(--card-sub);
+			border: 1px solid var(--border);
+			border-radius: 10px;
+			padding: 18px;
+			display: flex;
+			flex-direction: column;
+			justify-content: space-between;
+		}
+		.tool-box h3 {
+			margin: 0 0 8px 0;
+			font-size: 1.1rem;
+			color: #fff;
+		}
+
+		/* Template section */
+		.template-tabs {
+			display: flex;
+			gap: 8px;
+			margin-bottom: 16px;
+			border-bottom: 1px solid var(--border);
+			padding-bottom: 10px;
+		}
+		.tab-btn {
+			padding: 6px 14px;
+			border-radius: 6px;
+			background: transparent;
+			border: 1px solid var(--border);
 			color: var(--muted);
+			font-size: 0.85rem;
+			cursor: pointer;
+			font-weight: 500;
+			transition: all 0.15s ease;
 		}
-		li { margin-bottom: 6px; }
-		.badge {
-			display: inline-block;
-			padding: 3px 9px;
-			border-radius: 999px;
-			font-size: 0.78rem;
+		.tab-btn.active, .tab-btn:hover {
+			background: var(--accent);
+			border-color: var(--accent);
+			color: #fff;
+		}
+		.mannequin-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+			gap: 12px;
+		}
+		.mannequin-card {
+			background: var(--card-sub);
+			border: 1px solid var(--border);
+			border-radius: 8px;
+			padding: 8px;
+			text-align: center;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+		}
+		.mannequin-card img {
+			width: 100%;
+			max-width: 90px;
+			height: 180px;
+			object-fit: contain;
+			background: #181d2c;
+			border-radius: 4px;
+			margin-bottom: 8px;
+		}
+		.mannequin-name {
+			font-size: 0.75rem;
 			font-weight: 600;
-			background: rgba(217, 67, 212, 0.18);
-			color: #f58cf1;
-			border: 1px solid rgba(217, 67, 212, 0.4);
-			margin-left: 8px;
+			color: #fff;
+			margin-bottom: 6px;
+			word-break: break-word;
 		}
-		.copy-btn {
-			margin-top: 10px;
-			font-size: 0.88rem;
-			padding: 8px 14px;
+		.dl-link {
+			font-size: 0.72rem;
+			padding: 4px 8px;
+			border-radius: 4px;
+			background: var(--border);
+			color: #fff;
+			text-decoration: none;
+			width: 100%;
+			transition: background 0.15s ease;
+		}
+		.dl-link:hover {
+			background: var(--accent);
 		}
 	</style>
 </head>
 <body>
 	<div class="container">
-		<div class="card">
+		<!-- Header -->
+		<header class="header">
 			<h1>JoJo-Mod <span class="badge">v1.3.8 — BC R133+</span></h1>
-			<p>Unlocks and adapts clothes &amp; restraints for flat-chested / male avatars (<code>FlatSmall</code> &amp; <code>FlatMedium</code>) in Bondage Club across all poses (Standing, Yoked, OverTheHead, BackBoxTie, BackCuffs, BackElbowTouch).</p>
-		</div>
+			<p>Bondage Club flat-chest &amp; male avatar clothing &amp; restraint compatibility mod.</p>
+			<div class="nav-pills">
+				<a class="pill" href="#activation">⚡ Try Mod</a>
+				<a class="pill" href="studio/index.html">🎨 JoJo-Studio</a>
+				<a class="pill" href="guide.html">📖 Guide &amp; Inspector</a>
+				<a class="pill" href="#templates">📥 Templates (PNG)</a>
+			</div>
+		</header>
 
-		<div class="card">
-			<h2>JoJo-Studio (Web Visualizer &amp; Editor)</h2>
-			<p>Preview clothes on the flat mannequin across all 6 poses in real-time, test custom colors and BC shaders, inspect individual layers, and test your custom PNGs with zero token cost:</p>
-			<a class="btn btn-primary" href="studio/index.html">
-				🎨 Open JoJo-Studio (In-Browser)
-			</a>
-		</div>
+		<!-- Prominent Activation Section -->
+		<section class="card" id="activation">
+			<h2>⚡ Try &amp; Activate JoJo-Mod in Bondage Club</h2>
+			<p>Works immediately on all servers (Asia, Europe, America) with zero conflicts and full BCX compatibility.</p>
 
-		<div class="card">
-			<h2>Method 1 (Recommended): Install in Violentmonkey / Tampermonkey</h2>
-			<p>Click the button below to install <strong>JoJo-Mod</strong> in Violentmonkey or Tampermonkey. Once installed, it will load automatically every time you open Bondage Club on any server (Asia, Europe, America):</p>
-			<a class="btn btn-primary" href="https://jojo-bc.github.io/JoJo-Mod/jojo-mod.user.js">
-				⚡ Install jojo-mod.user.js (1-Click)
-			</a>
-		</div>
+			<div class="activation-grid">
+				<!-- Option 1: Bookmarklet -->
+				<div class="activation-option">
+					<div class="activation-title">
+						<span>Option 1: 1-Click Bookmarklet</span>
+						<span class="activation-tag">Fastest for Friends &amp; Testing</span>
+					</div>
+					<p style="font-size:0.86rem; margin-bottom:10px;">Drag this purple button to your browser's Bookmarks bar. Then click it while playing in Bondage Club to activate:</p>
+					<a class="btn btn-primary" href="javascript:(function(){var s=document.createElement('script');s.src='https://jojo-bc.github.io/JoJo-Mod/jojo-mod.user.js?t='+Date.now();document.head.appendChild(s);})();">
+						🔖 Activate JoJo-Mod (Drag to Bookmarks Bar)
+					</a>
+				</div>
 
-		<div class="card">
-			<h2>Method 2 (No Extension Needed): Bookmarklet or Console</h2>
-			<p><strong>Note:</strong> Bondage Club's FUSAM loader restricts <code>?fusam=</code> URL parameters to <code>localhost</code> only. If you don't use Violentmonkey, you can load <strong>JoJo-Mod</strong> on any browser with 1 click using a Bookmarklet or the Console:</p>
-			<p><strong>Option A (Bookmarklet):</strong> Drag this purple button to your browser's Bookmarks Bar, then click it whenever you are in Bondage Club:</p>
-			<p>
-				<a class="btn btn-primary" href="javascript:(function(){var s=document.createElement('script');s.src='https://jojo-bc.github.io/JoJo-Mod/jojo-mod.user.js?t='+Date.now();document.head.appendChild(s);})();">
-					🔖 Activate JoJo-Mod (Drag to Bookmarks Bar)
-				</a>
-			</p>
-			<p><strong>Option B (Console F12):</strong> Or copy and paste this line into the browser Console (F12):</p>
-			<pre id="console-cmd">import("https://jojo-bc.github.io/JoJo-Mod/jojo-mod.user.js?t=" + Date.now())</pre>
-			<button class="btn copy-btn" onclick="navigator.clipboard.writeText(document.getElementById('console-cmd').textContent); this.textContent='✅ Copied!'; setTimeout(()=>this.textContent='📋 Copy Console Command', 2000);">
-				📋 Copy Console Command
-			</button>
-		</div>
+				<!-- Option 2: Console F12 -->
+				<div class="activation-option">
+					<div class="activation-title">
+						<span>Option 2: Browser Console (F12)</span>
+						<span class="activation-tag">No Installation Needed</span>
+					</div>
+					<p style="font-size:0.86rem; margin-bottom:6px;">Press <code>F12</code> in your browser, switch to the <strong>Console</strong> tab, paste this line and press Enter:</p>
+					<pre id="console-cmd">import("https://jojo-bc.github.io/JoJo-Mod/jojo-mod.user.js?t=" + Date.now())</pre>
+					<button class="btn" onclick="copyConsoleCmd(this)">📋 Copy Console Command</button>
+				</div>
 
-		<div class="card">
-			<h2>Unlocked &amp; Adapted Items</h2>
-			<ul>
-				<li><strong>Glossy Bodystocking</strong> (Vanilla <code>Suit / GlossyBodystocking</code> &amp; Echo <code>Suit / 马油袜</code> + <code>SuitLower / 马油袜下</code>) — Unlocked for <code>FlatSmall</code> &amp; <code>FlatMedium</code> (including Echo's <code>gmask</code> alpha mask).</li>
-				<li><strong>Echo Latex Top &amp; Bottom</strong> (<code>Suit / 乳胶衣</code> &amp; <code>SuitLower / 乳胶衣</code>) — 2D flat-chest warped across all 6 poses (<code>FlatSmall</code> &amp; <code>FlatMedium</code>), unlocked for male/flat avatars.</li>
-				<li><strong>Latex Top &amp; Pants (Cloth)</strong> (<code>Cloth / LatexTop</code> &amp; <code>ClothLower / LatexPants1</code>) — Unlocked &amp; 2D warped for flat chest across all 6 poses.</li>
-				<li><strong>Pantyhose fullBody</strong> (<code>ItemArms / PantyhoseBody</code>) — Unlocked for <code>FlatSmall</code> &amp; <code>FlatMedium</code>.</li>
-				<li><strong>Crotchless Pantyhose fullBody</strong> (<code>ItemArms / PantyhoseBodyOpen</code>) — Unlocked for <code>FlatSmall</code> &amp; <code>FlatMedium</code>.</li>
-			</ul>
-		</div>
+				<!-- Option 3: Violentmonkey -->
+				<div class="activation-option">
+					<div class="activation-title">
+						<span>Option 3: Violentmonkey / Tampermonkey</span>
+						<span class="activation-tag">Automatic Updates</span>
+					</div>
+					<p style="font-size:0.86rem; margin-bottom:10px;">For regular players: install the userscript to load the mod automatically on every page refresh:</p>
+					<a class="btn btn-primary" href="https://jojo-bc.github.io/JoJo-Mod/jojo-mod.user.js">
+						⚡ Install jojo-mod.user.js (1-Click)
+					</a>
+				</div>
+			</div>
+		</section>
+
+		<!-- Studio & Guide Links -->
+		<section class="tools-grid">
+			<div class="tool-box">
+				<div>
+					<h3>🎨 JoJo-Studio</h3>
+					<p>In-browser mannequin visualizer &amp; test suite. Drag &amp; drop your custom PNGs to verify fit across all 6 poses in real time.</p>
+				</div>
+				<a class="btn btn-primary" href="studio/index.html">🎨 Open JoJo-Studio</a>
+			</div>
+
+			<div class="tool-box">
+				<div>
+					<h3>📖 Full Guide &amp; Asset Inspector</h3>
+					<p>Step-by-step instructions, F12 console asset inspector snippet to identify clothing codes, and technical drawing rules.</p>
+				</div>
+				<a class="btn" href="guide.html">📖 View Documentation</a>
+			</div>
+		</section>
+
+		<!-- Templates Download Spoiler / Section -->
+		<section class="card" id="templates" style="margin-top:20px;">
+			<details open>
+				<summary style="font-size:1.25rem; font-weight:700; color:#fff; cursor:pointer; outline:none; user-select:none;">
+					📥 Mannequin Templates for Drawing (500×1000 PNG)
+				</summary>
+				<p style="margin-top:10px;">Pixel-perfect 500×1000 templates for Photoshop, Krita, GIMP, Procreate, or Paint.NET. Lock the mannequin as the bottom layer and paint your clothes/restraints on transparent layers above.</p>
+
+				<!-- Tabs for FlatSmall / FlatMedium / Female -->
+				<div class="template-tabs">
+					<button class="tab-btn active" onclick="showTab('flatsmall', this)">FlatSmall (Slender Male)</button>
+					<button class="tab-btn" onclick="showTab('flatmedium', this)">FlatMedium (Athletic Male)</button>
+					<button class="tab-btn" onclick="showTab('female', this)">Female Small</button>
+				</div>
+
+				<!-- FlatSmall Grid -->
+				<div id="tab-flatsmall" class="tab-content mannequin-grid">
+					<div class="mannequin-card">
+						<img src="templates/mannequins/mannequin_FlatSmall_Standing.png" alt="Standing">
+						<div class="mannequin-name">Standing</div>
+						<a class="dl-link" href="templates/mannequins/mannequin_FlatSmall_Standing.png" download>Download</a>
+					</div>
+					<div class="mannequin-card">
+						<img src="templates/mannequins/mannequin_FlatSmall_Yoked.png" alt="Yoked">
+						<div class="mannequin-name">Yoked</div>
+						<a class="dl-link" href="templates/mannequins/mannequin_FlatSmall_Yoked.png" download>Download</a>
+					</div>
+					<div class="mannequin-card">
+						<img src="templates/mannequins/mannequin_FlatSmall_OverTheHead.png" alt="OverTheHead">
+						<div class="mannequin-name">OverTheHead</div>
+						<a class="dl-link" href="templates/mannequins/mannequin_FlatSmall_OverTheHead.png" download>Download</a>
+					</div>
+					<div class="mannequin-card">
+						<img src="templates/mannequins/mannequin_FlatSmall_BackBoxTie.png" alt="BackBoxTie">
+						<div class="mannequin-name">BackBoxTie</div>
+						<a class="dl-link" href="templates/mannequins/mannequin_FlatSmall_BackBoxTie.png" download>Download</a>
+					</div>
+					<div class="mannequin-card">
+						<img src="templates/mannequins/mannequin_FlatSmall_BackCuffs.png" alt="BackCuffs">
+						<div class="mannequin-name">BackCuffs</div>
+						<a class="dl-link" href="templates/mannequins/mannequin_FlatSmall_BackCuffs.png" download>Download</a>
+					</div>
+					<div class="mannequin-card">
+						<img src="templates/mannequins/mannequin_FlatSmall_BackElbowTouch.png" alt="BackElbowTouch">
+						<div class="mannequin-name">BackElbowTouch</div>
+						<a class="dl-link" href="templates/mannequins/mannequin_FlatSmall_BackElbowTouch.png" download>Download</a>
+					</div>
+				</div>
+
+				<!-- FlatMedium Grid -->
+				<div id="tab-flatmedium" class="tab-content mannequin-grid" style="display:none;">
+					<div class="mannequin-card">
+						<img src="templates/mannequins/mannequin_FlatMedium_Standing.png" alt="Standing">
+						<div class="mannequin-name">Standing</div>
+						<a class="dl-link" href="templates/mannequins/mannequin_FlatMedium_Standing.png" download>Download</a>
+					</div>
+					<div class="mannequin-card">
+						<img src="templates/mannequins/mannequin_FlatMedium_Yoked.png" alt="Yoked">
+						<div class="mannequin-name">Yoked</div>
+						<a class="dl-link" href="templates/mannequins/mannequin_FlatMedium_Yoked.png" download>Download</a>
+					</div>
+					<div class="mannequin-card">
+						<img src="templates/mannequins/mannequin_FlatMedium_OverTheHead.png" alt="OverTheHead">
+						<div class="mannequin-name">OverTheHead</div>
+						<a class="dl-link" href="templates/mannequins/mannequin_FlatMedium_OverTheHead.png" download>Download</a>
+					</div>
+					<div class="mannequin-card">
+						<img src="templates/mannequins/mannequin_FlatMedium_BackBoxTie.png" alt="BackBoxTie">
+						<div class="mannequin-name">BackBoxTie</div>
+						<a class="dl-link" href="templates/mannequins/mannequin_FlatMedium_BackBoxTie.png" download>Download</a>
+					</div>
+					<div class="mannequin-card">
+						<img src="templates/mannequins/mannequin_FlatMedium_BackCuffs.png" alt="BackCuffs">
+						<div class="mannequin-name">BackCuffs</div>
+						<a class="dl-link" href="templates/mannequins/mannequin_FlatMedium_BackCuffs.png" download>Download</a>
+					</div>
+					<div class="mannequin-card">
+						<img src="templates/mannequins/mannequin_FlatMedium_BackElbowTouch.png" alt="BackElbowTouch">
+						<div class="mannequin-name">BackElbowTouch</div>
+						<a class="dl-link" href="templates/mannequins/mannequin_FlatMedium_BackElbowTouch.png" download>Download</a>
+					</div>
+				</div>
+
+				<!-- Female Small Grid -->
+				<div id="tab-female" class="tab-content mannequin-grid" style="display:none;">
+					<div class="mannequin-card">
+						<img src="templates/mannequins/mannequin_FemaleSmall_Standing.png" alt="Standing">
+						<div class="mannequin-name">Standing</div>
+						<a class="dl-link" href="templates/mannequins/mannequin_FemaleSmall_Standing.png" download>Download</a>
+					</div>
+					<div class="mannequin-card">
+						<img src="templates/mannequins/mannequin_FemaleSmall_Yoked.png" alt="Yoked">
+						<div class="mannequin-name">Yoked</div>
+						<a class="dl-link" href="templates/mannequins/mannequin_FemaleSmall_Yoked.png" download>Download</a>
+					</div>
+					<div class="mannequin-card">
+						<img src="templates/mannequins/mannequin_FemaleSmall_OverTheHead.png" alt="OverTheHead">
+						<div class="mannequin-name">OverTheHead</div>
+						<a class="dl-link" href="templates/mannequins/mannequin_FemaleSmall_OverTheHead.png" download>Download</a>
+					</div>
+					<div class="mannequin-card">
+						<img src="templates/mannequins/mannequin_FemaleSmall_BackBoxTie.png" alt="BackBoxTie">
+						<div class="mannequin-name">BackBoxTie</div>
+						<a class="dl-link" href="templates/mannequins/mannequin_FemaleSmall_BackBoxTie.png" download>Download</a>
+					</div>
+					<div class="mannequin-card">
+						<img src="templates/mannequins/mannequin_FemaleSmall_BackCuffs.png" alt="BackCuffs">
+						<div class="mannequin-name">BackCuffs</div>
+						<a class="dl-link" href="templates/mannequins/mannequin_FemaleSmall_BackCuffs.png" download>Download</a>
+					</div>
+					<div class="mannequin-card">
+						<img src="templates/mannequins/mannequin_FemaleSmall_BackElbowTouch.png" alt="BackElbowTouch">
+						<div class="mannequin-name">BackElbowTouch</div>
+						<a class="dl-link" href="templates/mannequins/mannequin_FemaleSmall_BackElbowTouch.png" download>Download</a>
+					</div>
+				</div>
+			</details>
+		</section>
 	</div>
+
+	<script>
+		function copyConsoleCmd(btn) {
+			const cmd = document.getElementById("console-cmd").textContent;
+			navigator.clipboard.writeText(cmd).then(() => {
+				const orig = btn.textContent;
+				btn.textContent = "✅ Copied!";
+				setTimeout(() => btn.textContent = orig, 2000);
+			});
+		}
+
+		function showTab(tabName, btn) {
+			document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+			btn.classList.add("active");
+			document.querySelectorAll(".tab-content").forEach(c => c.style.display = "none");
+			document.getElementById("tab-" + tabName).style.display = "grid";
+		}
+	</script>
 </body>
 </html>

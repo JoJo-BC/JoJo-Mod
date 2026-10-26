@@ -285,10 +285,11 @@
 				<option value="BackElbowTouch">BackElbowTouch (Elbows tied)</option>
 			</select>
 
-			<label for="sizeSelect">Male Chest Size</label>
+			<label for="sizeSelect">Body / Chest Type</label>
 			<select id="sizeSelect">
 				<option value="FlatSmall">FlatSmall (Slender Flat Chest)</option>
 				<option value="FlatMedium">FlatMedium (Athletic Male Chest)</option>
+				<option value="FemaleSmall">FemaleSmall (Female Chest)</option>
 			</select>
 
 			<label>Base Body Mannequin</label>
@@ -482,7 +483,9 @@
 			}
 
 			// 2. Render Bodystocking Layers
-			const basePath = `../assets/Assets/Female3DCG/Suit/${poseSubdir}GlossyBodystocking_${size}_`;
+			const basePath = size === "FemaleSmall"
+				? `../reference_samples/Assets/Female3DCG/Suit/${poseSubdir}GlossyBodystocking_Small_`
+				: `../assets/Assets/Female3DCG/Suit/${poseSubdir}GlossyBodystocking_${size}_`;
 
 			// Helper to draw tinted BaseColor
 			if (layerState["BaseColor"]) {
