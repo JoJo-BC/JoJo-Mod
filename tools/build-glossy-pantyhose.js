@@ -1,10 +1,14 @@
 #!/usr/bin/env node
 /**
  * JoJo-Mod: Generator for Glossy Fullbody Pantyhose Restraint
- * Generates 500x1000 layers (BaseColor, Shadow, Highlight, Composite) for:
- * - Male / Flat Chest: FlatSmall, FlatMedium
- * - Female Bodies: Small, Normal, Large, XLarge
- * - Wardrobe Preview thumbnail
+ * Generates 400x800 layers (BaseColor, Shadow, Highlight, Composite) matching
+ * BC's native ItemArms coordinates (Left: 50, Top: 200 on 500x1000 canvas).
+ *
+ * Features:
+ * - Sheer / Translucent BaseColor (alpha ~ 105, showing skin through fabric like GlossyBodystocking)
+ * - Ultra-feathered Gaussian wetlook specular highlights
+ * - 3D volumetric edge and leg-junction crease shadows
+ * - Full support for FlatSmall, FlatMedium, Small, Normal, Large, XLarge
  */
 
 const fs = require("fs");
@@ -21,90 +25,49 @@ fs.mkdirSync(PREVIEW_DIR, { recursive: true });
 
 const vanillaPanty = parsePng(fs.readFileSync(path.join(REF_DIR, "ItemArms", "PantyhoseBody_Small.png")));
 
-function createMask(size) {
-  const mask = Buffer.alloc(500 * 1000);
+function create400x800Mask(size) {
+  const mask = Buffer.alloc(400 * 800);
 
-  // 1. Position vanilla pantyhose at X=50, Y=200
-  for (let y = 0; y < 800; y++) {
-    const dstY = y + 200;
-    if (dstY >= 1000) break;
-    for (let x = 0; x < 400; x++) {
-      const dstX = x + 50;
-      if (dstX >= 500) break;
-      mask[dstY * 500 + dstX] = vanillaPanty.pixels[(y * 400 + x) * 4 + 3];
-    }
+  // 1. Copy base vanilla pantyhose silhouette (400x800)
+  for (let i = 0; i < 400 * 800; i++) {
+    mask[i] = vanillaPanty.pixels[i * 4 + 3];
   }
 
-  // 2. Torso chest contouring:
+  // 2. Sculpt chest:
   if (size === "FlatSmall" || size === "FlatMedium") {
-    // Sculpt masculine flat chest
-    for (let y = 260; y <= 380; y++) {
-      const progress = (y - 260) / 120;
-      const targetLeft = 168 + progress * 14;
-      const targetRight = 332 - progress * 14;
-      for (let x = 0; x < 500; x++) {
-        const idx = y * 500 + x;
+    // Flatten masculine chest (chest in 400x800 is y = 60..180)
+    for (let y = 60; y <= 180; y++) {
+      const progress = (y - 60) / 120;
+      const targetLeft = 118 + progress * 14;
+      const targetRight = 282 - progress * 14;
+      for (let x = 0; x < 400; x++) {
+        const idx = y * 400 + x;
         if (x < targetLeft && mask[idx] > 0) mask[idx] = 0;
         if (x > targetRight && mask[idx] > 0) mask[idx] = 0;
       }
     }
   } else if (size === "Normal" || size === "Large" || size === "XLarge") {
-    // Expand mask to enclose larger female breasts from BodyUpper
+    // Expand for female breasts from BodyUpper (offset by X=50, Y=200)
     const upperPath = path.join(REF_DIR, "BodyUpper", `${size}_White.png`);
     if (fs.existsSync(upperPath)) {
       const upper = parsePng(fs.readFileSync(upperPath));
-      for (let y = 260; y <= 400; y++) {
-        for (let x = 120; x < 380; x++) {
-          const idx = (y * 500 + x) * 4 + 3;
+      for (let y = 60; y <= 200; y++) {
+        const srcY = y + 200;
+        for (let x = 70; x < 330; x++) {
+          const srcX = x + 50;
+          const idx = (srcY * 500 + srcX) * 4 + 3;
           if (upper.pixels[idx] > 20) {
-            mask[y * 500 + x] = 255;
+            mask[y * 400 + x] = 255;
           }
         }
       }
     }
   }
 
-  // 3. Ensure garment completely envelopes the avatar (no skin peeking at elbows, hips, calves)
-  let armL = null, armR = null;
-  const armSize = (size === "FlatSmall" || size === "FlatMedium") ? size : "Small";
-  const armLPath = path.join(REF_DIR, "Override", "EchoV2", "ArmsLeft", "BackElbowTouch", `${armSize}_White.png`);
-  const armRPath = path.join(REF_DIR, "Override", "EchoV2", "ArmsRight", "BackElbowTouch", `${armSize}_White.png`);
-  if (fs.existsSync(armLPath)) armL = parsePng(fs.readFileSync(armLPath));
-  if (fs.existsSync(armRPath)) armR = parsePng(fs.readFileSync(armRPath));
-
-  for (let y = 210; y < 960; y++) {
-    let armMinX = 999, armMaxX = -1;
-    if (armL && armR) {
-      for (let x = 0; x < 500; x++) {
-        const idx = (y * 500 + x) * 4 + 3;
-        if (armL.pixels[idx] > 30 || armR.pixels[idx] > 30) {
-          if (x < armMinX) armMinX = x;
-          if (x > armMaxX) armMaxX = x;
-        }
-      }
-    }
-
-    let pLeft = -1, pRight = -1;
-    for (let x = 100; x < 400; x++) {
-      if (mask[y * 500 + x] > 50) {
-        if (pLeft === -1) pLeft = x;
-        pRight = x;
-      }
-    }
-
-    if (pLeft !== -1 && pRight !== -1) {
-      const finalLeft = armMinX !== 999 ? Math.min(armMinX, pLeft) : pLeft;
-      const finalRight = armMaxX !== -1 ? Math.max(armMaxX, pRight) : pRight;
-      for (let x = finalLeft; x <= finalRight; x++) {
-        mask[y * 500 + x] = 255;
-      }
-    }
-  }
-
-  // Collar cut at y < 210
-  for (let y = 0; y < 210; y++) {
-    for (let x = 0; x < 500; x++) {
-      mask[y * 500 + x] = 0;
+  // Collar cut at y < 10
+  for (let y = 0; y < 10; y++) {
+    for (let x = 0; x < 400; x++) {
+      mask[y * 400 + x] = 0;
     }
   }
 
@@ -153,14 +116,14 @@ function gaussianBlurAlpha(srcBuf, width, height, radius) {
   return dst;
 }
 
-function generateLayers(size) {
-  const mask = createMask(size);
+function generate400x800Layers(size) {
+  const mask = create400x800Mask(size);
 
   const rawBounds = [];
-  for (let y = 0; y < 1000; y++) {
+  for (let y = 0; y < 800; y++) {
     let left = -1, right = -1;
-    for (let x = 100; x < 400; x++) {
-      if (mask[y * 500 + x] > 50) {
+    for (let x = 0; x < 400; x++) {
+      if (mask[y * 400 + x] > 50) {
         if (left === -1) left = x;
         right = x;
       }
@@ -169,15 +132,15 @@ function generateLayers(size) {
   }
 
   const smoothBounds = [];
-  for (let y = 0; y < 1000; y++) {
+  for (let y = 0; y < 800; y++) {
     if (rawBounds[y].left === -1) {
       smoothBounds.push(rawBounds[y]);
       continue;
     }
     let cSum = 0, wSum = 0, count = 0;
-    for (let dy = -7; dy <= 7; dy++) {
+    for (let dy = -6; dy <= 6; dy++) {
       const ny = y + dy;
-      if (ny >= 0 && ny < 1000 && rawBounds[ny].left !== -1) {
+      if (ny >= 0 && ny < 800 && rawBounds[ny].left !== -1) {
         cSum += rawBounds[ny].center;
         wSum += rawBounds[ny].width;
         count++;
@@ -191,108 +154,108 @@ function generateLayers(size) {
     });
   }
 
-  const baseColor = Buffer.alloc(500 * 1000 * 4);
-  const rawShadow = Buffer.alloc(500 * 1000 * 4);
-  const rawHighlight = Buffer.alloc(500 * 1000 * 4);
+  const baseColor = Buffer.alloc(400 * 800 * 4);
+  const rawShadow = Buffer.alloc(400 * 800 * 4);
+  const rawHighlight = Buffer.alloc(400 * 800 * 4);
 
-  // Soft 2D elliptical specular hotspots
+  // Soft 2D specular hotspots (in 400x800 coordinates)
   let chestHotspots = [];
   if (size === "FlatSmall") {
     chestHotspots = [
-      { xRatio: -0.28, y: 310, sigmaX: 0.14, sigmaY: 35, peak: 55 },
-      { xRatio: 0.28, y: 310, sigmaX: 0.14, sigmaY: 35, peak: 55 },
+      { xRatio: -0.28, y: 110, sigmaX: 0.14, sigmaY: 25, peak: 55 },
+      { xRatio: 0.28, y: 110, sigmaX: 0.14, sigmaY: 25, peak: 55 },
     ];
   } else if (size === "FlatMedium") {
     chestHotspots = [
-      { xRatio: -0.28, y: 310, sigmaX: 0.14, sigmaY: 35, peak: 65 },
-      { xRatio: 0.28, y: 310, sigmaX: 0.14, sigmaY: 35, peak: 65 },
+      { xRatio: -0.28, y: 110, sigmaX: 0.14, sigmaY: 25, peak: 65 },
+      { xRatio: 0.28, y: 110, sigmaX: 0.14, sigmaY: 25, peak: 65 },
     ];
   } else if (size === "Small") {
     chestHotspots = [
-      { xRatio: -0.28, y: 315, sigmaX: 0.13, sigmaY: 28, peak: 80 },
-      { xRatio: 0.28, y: 315, sigmaX: 0.13, sigmaY: 28, peak: 80 },
+      { xRatio: -0.28, y: 115, sigmaX: 0.13, sigmaY: 22, peak: 75 },
+      { xRatio: 0.28, y: 115, sigmaX: 0.13, sigmaY: 22, peak: 75 },
     ];
   } else if (size === "Normal") {
     chestHotspots = [
-      { xRatio: -0.30, y: 320, sigmaX: 0.14, sigmaY: 30, peak: 90 },
-      { xRatio: 0.30, y: 320, sigmaX: 0.14, sigmaY: 30, peak: 90 },
+      { xRatio: -0.30, y: 120, sigmaX: 0.14, sigmaY: 24, peak: 85 },
+      { xRatio: 0.30, y: 120, sigmaX: 0.14, sigmaY: 24, peak: 85 },
     ];
   } else if (size === "Large") {
     chestHotspots = [
-      { xRatio: -0.32, y: 325, sigmaX: 0.15, sigmaY: 34, peak: 100 },
-      { xRatio: 0.32, y: 325, sigmaX: 0.15, sigmaY: 34, peak: 100 },
+      { xRatio: -0.32, y: 125, sigmaX: 0.15, sigmaY: 26, peak: 95 },
+      { xRatio: 0.32, y: 125, sigmaX: 0.15, sigmaY: 26, peak: 95 },
     ];
   } else if (size === "XLarge") {
     chestHotspots = [
-      { xRatio: -0.34, y: 330, sigmaX: 0.16, sigmaY: 38, peak: 110 },
-      { xRatio: 0.34, y: 330, sigmaX: 0.16, sigmaY: 38, peak: 110 },
+      { xRatio: -0.34, y: 130, sigmaX: 0.16, sigmaY: 28, peak: 105 },
+      { xRatio: 0.34, y: 130, sigmaX: 0.16, sigmaY: 28, peak: 105 },
     ];
   }
 
   const hotspots = [
-    { xRatio: -0.32, y: 245, sigmaX: 0.12, sigmaY: 25, peak: 90 }, // Left shoulder
-    { xRatio: 0.32, y: 245, sigmaX: 0.12, sigmaY: 25, peak: 90 },  // Right shoulder
+    { xRatio: -0.32, y: 45, sigmaX: 0.12, sigmaY: 20, peak: 85 }, // Left shoulder
+    { xRatio: 0.32, y: 45, sigmaX: 0.12, sigmaY: 20, peak: 85 },  // Right shoulder
     ...chestHotspots,
-    { xRatio: -0.32, y: 590, sigmaX: 0.12, sigmaY: 45, peak: 70 }, // Left thigh
-    { xRatio: 0.32, y: 590, sigmaX: 0.12, sigmaY: 45, peak: 70 },  // Right thigh
-    { xRatio: -0.30, y: 720, sigmaX: 0.12, sigmaY: 30, peak: 95 }, // Left knee
-    { xRatio: 0.30, y: 720, sigmaX: 0.12, sigmaY: 30, peak: 95 },  // Right knee
-    { xRatio: -0.28, y: 820, sigmaX: 0.11, sigmaY: 40, peak: 75 }, // Left shin
-    { xRatio: 0.28, y: 820, sigmaX: 0.11, sigmaY: 40, peak: 75 },  // Right shin
+    { xRatio: -0.32, y: 390, sigmaX: 0.12, sigmaY: 35, peak: 65 }, // Left thigh
+    { xRatio: 0.32, y: 390, sigmaX: 0.12, sigmaY: 35, peak: 65 },  // Right thigh
+    { xRatio: -0.30, y: 520, sigmaX: 0.12, sigmaY: 25, peak: 90 }, // Left knee
+    { xRatio: 0.30, y: 520, sigmaX: 0.12, sigmaY: 25, peak: 90 },  // Right knee
+    { xRatio: -0.28, y: 620, sigmaX: 0.11, sigmaY: 30, peak: 70 }, // Left shin
+    { xRatio: 0.28, y: 620, sigmaX: 0.11, sigmaY: 30, peak: 70 },  // Right shin
   ];
 
-  for (let y = 210; y < 960; y++) {
+  for (let y = 10; y < 760; y++) {
     const { left, right, width, center } = smoothBounds[y];
     if (left === -1 || width < 10) continue;
 
     for (let x = left; x <= right; x++) {
-      const idx = (y * 500 + x) * 4;
-      const a = mask[y * 500 + x] / 255;
+      const idx = (y * 400 + x) * 4;
+      const a = mask[y * 400 + x] / 255;
       if (a === 0) continue;
 
       const normX = (x - center) / (width / 2);
       const absX = Math.abs(normX);
 
-      // BaseColor
+      // 1. BaseColor: SHEER / TRANSLUCENT (Median alpha ~ 105, showing skin through fabric like GlossyBodystocking)
       baseColor[idx] = 255;
       baseColor[idx + 1] = 255;
       baseColor[idx + 2] = 255;
-      baseColor[idx + 3] = Math.round(a * 242);
+      baseColor[idx + 3] = Math.round(a * 105);
 
-      // Shadow: Fresnel edge falloff
+      // 2. Shadow: Ambient rim darkening & leg-joining crease
       let sVal = 0;
-      if (absX > 0.48) {
-        const edgeT = (absX - 0.48) / 0.52;
-        sVal += (edgeT * edgeT) * 165;
+      if (absX > 0.45) {
+        const edgeT = (absX - 0.45) / 0.55;
+        sVal += (edgeT * edgeT) * 140;
       }
 
-      // Taut fabric junction between legs
-      if (y >= 500 && y <= 940) {
+      // Taut leg junction crease (y >= 300 to 740)
+      if (y >= 300 && y <= 740) {
         let legFade = 1.0;
-        if (y < 550) legFade = (y - 500) / 50;
-        if (y > 920) legFade = (940 - y) / 20;
+        if (y < 350) legFade = (y - 300) / 50;
+        if (y > 720) legFade = (740 - y) / 20;
 
         const centerDist = Math.abs(x - center);
-        if (centerDist < 18) {
-          const crease = Math.cos((centerDist / 18) * (Math.PI / 2));
-          sVal += crease * 65 * legFade;
+        if (centerDist < 14) {
+          const crease = Math.cos((centerDist / 14) * (Math.PI / 2));
+          sVal += crease * 55 * legFade;
         }
       }
 
-      // FlatMedium pectoral fold
-      if (size === "FlatMedium" && y >= 325 && y <= 337 && absX < 0.55) {
-        const yDist = Math.abs(y - 331);
-        const yWeight = Math.cos((yDist / 6) * (Math.PI / 2));
+      // FlatMedium pectoral fold (y ~ 125..135)
+      if (size === "FlatMedium" && y >= 125 && y <= 135 && absX < 0.55) {
+        const yDist = Math.abs(y - 130);
+        const yWeight = Math.cos((yDist / 5) * (Math.PI / 2));
         const xWeight = Math.cos((absX / 0.55) * (Math.PI / 2));
-        sVal += yWeight * xWeight * 45;
+        sVal += yWeight * xWeight * 40;
       }
 
-      // Female cleavage shadow between breasts
-      if ((size === "Normal" || size === "Large" || size === "XLarge") && y >= 300 && y <= 350) {
+      // Female cleavage shadow
+      if ((size === "Normal" || size === "Large" || size === "XLarge") && y >= 100 && y <= 150) {
         const centerDist = Math.abs(x - center);
-        if (centerDist < 14) {
-          const cleav = Math.cos((centerDist / 14) * (Math.PI / 2)) * Math.sin(((y - 300) / 50) * Math.PI);
-          const cleavStrength = size === "XLarge" ? 80 : size === "Large" ? 65 : 45;
+        if (centerDist < 12) {
+          const cleav = Math.cos((centerDist / 12) * (Math.PI / 2)) * Math.sin(((y - 100) / 50) * Math.PI);
+          const cleavStrength = size === "XLarge" ? 70 : size === "Large" ? 55 : 40;
           sVal += cleav * cleavStrength;
         }
       }
@@ -305,16 +268,15 @@ function generateLayers(size) {
         rawShadow[idx + 3] = Math.round(sVal * a);
       }
 
-      // Highlight: Continuous Gaussian band
+      // 3. Highlight: Wetlook glossy specular sheen
       const distFromBand = Math.abs(absX - 0.32);
       const bandSheen = Math.exp(-(distFromBand * distFromBand) / (2 * 0.15 * 0.15));
 
-      const normY = (y - 210) / 750;
+      const normY = y / 750;
       const verticalFlow = 0.75 + 0.15 * Math.cos(normY * Math.PI * 3);
 
-      let hiVal = bandSheen * verticalFlow * 150;
+      let hiVal = bandSheen * verticalFlow * 140;
 
-      // 2D smooth hotspots
       for (const h of hotspots) {
         const dx = normX - h.xRatio;
         const dy = y - h.y;
@@ -328,7 +290,7 @@ function generateLayers(size) {
       if (absX > 0.82) {
         const rimDist = Math.abs(absX - 0.92);
         const rimSheen = Math.exp(-(rimDist * rimDist) / (2 * 0.06 * 0.06));
-        hiVal += rimSheen * 75;
+        hiVal += rimSheen * 70;
       }
 
       hiVal = Math.min(255, Math.round(hiVal));
@@ -340,27 +302,27 @@ function generateLayers(size) {
       }
     }
 
-    // Seam
-    if (mask[y * 500 + 250] > 50) {
-      const idx = (y * 500 + 250) * 4;
+    // Central seam line
+    if (mask[y * 400 + 200] > 50) {
+      const idx = (y * 400 + 200) * 4;
       rawShadow[idx] = 0;
       rawShadow[idx + 1] = 0;
       rawShadow[idx + 2] = 0;
-      rawShadow[idx + 3] = 180;
+      rawShadow[idx + 3] = 160;
     }
   }
 
-  const highlight = gaussianBlurAlpha(rawHighlight, 500, 1000, 4);
-  const shadow = gaussianBlurAlpha(rawShadow, 500, 1000, 3);
+  const highlight = gaussianBlurAlpha(rawHighlight, 400, 800, 3);
+  const shadow = gaussianBlurAlpha(rawShadow, 400, 800, 2);
 
-  for (let i = 0; i < 500 * 1000; i++) {
+  for (let i = 0; i < 400 * 800; i++) {
     const a = mask[i] / 255;
     highlight[i * 4 + 3] = Math.round(highlight[i * 4 + 3] * a);
     shadow[i * 4 + 3] = Math.round(shadow[i * 4 + 3] * a);
   }
 
-  // Pre-composite version (black vinyl)
-  const composite = Buffer.alloc(500 * 1000 * 4);
+  // Pre-composite version (translucent tinted black vinyl)
+  const composite = Buffer.alloc(400 * 800 * 4);
   for (let i = 0; i < composite.length; i += 4) {
     const bA = baseColor[i + 3] / 255;
     if (bA === 0) continue;
@@ -394,34 +356,32 @@ function generateLayers(size) {
   return { baseColor, shadow, highlight, composite };
 }
 
-console.log("[JoJo-Mod] Generating GlossyPantyhoseBody for all body types...");
+console.log("[JoJo-Mod] Generating 400x800 translucent GlossyPantyhoseBody assets...");
 
 const allSizes = ["FlatSmall", "FlatMedium", "Small", "Normal", "Large", "XLarge"];
 for (const size of allSizes) {
-  console.log(`- Building layers for ${size}...`);
-  const layers = generateLayers(size);
+  console.log(`- Building 400x800 layers for ${size}...`);
+  const layers = generate400x800Layers(size);
 
-  // Write layers
-  fs.writeFileSync(path.join(OUT_DIR, `GlossyPantyhoseBody_${size}_BaseColor.png`), encodePng(500, 1000, layers.baseColor));
-  fs.writeFileSync(path.join(OUT_DIR, `GlossyPantyhoseBody_${size}_Shadow.png`), encodePng(500, 1000, layers.shadow));
-  fs.writeFileSync(path.join(OUT_DIR, `GlossyPantyhoseBody_${size}_Highlight.png`), encodePng(500, 1000, layers.highlight));
+  fs.writeFileSync(path.join(OUT_DIR, `GlossyPantyhoseBody_${size}_BaseColor.png`), encodePng(400, 800, layers.baseColor));
+  fs.writeFileSync(path.join(OUT_DIR, `GlossyPantyhoseBody_${size}_Shadow.png`), encodePng(400, 800, layers.shadow));
+  fs.writeFileSync(path.join(OUT_DIR, `GlossyPantyhoseBody_${size}_Highlight.png`), encodePng(400, 800, layers.highlight));
 
-  // Write composite
-  fs.writeFileSync(path.join(OUT_DIR, `GlossyPantyhoseBody_${size}.png`), encodePng(500, 1000, layers.composite));
+  fs.writeFileSync(path.join(OUT_DIR, `GlossyPantyhoseBody_${size}.png`), encodePng(400, 800, layers.composite));
 
   // Also write for vanilla PantyhoseBody override
-  fs.writeFileSync(path.join(OUT_DIR, `PantyhoseBody_${size}.png`), encodePng(500, 1000, layers.composite));
+  fs.writeFileSync(path.join(OUT_DIR, `PantyhoseBody_${size}.png`), encodePng(400, 800, layers.composite));
 }
 
-// Write preview icon (100x100)
+// Generate Preview thumbnail (100x100)
 console.log("- Generating Preview thumbnail...");
 const compSmall = parsePng(fs.readFileSync(path.join(OUT_DIR, "GlossyPantyhoseBody_FlatSmall.png")));
 const thumb = Buffer.alloc(100 * 100 * 4);
 for (let y = 0; y < 100; y++) {
-  const srcY = y * 10;
+  const srcY = y * 8;
   for (let x = 0; x < 100; x++) {
-    const srcX = x * 5;
-    const srcIdx = (srcY * 500 + srcX) * 4;
+    const srcX = x * 4;
+    const srcIdx = (srcY * 400 + srcX) * 4;
     const dstIdx = (y * 100 + x) * 4;
     for (let c = 0; c < 4; c++) {
       thumb[dstIdx + c] = compSmall.pixels[srcIdx + c];
@@ -430,4 +390,4 @@ for (let y = 0; y < 100; y++) {
 }
 fs.writeFileSync(path.join(PREVIEW_DIR, "GlossyPantyhoseBody.png"), encodePng(100, 100, thumb));
 
-console.log("[JoJo-Mod] All 6 body types generated successfully!");
+console.log("[JoJo-Mod] All 6 body types generated successfully at 400x800 with sheer translucency!");
