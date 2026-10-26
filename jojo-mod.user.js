@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         JoJo Flat-Chest & Male Avatar Compatibility Mod (BC R133+)
 // @namespace    https://jojo-bc.github.io/JoJo-Mod/
-// @version      1.3.5
-// @description  Unlocks and maps flat-chest (FlatSmall / FlatMedium) clothes and restraints in Bondage Club (Glossy Bodystocking Vanilla & Echo with custom flat male pectoral PNGs, Pantyhose fullBody, Latex Top & Pants, etc.), 100% ModSDK & BCX compliant.
+// @version      1.3.6
+// @description  Unlocks and maps flat-chest (FlatSmall / FlatMedium) clothes and restraints in Bondage Club (Glossy Bodystocking, Echo Latex Top 乳胶衣 & Latex Bottom, Pantyhose fullBody, etc.), 100% ModSDK & BCX compliant.
 // @author       JoJo-BC
 // @match        https://*.bondageprojects.elementfx.com/R*/*
 // @match        https://*.bondage-europe.com/R*/*
@@ -24,17 +24,17 @@
 		window.CommonDrawAppearanceBuild = window.CommonDrawAppearanceBuild.__jojoOrigBuild;
 	}
 
-	if (window.__JoJoFlatModLoaded === "1.3.5") {
-		console.log("[JoJo-Mod] v1.3.5 already active, refreshing characters.");
+	if (window.__JoJoFlatModLoaded === "1.3.6") {
+		console.log("[JoJo-Mod] v1.3.6 already active, refreshing characters.");
 		if (typeof window.__JoJoFlatModRefreshAll === "function") {
 			window.__JoJoFlatModRefreshAll();
 		}
 		return;
 	}
-	window.__JoJoFlatModLoaded = "1.3.5";
+	window.__JoJoFlatModLoaded = "1.3.6";
 
 	const TAG = "[JoJo-Mod]";
-	const VERSION = "1.3.5";
+	const VERSION = "1.3.6";
 	const REPO_BASE_URL = "https://jojo-bc.github.io/JoJo-Mod/";
 
 	console.log(`${TAG} v${VERSION} initializing...`);
@@ -48,6 +48,10 @@
 		{ group: "Suit", name: "GlossyBodystocking", fallbackToSmall: true, makeFreeInSession: true },
 		{ group: "Suit", name: "马油袜", fallbackToSmall: true, makeFreeInSession: true },
 		{ group: "SuitLower", name: "马油袜下", fallbackToSmall: true, makeFreeInSession: true },
+
+		// Echo Clothing Extension: Latex Top & Latex Bottom
+		{ group: "Suit", name: "乳胶衣", fallbackToSmall: true, makeFreeInSession: true },
+		{ group: "SuitLower", name: "乳胶衣", fallbackToSmall: true, makeFreeInSession: true },
 
 		// Clothing: Latex Top & Latex Pants
 		{ group: "Cloth", name: "LatexTop", fallbackToSmall: true, makeFreeInSession: true },
@@ -112,6 +116,12 @@
 		"Assets/Female3DCG/Suit/BackBoxTie/GlossyBodystocking_FlatSmall_D7.png",
 		"Assets/Female3DCG/Suit/BackBoxTie/GlossyBodystocking_FlatSmall_EdgeLine.png",
 		"Assets/Female3DCG/Suit/BackBoxTie/GlossyBodystocking_FlatSmall_EdgeShade.png",
+		"Assets/Female3DCG/Suit/BackBoxTie/乳胶衣_FlatMedium_上底色.png",
+		"Assets/Female3DCG/Suit/BackBoxTie/乳胶衣_FlatMedium_上阴影.png",
+		"Assets/Female3DCG/Suit/BackBoxTie/乳胶衣_FlatMedium_上高光.png",
+		"Assets/Female3DCG/Suit/BackBoxTie/乳胶衣_FlatSmall_上底色.png",
+		"Assets/Female3DCG/Suit/BackBoxTie/乳胶衣_FlatSmall_上阴影.png",
+		"Assets/Female3DCG/Suit/BackBoxTie/乳胶衣_FlatSmall_上高光.png",
 		"Assets/Female3DCG/Suit/BackCuffs/GlossyBodystocking_FlatMedium_A3.png",
 		"Assets/Female3DCG/Suit/BackCuffs/GlossyBodystocking_FlatMedium_BaseColor.png",
 		"Assets/Female3DCG/Suit/BackCuffs/GlossyBodystocking_FlatMedium_BodyHue.png",
@@ -145,6 +155,12 @@
 		"Assets/Female3DCG/Suit/BackCuffs/GlossyBodystocking_FlatSmall_D7.png",
 		"Assets/Female3DCG/Suit/BackCuffs/GlossyBodystocking_FlatSmall_EdgeLine.png",
 		"Assets/Female3DCG/Suit/BackCuffs/GlossyBodystocking_FlatSmall_EdgeShade.png",
+		"Assets/Female3DCG/Suit/BackCuffs/乳胶衣_FlatMedium_上底色.png",
+		"Assets/Female3DCG/Suit/BackCuffs/乳胶衣_FlatMedium_上阴影.png",
+		"Assets/Female3DCG/Suit/BackCuffs/乳胶衣_FlatMedium_上高光.png",
+		"Assets/Female3DCG/Suit/BackCuffs/乳胶衣_FlatSmall_上底色.png",
+		"Assets/Female3DCG/Suit/BackCuffs/乳胶衣_FlatSmall_上阴影.png",
+		"Assets/Female3DCG/Suit/BackCuffs/乳胶衣_FlatSmall_上高光.png",
 		"Assets/Female3DCG/Suit/BackElbowTouch/GlossyBodystocking_FlatMedium_A3.png",
 		"Assets/Female3DCG/Suit/BackElbowTouch/GlossyBodystocking_FlatMedium_BaseColor.png",
 		"Assets/Female3DCG/Suit/BackElbowTouch/GlossyBodystocking_FlatMedium_BodyHue.png",
@@ -178,6 +194,12 @@
 		"Assets/Female3DCG/Suit/BackElbowTouch/GlossyBodystocking_FlatSmall_D7.png",
 		"Assets/Female3DCG/Suit/BackElbowTouch/GlossyBodystocking_FlatSmall_EdgeLine.png",
 		"Assets/Female3DCG/Suit/BackElbowTouch/GlossyBodystocking_FlatSmall_EdgeShade.png",
+		"Assets/Female3DCG/Suit/BackElbowTouch/乳胶衣_FlatMedium_上底色.png",
+		"Assets/Female3DCG/Suit/BackElbowTouch/乳胶衣_FlatMedium_上阴影.png",
+		"Assets/Female3DCG/Suit/BackElbowTouch/乳胶衣_FlatMedium_上高光.png",
+		"Assets/Female3DCG/Suit/BackElbowTouch/乳胶衣_FlatSmall_上底色.png",
+		"Assets/Female3DCG/Suit/BackElbowTouch/乳胶衣_FlatSmall_上阴影.png",
+		"Assets/Female3DCG/Suit/BackElbowTouch/乳胶衣_FlatSmall_上高光.png",
 		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatMedium_A3.png",
 		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatMedium_BaseColor.png",
 		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatMedium_BodyHue.png",
@@ -244,6 +266,18 @@
 		"Assets/Female3DCG/Suit/OverTheHead/GlossyBodystocking_FlatSmall_D7.png",
 		"Assets/Female3DCG/Suit/OverTheHead/GlossyBodystocking_FlatSmall_EdgeLine.png",
 		"Assets/Female3DCG/Suit/OverTheHead/GlossyBodystocking_FlatSmall_EdgeShade.png",
+		"Assets/Female3DCG/Suit/OverTheHead/乳胶衣_FlatMedium_上底色.png",
+		"Assets/Female3DCG/Suit/OverTheHead/乳胶衣_FlatMedium_上阴影.png",
+		"Assets/Female3DCG/Suit/OverTheHead/乳胶衣_FlatMedium_上高光.png",
+		"Assets/Female3DCG/Suit/OverTheHead/乳胶衣_FlatMedium_手套底色.png",
+		"Assets/Female3DCG/Suit/OverTheHead/乳胶衣_FlatMedium_手套阴影.png",
+		"Assets/Female3DCG/Suit/OverTheHead/乳胶衣_FlatMedium_手套高光.png",
+		"Assets/Female3DCG/Suit/OverTheHead/乳胶衣_FlatSmall_上底色.png",
+		"Assets/Female3DCG/Suit/OverTheHead/乳胶衣_FlatSmall_上阴影.png",
+		"Assets/Female3DCG/Suit/OverTheHead/乳胶衣_FlatSmall_上高光.png",
+		"Assets/Female3DCG/Suit/OverTheHead/乳胶衣_FlatSmall_手套底色.png",
+		"Assets/Female3DCG/Suit/OverTheHead/乳胶衣_FlatSmall_手套阴影.png",
+		"Assets/Female3DCG/Suit/OverTheHead/乳胶衣_FlatSmall_手套高光.png",
 		"Assets/Female3DCG/Suit/Yoked/GlossyBodystocking_FlatMedium_A3.png",
 		"Assets/Female3DCG/Suit/Yoked/GlossyBodystocking_FlatMedium_BaseColor.png",
 		"Assets/Female3DCG/Suit/Yoked/GlossyBodystocking_FlatMedium_BodyHue.png",
@@ -277,6 +311,66 @@
 		"Assets/Female3DCG/Suit/Yoked/GlossyBodystocking_FlatSmall_D7.png",
 		"Assets/Female3DCG/Suit/Yoked/GlossyBodystocking_FlatSmall_EdgeLine.png",
 		"Assets/Female3DCG/Suit/Yoked/GlossyBodystocking_FlatSmall_EdgeShade.png",
+		"Assets/Female3DCG/Suit/Yoked/乳胶衣_FlatMedium_上底色.png",
+		"Assets/Female3DCG/Suit/Yoked/乳胶衣_FlatMedium_上阴影.png",
+		"Assets/Female3DCG/Suit/Yoked/乳胶衣_FlatMedium_上高光.png",
+		"Assets/Female3DCG/Suit/Yoked/乳胶衣_FlatMedium_手套底色.png",
+		"Assets/Female3DCG/Suit/Yoked/乳胶衣_FlatMedium_手套阴影.png",
+		"Assets/Female3DCG/Suit/Yoked/乳胶衣_FlatMedium_手套高光.png",
+		"Assets/Female3DCG/Suit/Yoked/乳胶衣_FlatSmall_上底色.png",
+		"Assets/Female3DCG/Suit/Yoked/乳胶衣_FlatSmall_上阴影.png",
+		"Assets/Female3DCG/Suit/Yoked/乳胶衣_FlatSmall_上高光.png",
+		"Assets/Female3DCG/Suit/Yoked/乳胶衣_FlatSmall_手套底色.png",
+		"Assets/Female3DCG/Suit/Yoked/乳胶衣_FlatSmall_手套阴影.png",
+		"Assets/Female3DCG/Suit/Yoked/乳胶衣_FlatSmall_手套高光.png",
+		"Assets/Female3DCG/Suit/乳胶衣_FlatMedium_上底色.png",
+		"Assets/Female3DCG/Suit/乳胶衣_FlatMedium_上阴影.png",
+		"Assets/Female3DCG/Suit/乳胶衣_FlatMedium_上高光.png",
+		"Assets/Female3DCG/Suit/乳胶衣_FlatMedium_手套底色.png",
+		"Assets/Female3DCG/Suit/乳胶衣_FlatMedium_手套阴影.png",
+		"Assets/Female3DCG/Suit/乳胶衣_FlatMedium_手套高光.png",
+		"Assets/Female3DCG/Suit/乳胶衣_FlatSmall_上底色.png",
+		"Assets/Female3DCG/Suit/乳胶衣_FlatSmall_上阴影.png",
+		"Assets/Female3DCG/Suit/乳胶衣_FlatSmall_上高光.png",
+		"Assets/Female3DCG/Suit/乳胶衣_FlatSmall_手套底色.png",
+		"Assets/Female3DCG/Suit/乳胶衣_FlatSmall_手套阴影.png",
+		"Assets/Female3DCG/Suit/乳胶衣_FlatSmall_手套高光.png",
+		"Assets/Female3DCG/SuitLower/Hogtied/乳胶衣_FlatMedium_下阴影.png",
+		"Assets/Female3DCG/SuitLower/Hogtied/乳胶衣_FlatSmall_下阴影.png",
+		"Assets/Female3DCG/SuitLower/Hogtied/乳胶衣_袜遮罩.png",
+		"Assets/Female3DCG/SuitLower/Kneel/乳胶衣_FlatMedium_下底色.png",
+		"Assets/Female3DCG/SuitLower/Kneel/乳胶衣_FlatMedium_下阴影.png",
+		"Assets/Female3DCG/SuitLower/Kneel/乳胶衣_FlatMedium_下高光.png",
+		"Assets/Female3DCG/SuitLower/Kneel/乳胶衣_FlatSmall_下底色.png",
+		"Assets/Female3DCG/SuitLower/Kneel/乳胶衣_FlatSmall_下阴影.png",
+		"Assets/Female3DCG/SuitLower/Kneel/乳胶衣_FlatSmall_下高光.png",
+		"Assets/Female3DCG/SuitLower/KneelingSpread/乳胶衣_FlatMedium_下底色.png",
+		"Assets/Female3DCG/SuitLower/KneelingSpread/乳胶衣_FlatMedium_下阴影.png",
+		"Assets/Female3DCG/SuitLower/KneelingSpread/乳胶衣_FlatMedium_下高光.png",
+		"Assets/Female3DCG/SuitLower/KneelingSpread/乳胶衣_FlatSmall_下底色.png",
+		"Assets/Female3DCG/SuitLower/KneelingSpread/乳胶衣_FlatSmall_下阴影.png",
+		"Assets/Female3DCG/SuitLower/KneelingSpread/乳胶衣_FlatSmall_下高光.png",
+		"Assets/Female3DCG/SuitLower/LegsClosed/乳胶衣_FlatMedium_下底色.png",
+		"Assets/Female3DCG/SuitLower/LegsClosed/乳胶衣_FlatMedium_下阴影.png",
+		"Assets/Female3DCG/SuitLower/LegsClosed/乳胶衣_FlatMedium_下高光.png",
+		"Assets/Female3DCG/SuitLower/LegsClosed/乳胶衣_FlatSmall_下底色.png",
+		"Assets/Female3DCG/SuitLower/LegsClosed/乳胶衣_FlatSmall_下阴影.png",
+		"Assets/Female3DCG/SuitLower/LegsClosed/乳胶衣_FlatSmall_下高光.png",
+		"Assets/Female3DCG/SuitLower/LegsClosed/乳胶衣_袜遮罩.png",
+		"Assets/Female3DCG/SuitLower/Spread/乳胶衣_FlatMedium_下底色.png",
+		"Assets/Female3DCG/SuitLower/Spread/乳胶衣_FlatMedium_下阴影.png",
+		"Assets/Female3DCG/SuitLower/Spread/乳胶衣_FlatMedium_下高光.png",
+		"Assets/Female3DCG/SuitLower/Spread/乳胶衣_FlatSmall_下底色.png",
+		"Assets/Female3DCG/SuitLower/Spread/乳胶衣_FlatSmall_下阴影.png",
+		"Assets/Female3DCG/SuitLower/Spread/乳胶衣_FlatSmall_下高光.png",
+		"Assets/Female3DCG/SuitLower/Spread/乳胶衣_袜遮罩.png",
+		"Assets/Female3DCG/SuitLower/乳胶衣_FlatMedium_下底色.png",
+		"Assets/Female3DCG/SuitLower/乳胶衣_FlatMedium_下阴影.png",
+		"Assets/Female3DCG/SuitLower/乳胶衣_FlatMedium_下高光.png",
+		"Assets/Female3DCG/SuitLower/乳胶衣_FlatSmall_下底色.png",
+		"Assets/Female3DCG/SuitLower/乳胶衣_FlatSmall_下阴影.png",
+		"Assets/Female3DCG/SuitLower/乳胶衣_FlatSmall_下高光.png",
+		"Assets/Female3DCG/SuitLower/乳胶衣_袜遮罩.png",
 	]);
 
 	// Fast lookup set of asset names that allow automatic _FlatSmall / _FlatMedium -> _Small fallback
@@ -335,9 +429,13 @@
 		const assetsIdx = decoded.indexOf("Assets/Female3DCG/");
 		const cleanSrc =
 			assetsIdx !== -1 ? decoded.slice(assetsIdx) : decoded.startsWith("./") ? decoded.slice(2) : decoded;
-		const canonical = toCanonicalManifestPath(cleanSrc);
 
-		// 1. Direct match in custom repository manifest (covers both FlatSmall & FlatMedium, Vanilla & Echo!)
+		// 1. Direct exact match in custom repository manifest (covers both FlatSmall & FlatMedium!)
+		if (CUSTOM_PNG_MANIFEST.has(cleanSrc)) {
+			return REPO_BASE_URL + "assets/" + cleanSrc;
+		}
+
+		const canonical = toCanonicalManifestPath(cleanSrc);
 		if (CUSTOM_PNG_MANIFEST.has(canonical)) {
 			return REPO_BASE_URL + "assets/" + canonical;
 		}
@@ -394,7 +492,7 @@
 			if (!asset) continue;
 
 			if (Array.isArray(asset.Prerequisite)) {
-				asset.Prerequisite = asset.Prerequisite.filter((p) => p !== "HasBreasts");
+				asset.Prerequisite = asset.Prerequisite.filter((p) => p !== "HasBreasts" && p !== "HasVagina");
 			}
 			if (asset.Gender === "F") {
 				asset.Gender = undefined;
@@ -411,7 +509,7 @@
 			if (Array.isArray(asset.Layer)) {
 				for (const layer of asset.Layer) {
 					if (Array.isArray(layer.Prerequisite)) {
-						layer.Prerequisite = layer.Prerequisite.filter((p) => p !== "HasBreasts");
+						layer.Prerequisite = layer.Prerequisite.filter((p) => p !== "HasBreasts" && p !== "HasVagina");
 					}
 				}
 			}
