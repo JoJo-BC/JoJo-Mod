@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         JoJo Flat-Chest & Male Avatar Compatibility Mod (BC R133+)
 // @namespace    https://jojo-bc.github.io/JoJo-Mod/
-// @version      1.3.9
-// @description  Unlocks and maps flat-chest (FlatSmall / FlatMedium) clothes and restraints in Bondage Club (Glossy Bodystocking, Echo Latex Top 乳胶衣 & Latex Bottom, Pantyhose fullBody, etc.), 100% ModSDK & BCX compliant.
+// @version      1.4.0
+// @description  Unlocks and maps flat-chest (FlatSmall / FlatMedium) clothes and restraints in Bondage Club (Glossy Bodystocking, Echo Latex Top 乳胶衣 & Latex Bottom, Pantyhose fullBody, Glossy Fullbody Pantyhose, etc.), 100% ModSDK & BCX compliant.
 // @author       JoJo-BC
 // @match        https://*.bondageprojects.elementfx.com/R*/*
 // @match        https://*.bondage-europe.com/R*/*
@@ -24,17 +24,17 @@
 		window.CommonDrawAppearanceBuild = window.CommonDrawAppearanceBuild.__jojoOrigBuild;
 	}
 
-	if (window.__JoJoFlatModLoaded === "1.3.9") {
-		console.log("[JoJo-Mod] v1.3.9 already active, refreshing characters.");
+	if (window.__JoJoFlatModLoaded === "1.4.0") {
+		console.log("[JoJo-Mod] v1.4.0 already active, refreshing characters.");
 		if (typeof window.__JoJoFlatModRefreshAll === "function") {
 			window.__JoJoFlatModRefreshAll();
 		}
 		return;
 	}
-	window.__JoJoFlatModLoaded = "1.3.9";
+	window.__JoJoFlatModLoaded = "1.4.0";
 
 	const TAG = "[JoJo-Mod]";
-	const VERSION = "1.3.9";
+	const VERSION = "1.4.0";
 	const REPO_BASE_URL = "https://jojo-bc.github.io/JoJo-Mod/";
 
 	console.log(`${TAG} v${VERSION} initializing...`);
@@ -60,6 +60,9 @@
 		// Restraints: Bodyhose (Pantyhose fullBody & Crotchless Pantyhose fullBody)
 		{ group: "ItemArms", name: "PantyhoseBody", fallbackToSmall: true, makeFreeInSession: true },
 		{ group: "ItemArms", name: "PantyhoseBodyOpen", fallbackToSmall: true, makeFreeInSession: true },
+
+		// Custom Restraints: Glossy Fullbody Pantyhose (Ultra-reflective wetlook sheath)
+		{ group: "ItemArms", name: "GlossyPantyhoseBody", fallbackToSmall: true, makeFreeInSession: true },
 	];
 
 	/**
@@ -83,6 +86,21 @@
 		"Assets/Female3DCG/Cloth/Yoked/LatexTop_FlatSmall.png",
 		"Assets/Female3DCG/ClothLower/LatexPants1_FlatMedium.png",
 		"Assets/Female3DCG/ClothLower/LatexPants1_FlatSmall.png",
+		"Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_FlatMedium.png",
+		"Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_FlatMedium_BaseColor.png",
+		"Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_FlatMedium_Highlight.png",
+		"Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_FlatMedium_Shadow.png",
+		"Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_FlatSmall.png",
+		"Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_FlatSmall_BaseColor.png",
+		"Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_FlatSmall_Highlight.png",
+		"Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_FlatSmall_Shadow.png",
+		"Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_Small.png",
+		"Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_Small_BaseColor.png",
+		"Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_Small_Highlight.png",
+		"Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_Small_Shadow.png",
+		"Assets/Female3DCG/ItemArms/PantyhoseBody_FlatMedium.png",
+		"Assets/Female3DCG/ItemArms/PantyhoseBody_FlatSmall.png",
+		"Assets/Female3DCG/ItemArms/Preview/GlossyPantyhoseBody.png",
 		"Assets/Female3DCG/Suit/BackBoxTie/GlossyBodystocking_FlatMedium_A2.png",
 		"Assets/Female3DCG/Suit/BackBoxTie/GlossyBodystocking_FlatMedium_A3.png",
 		"Assets/Female3DCG/Suit/BackBoxTie/GlossyBodystocking_FlatMedium_A4.png",
@@ -542,16 +560,25 @@
 
 		let decoded = src;
 		try { decoded = decodeURIComponent(src); } catch (_) {}
-		if (!decoded.includes("_FlatSmall") && !decoded.includes("_FlatMedium")) return src;
 
 		const assetsIdx = decoded.indexOf("Assets/Female3DCG/");
 		const cleanSrc =
 			assetsIdx !== -1 ? decoded.slice(assetsIdx) : decoded.startsWith("./") ? decoded.slice(2) : decoded;
 
-		// 1. Direct exact match in custom repository manifest (covers both FlatSmall & FlatMedium!)
+		// 1. Direct exact match in custom repository manifest (covers custom assets, layers, and previews)
 		if (CUSTOM_PNG_MANIFEST.has(cleanSrc)) {
 			return REPO_BASE_URL + "assets/" + cleanSrc;
 		}
+
+		// Fallback for custom asset without size suffix (e.g. GlossyPantyhoseBody_BaseColor.png -> _Small_BaseColor.png)
+		if (cleanSrc.includes("GlossyPantyhoseBody_") && !cleanSrc.includes("_Flat") && !cleanSrc.includes("_Small")) {
+			const smallFallback = cleanSrc.replace("GlossyPantyhoseBody_", "GlossyPantyhoseBody_Small_");
+			if (CUSTOM_PNG_MANIFEST.has(smallFallback)) {
+				return REPO_BASE_URL + "assets/" + smallFallback;
+			}
+		}
+
+		if (!decoded.includes("_FlatSmall") && !decoded.includes("_FlatMedium")) return src;
 
 		const canonical = toCanonicalManifestPath(cleanSrc);
 		if (CUSTOM_PNG_MANIFEST.has(canonical)) {
@@ -605,12 +632,70 @@
 	}
 
 	/**
+	 * Registers custom restraint GlossyPantyhoseBody in ItemArms group.
+	 */
+	function registerGlossyPantyhoseBody() {
+		if (typeof AssetGet !== "function" || typeof AssetGroupGet !== "function") return;
+		const group = AssetGroupGet("Female3DCG", "ItemArms");
+		if (!group || !Array.isArray(group.Asset)) return;
+
+		if (!AssetGet("Female3DCG", "ItemArms", "GlossyPantyhoseBody")) {
+			const customAsset = {
+				Name: "GlossyPantyhoseBody",
+				Description: "Glossy Fullbody Pantyhose",
+				Group: group,
+				ParentItem: group.Name,
+				AllowColorize: true,
+				Value: 0,
+				Difficulty: 6,
+				SelfBondage: 0,
+				Time: 25,
+				RemoveTime: 20,
+				AllowLock: true,
+				SetPose: ["BackElbowTouch", "LegsClosed"],
+				Effect: ["Block", "BlockWardrobe", "Slow"],
+				Hide: ["Cloth", "ClothLower", "Suit", "SuitLower", "Garters"],
+				Block: [
+					"ItemHands",
+					"ItemHandheld",
+					"ItemVulva",
+					"ItemButt",
+					"ItemVulvaPiercings",
+					"ItemNipplesPiercings",
+				],
+				Audio: "ClothSlip",
+				Layer: [
+					{ Name: "BaseColor", AllowColorize: true },
+					{ Name: "Shadow", AllowColorize: false },
+					{ Name: "Highlight", AllowColorize: false },
+				],
+				DefaultColor: ["#1e1e24"],
+			};
+
+			if (typeof window.AssetAdd === "function") {
+				try {
+					window.AssetAdd(group, customAsset);
+				} catch (_) {
+					group.Asset.push(customAsset);
+					if (Array.isArray(window.Asset)) window.Asset.push(customAsset);
+				}
+			} else {
+				group.Asset.push(customAsset);
+				if (Array.isArray(window.Asset)) window.Asset.push(customAsset);
+			}
+			console.log(`${TAG} Registered custom restraint: ItemArms / GlossyPantyhoseBody`);
+		}
+	}
+
+	/**
 	 * Removes "HasBreasts" prerequisite and "F" gender restriction from configured assets.
 	 */
 	function unlockFlatAssets() {
 		if (typeof AssetGet !== "function" || typeof Asset === "undefined" || !Asset.length) {
 			return false;
 		}
+
+		registerGlossyPantyhoseBody();
 
 		let unlockedCount = 0;
 		for (const item of UNLOCKED_FLAT_ASSETS) {
