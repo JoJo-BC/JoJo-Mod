@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -274,52 +274,52 @@
 
 		<!-- Configuration Section -->
 		<div class="section">
-			<div class="section-title">Avatar &amp; Posa</div>
-			<label for="poseSelect">Posa Braccia</label>
+			<div class="section-title">Avatar &amp; Pose</div>
+			<label for="poseSelect">Arm Pose</label>
 			<select id="poseSelect">
-				<option value="Standing">Standing (In piedi)</option>
-				<option value="Yoked">Yoked (Braccia a T / Giogo)</option>
-				<option value="OverTheHead">OverTheHead (Mani in alto)</option>
-				<option value="BackBoxTie">BackBoxTie (Box Tie dietro)</option>
-				<option value="BackCuffs">BackCuffs (Manette dietro)</option>
-				<option value="BackElbowTouch">BackElbowTouch (Gomiti uniti)</option>
+				<option value="Standing">Standing (Default upright)</option>
+				<option value="Yoked">Yoked (T-Pose / Yoke)</option>
+				<option value="OverTheHead">OverTheHead (Hands raised)</option>
+				<option value="BackBoxTie">BackBoxTie (Bound behind back)</option>
+				<option value="BackCuffs">BackCuffs (Cuffed behind back)</option>
+				<option value="BackElbowTouch">BackElbowTouch (Elbows tied)</option>
 			</select>
 
-			<label for="sizeSelect">Taglia Corpo Maschile</label>
+			<label for="sizeSelect">Male Chest Size</label>
 			<select id="sizeSelect">
-				<option value="FlatSmall">FlatSmall (Corpo maschile Tex)</option>
-				<option value="FlatMedium">FlatMedium (Flat medio)</option>
+				<option value="FlatSmall">FlatSmall (Slender Flat Chest)</option>
+				<option value="FlatMedium">FlatMedium (Athletic Male Chest)</option>
 			</select>
 
-			<label>Manichino Corpo Base</label>
+			<label>Base Body Mannequin</label>
 			<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
-				<span style="font-size:0.85rem; color:var(--muted);">Mostra Manichino Guida</span>
+				<span style="font-size:0.85rem; color:var(--muted);">Show Guide Mannequin</span>
 				<input type="checkbox" id="showMannequin" checked style="width:18px; height:18px; cursor:pointer;">
 			</div>
 		</div>
 
 		<!-- Clothing & Tint Section -->
 		<div class="section">
-			<div class="section-title">Colore Vestito (Simulazione BC)</div>
-			<label>Tinta BaseColor</label>
+			<div class="section-title">Outfit Color (BC Simulation)</div>
+			<label>BaseColor Tint</label>
 			<div class="color-row">
 				<input type="color" id="tintColor" value="#4b3a37">
 				<input type="text" id="tintHex" value="#4b3a37" style="margin:0; width:110px;">
 			</div>
 			<div class="color-presets">
-				<div class="preset-btn" style="background:#4b3a37;" title="Nero / Marrone scuro" onclick="setTint('#4b3a37')"></div>
-				<div class="preset-btn" style="background:#151515;" title="Nero vinile" onclick="setTint('#151515')"></div>
-				<div class="preset-btn" style="background:#ffffff;" title="Bianco" onclick="setTint('#ffffff')"></div>
-				<div class="preset-btn" style="background:#d943d4;" title="Rosa / Magenta" onclick="setTint('#d943d4')"></div>
-				<div class="preset-btn" style="background:#2463eb;" title="Blu elettrico" onclick="setTint('#2463eb')"></div>
-				<div class="preset-btn" style="background:#dc2626;" title="Rosso vivo" onclick="setTint('#dc2626')"></div>
-				<div class="preset-btn" style="background:#16a34a;" title="Verde smeraldo" onclick="setTint('#16a34a')"></div>
+				<div class="preset-btn" style="background:#4b3a37;" title="Dark Brown / Black" onclick="setTint('#4b3a37')"></div>
+				<div class="preset-btn" style="background:#151515;" title="Vinyl Black" onclick="setTint('#151515')"></div>
+				<div class="preset-btn" style="background:#ffffff;" title="White" onclick="setTint('#ffffff')"></div>
+				<div class="preset-btn" style="background:#d943d4;" title="Pink / Magenta" onclick="setTint('#d943d4')"></div>
+				<div class="preset-btn" style="background:#2463eb;" title="Electric Blue" onclick="setTint('#2463eb')"></div>
+				<div class="preset-btn" style="background:#dc2626;" title="Vivid Red" onclick="setTint('#dc2626')"></div>
+				<div class="preset-btn" style="background:#16a34a;" title="Emerald Green" onclick="setTint('#16a34a')"></div>
 			</div>
 		</div>
 
 		<!-- Layer Visibility Inspector -->
 		<div class="section">
-			<div class="section-title">Ispettore Livelli</div>
+			<div class="section-title">Layer Inspector</div>
 			<div class="layer-list" id="layerList">
 				<!-- Dynamically filled -->
 			</div>
@@ -327,9 +327,9 @@
 
 		<!-- Custom Drop Zone -->
 		<div class="section">
-			<div class="section-title">Test Disegno Personalizzato</div>
+			<div class="section-title">Test Custom Artwork</div>
 			<div class="drop-zone" id="dropZone">
-				📁 Trascina qui un tuo PNG disegnato<br>per testarlo sul manichino al volo!
+				📁 Drag &amp; drop your PNG here<br>to test it on the mannequin live!
 			</div>
 			<input type="file" id="fileInput" accept="image/png" style="display:none;">
 		</div>
@@ -337,13 +337,13 @@
 		<!-- Actions -->
 		<div class="section" style="border:none;">
 			<button class="btn btn-primary" onclick="exportComposite()">
-				💾 Scarica PNG Composito (500x1000)
+				💾 Export Composite PNG (500x1000)
 			</button>
 			<button class="btn" onclick="copyConsoleCmd()">
-				📋 Copia Comando Console BC
+				📋 Copy BC Console Command
 			</button>
-			<a class="btn" href="../templates/GUIDA_DISEGNO.md" target="_blank">
-				📖 Apri Guida al Disegno
+			<a class="btn" href="../templates/DRAWING_GUIDE.md" target="_blank">
+				📖 Open Drawing Guide
 			</a>
 		</div>
 	</aside>
@@ -351,11 +351,11 @@
 	<!-- Main Viewport -->
 	<main class="viewport">
 		<div class="viewport-toolbar">
-			<div class="status-text" id="statusText">Pronto. Dimensioni canvas: 500 × 1000 px</div>
+			<div class="status-text" id="statusText">Ready. Canvas dimensions: 500 × 1000 px</div>
 			<div class="zoom-controls">
 				<button class="zoom-btn" onclick="setZoom(0.6)">60%</button>
 				<button class="zoom-btn" onclick="setZoom(0.8)">80%</button>
-				<button class="zoom-btn" onclick="setZoom(1.0)">100% (Reale)</button>
+				<button class="zoom-btn" onclick="setZoom(1.0)">100% (1:1)</button>
 				<button class="zoom-btn" onclick="setZoom(1.4)">140%</button>
 			</div>
 		</div>
@@ -383,14 +383,14 @@
 		let customDroppedImage = null;
 
 		const LAYERS_INFO = [
-			{ id: "BodyHue", label: "BodyHue (Fondo pelle)", defaultOn: true, blend: "source-over" },
-			{ id: "BaseColor", label: "BaseColor (Sagoma tinta)", defaultOn: true, blend: "source-over", isTinted: true },
-			{ id: "EdgeShade", label: "EdgeShade (Ombre bordi)", defaultOn: true, blend: "source-over" },
-			{ id: "A2", label: "A2 (Ombra pettorale)", defaultOn: true, blend: "source-over" },
-			{ id: "A3", label: "A3 (Ombra braccia)", defaultOn: true, blend: "source-over" },
-			{ id: "C1", label: "C1..C12 (Punti luce vinile)", defaultOn: true, blend: "source-over" },
-			{ id: "D1", label: "D1..D7 (Riflessi & pieghe)", defaultOn: true, blend: "source-over" },
-			{ id: "EdgeLine", label: "EdgeLine (Linee contorno)", defaultOn: true, blend: "source-over" },
+			{ id: "BodyHue", label: "BodyHue (Skin Underlay)", defaultOn: true, blend: "source-over" },
+			{ id: "BaseColor", label: "BaseColor (Tint Silhouette)", defaultOn: true, blend: "source-over", isTinted: true },
+			{ id: "EdgeShade", label: "EdgeShade (Edge Shadows)", defaultOn: true, blend: "source-over" },
+			{ id: "A2", label: "A2 (Chest / Pec Shadow)", defaultOn: true, blend: "source-over" },
+			{ id: "A3", label: "A3 (Arm Shadow)", defaultOn: true, blend: "source-over" },
+			{ id: "C1", label: "C1..C12 (Vinyl Specular Highlights)", defaultOn: true, blend: "source-over" },
+			{ id: "D1", label: "D1..D7 (Creases & Sheen)", defaultOn: true, blend: "source-over" },
+			{ id: "EdgeLine", label: "EdgeLine (Outlines)", defaultOn: true, blend: "source-over" },
 		];
 
 		const layerState = {};
@@ -585,7 +585,7 @@
 				const img = new Image();
 				img.onload = () => {
 					customDroppedImage = img;
-					dropZone.innerHTML = `✅ Caricato: <strong>${file.name}</strong><br><span style="font-size:0.75rem; color:#888;">Clicca per cambiare</span>`;
+					dropZone.innerHTML = `✅ Loaded: <strong>${file.name}</strong><br><span style="font-size:0.75rem; color:#888;">Click to replace</span>`;
 					render();
 				};
 				img.src = evt.target.result;
@@ -603,7 +603,7 @@
 		function copyConsoleCmd() {
 			const cmd = 'import("https://jojo-bc.github.io/JoJo-Mod/jojo-mod.user.js?t=" + Date.now())';
 			navigator.clipboard.writeText(cmd).then(() => {
-				alert("Comando copiato negli appunti! Incollalo nella console del browser (F12) per testare su Bondage Club.");
+				alert("Command copied to clipboard! Paste it into your browser console (F12) to test in Bondage Club.");
 			});
 		}
 

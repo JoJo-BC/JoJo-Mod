@@ -20,7 +20,7 @@ Questa guida spiega come creare o modificare vestiti e restraint personalizzati 
 
 Nella cartella `templates/mannequins/` trovi i 12 manichini a figura intera (500x1000) già allineati al pixel:
 
-| Posa | File FlatSmall (Corpo Tex) | File FlatMedium |
+| Posa | File FlatSmall | File FlatMedium |
 | :--- | :--- | :--- |
 | **In piedi standard** | `mannequin_FlatSmall_Standing.png` | `mannequin_FlatMedium_Standing.png` |
 | **Braccia a T / Giogo** | `mannequin_FlatSmall_Yoked.png` | `mannequin_FlatMedium_Yoked.png` |
