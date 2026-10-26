@@ -2,10 +2,9 @@
 /**
  * JoJo-Mod: Generator for Glossy Fullbody Pantyhose Restraint
  * Generates 500x1000 layers (BaseColor, Shadow, Highlight, Composite) for:
- * - FlatSmall (masculine completely flat chest)
- * - FlatMedium (masculine athletic pectoral fold)
- * - Small (female contour reference)
- * - Preview thumbnail
+ * - Male / Flat Chest: FlatSmall, FlatMedium
+ * - Female Bodies: Small, Normal, Large, XLarge
+ * - Wardrobe Preview thumbnail
  */
 
 const fs = require("fs");
@@ -36,8 +35,9 @@ function createMask(size) {
     }
   }
 
-  // 2. Torso chest contouring
+  // 2. Torso chest contouring:
   if (size === "FlatSmall" || size === "FlatMedium") {
+    // Sculpt masculine flat chest
     for (let y = 260; y <= 380; y++) {
       const progress = (y - 260) / 120;
       const targetLeft = 168 + progress * 14;
@@ -48,13 +48,27 @@ function createMask(size) {
         if (x > targetRight && mask[idx] > 0) mask[idx] = 0;
       }
     }
+  } else if (size === "Normal" || size === "Large" || size === "XLarge") {
+    // Expand mask to enclose larger female breasts from BodyUpper
+    const upperPath = path.join(REF_DIR, "BodyUpper", `${size}_White.png`);
+    if (fs.existsSync(upperPath)) {
+      const upper = parsePng(fs.readFileSync(upperPath));
+      for (let y = 260; y <= 400; y++) {
+        for (let x = 120; x < 380; x++) {
+          const idx = (y * 500 + x) * 4 + 3;
+          if (upper.pixels[idx] > 20) {
+            mask[y * 500 + x] = 255;
+          }
+        }
+      }
+    }
   }
 
   // 3. Ensure garment completely envelopes the avatar (no skin peeking at elbows, hips, calves)
-  // Check bounds of reference BackElbowTouch arms
   let armL = null, armR = null;
-  const armLPath = path.join(REF_DIR, "Override", "EchoV2", "ArmsLeft", "BackElbowTouch", `${size === "Small" ? "Small" : size}_White.png`);
-  const armRPath = path.join(REF_DIR, "Override", "EchoV2", "ArmsRight", "BackElbowTouch", `${size === "Small" ? "Small" : size}_White.png`);
+  const armSize = (size === "FlatSmall" || size === "FlatMedium") ? size : "Small";
+  const armLPath = path.join(REF_DIR, "Override", "EchoV2", "ArmsLeft", "BackElbowTouch", `${armSize}_White.png`);
+  const armRPath = path.join(REF_DIR, "Override", "EchoV2", "ArmsRight", "BackElbowTouch", `${armSize}_White.png`);
   if (fs.existsSync(armLPath)) armL = parsePng(fs.readFileSync(armLPath));
   if (fs.existsSync(armRPath)) armR = parsePng(fs.readFileSync(armRPath));
 
@@ -181,12 +195,44 @@ function generateLayers(size) {
   const rawShadow = Buffer.alloc(500 * 1000 * 4);
   const rawHighlight = Buffer.alloc(500 * 1000 * 4);
 
-  // Soft 2D elliptical specular hotspots (smooth 2D Gaussians)
+  // Soft 2D elliptical specular hotspots
+  let chestHotspots = [];
+  if (size === "FlatSmall") {
+    chestHotspots = [
+      { xRatio: -0.28, y: 310, sigmaX: 0.14, sigmaY: 35, peak: 55 },
+      { xRatio: 0.28, y: 310, sigmaX: 0.14, sigmaY: 35, peak: 55 },
+    ];
+  } else if (size === "FlatMedium") {
+    chestHotspots = [
+      { xRatio: -0.28, y: 310, sigmaX: 0.14, sigmaY: 35, peak: 65 },
+      { xRatio: 0.28, y: 310, sigmaX: 0.14, sigmaY: 35, peak: 65 },
+    ];
+  } else if (size === "Small") {
+    chestHotspots = [
+      { xRatio: -0.28, y: 315, sigmaX: 0.13, sigmaY: 28, peak: 80 },
+      { xRatio: 0.28, y: 315, sigmaX: 0.13, sigmaY: 28, peak: 80 },
+    ];
+  } else if (size === "Normal") {
+    chestHotspots = [
+      { xRatio: -0.30, y: 320, sigmaX: 0.14, sigmaY: 30, peak: 90 },
+      { xRatio: 0.30, y: 320, sigmaX: 0.14, sigmaY: 30, peak: 90 },
+    ];
+  } else if (size === "Large") {
+    chestHotspots = [
+      { xRatio: -0.32, y: 325, sigmaX: 0.15, sigmaY: 34, peak: 100 },
+      { xRatio: 0.32, y: 325, sigmaX: 0.15, sigmaY: 34, peak: 100 },
+    ];
+  } else if (size === "XLarge") {
+    chestHotspots = [
+      { xRatio: -0.34, y: 330, sigmaX: 0.16, sigmaY: 38, peak: 110 },
+      { xRatio: 0.34, y: 330, sigmaX: 0.16, sigmaY: 38, peak: 110 },
+    ];
+  }
+
   const hotspots = [
     { xRatio: -0.32, y: 245, sigmaX: 0.12, sigmaY: 25, peak: 90 }, // Left shoulder
     { xRatio: 0.32, y: 245, sigmaX: 0.12, sigmaY: 25, peak: 90 },  // Right shoulder
-    { xRatio: -0.28, y: 310, sigmaX: 0.14, sigmaY: 35, peak: 60 }, // Left chest
-    { xRatio: 0.28, y: 310, sigmaX: 0.14, sigmaY: 35, peak: 60 },  // Right chest
+    ...chestHotspots,
     { xRatio: -0.32, y: 590, sigmaX: 0.12, sigmaY: 45, peak: 70 }, // Left thigh
     { xRatio: 0.32, y: 590, sigmaX: 0.12, sigmaY: 45, peak: 70 },  // Right thigh
     { xRatio: -0.30, y: 720, sigmaX: 0.12, sigmaY: 30, peak: 95 }, // Left knee
@@ -207,13 +253,13 @@ function generateLayers(size) {
       const normX = (x - center) / (width / 2);
       const absX = Math.abs(normX);
 
-      // BaseColor (pure white base for perfect wardrobe color tinting)
+      // BaseColor
       baseColor[idx] = 255;
       baseColor[idx + 1] = 255;
       baseColor[idx + 2] = 255;
       baseColor[idx + 3] = Math.round(a * 242);
 
-      // Shadow: Continuous Fresnel edge falloff
+      // Shadow: Fresnel edge falloff
       let sVal = 0;
       if (absX > 0.48) {
         const edgeT = (absX - 0.48) / 0.52;
@@ -241,6 +287,16 @@ function generateLayers(size) {
         sVal += yWeight * xWeight * 45;
       }
 
+      // Female cleavage shadow between breasts
+      if ((size === "Normal" || size === "Large" || size === "XLarge") && y >= 300 && y <= 350) {
+        const centerDist = Math.abs(x - center);
+        if (centerDist < 14) {
+          const cleav = Math.cos((centerDist / 14) * (Math.PI / 2)) * Math.sin(((y - 300) / 50) * Math.PI);
+          const cleavStrength = size === "XLarge" ? 80 : size === "Large" ? 65 : 45;
+          sVal += cleav * cleavStrength;
+        }
+      }
+
       sVal = Math.min(255, Math.round(sVal));
       if (sVal > 0) {
         rawShadow[idx] = 10;
@@ -249,7 +305,7 @@ function generateLayers(size) {
         rawShadow[idx + 3] = Math.round(sVal * a);
       }
 
-      // Highlight: Continuous Gaussian band (zero lines)
+      // Highlight: Continuous Gaussian band
       const distFromBand = Math.abs(absX - 0.32);
       const bandSheen = Math.exp(-(distFromBand * distFromBand) / (2 * 0.15 * 0.15));
 
@@ -258,7 +314,7 @@ function generateLayers(size) {
 
       let hiVal = bandSheen * verticalFlow * 150;
 
-      // Add 2D smooth hotspots
+      // 2D smooth hotspots
       for (const h of hotspots) {
         const dx = normX - h.xRatio;
         const dy = y - h.y;
@@ -303,18 +359,16 @@ function generateLayers(size) {
     shadow[i * 4 + 3] = Math.round(shadow[i * 4 + 3] * a);
   }
 
-  // Pre-composite version (tinted black vinyl #141419)
+  // Pre-composite version (black vinyl)
   const composite = Buffer.alloc(500 * 1000 * 4);
   for (let i = 0; i < composite.length; i += 4) {
     const bA = baseColor[i + 3] / 255;
     if (bA === 0) continue;
-    // Tint base with black vinyl [20, 20, 25]
     let r = (baseColor[i] * 20) / 255;
     let g = (baseColor[i + 1] * 20) / 255;
     let b = (baseColor[i + 2] * 25) / 255;
     let a = bA;
 
-    // Blend shadow over
     const sA = shadow[i + 3] / 255;
     if (sA > 0) {
       r = r * (1 - sA) + shadow[i] * sA;
@@ -323,7 +377,6 @@ function generateLayers(size) {
       a = a + sA * (1 - a);
     }
 
-    // Blend highlight over
     const hA = highlight[i + 3] / 255;
     if (hA > 0) {
       r = r * (1 - hA) + highlight[i] * hA;
@@ -341,10 +394,10 @@ function generateLayers(size) {
   return { baseColor, shadow, highlight, composite };
 }
 
-console.log("[JoJo-Mod] Generating GlossyPantyhoseBody assets...");
+console.log("[JoJo-Mod] Generating GlossyPantyhoseBody for all body types...");
 
-const sizes = ["FlatSmall", "FlatMedium", "Small"];
-for (const size of sizes) {
+const allSizes = ["FlatSmall", "FlatMedium", "Small", "Normal", "Large", "XLarge"];
+for (const size of allSizes) {
   console.log(`- Building layers for ${size}...`);
   const layers = generateLayers(size);
 
@@ -357,9 +410,7 @@ for (const size of sizes) {
   fs.writeFileSync(path.join(OUT_DIR, `GlossyPantyhoseBody_${size}.png`), encodePng(500, 1000, layers.composite));
 
   // Also write for vanilla PantyhoseBody override
-  if (size === "FlatSmall" || size === "FlatMedium") {
-    fs.writeFileSync(path.join(OUT_DIR, `PantyhoseBody_${size}.png`), encodePng(500, 1000, layers.composite));
-  }
+  fs.writeFileSync(path.join(OUT_DIR, `PantyhoseBody_${size}.png`), encodePng(500, 1000, layers.composite));
 }
 
 // Write preview icon (100x100)
@@ -379,4 +430,4 @@ for (let y = 0; y < 100; y++) {
 }
 fs.writeFileSync(path.join(PREVIEW_DIR, "GlossyPantyhoseBody.png"), encodePng(100, 100, thumb));
 
-console.log("[JoJo-Mod] All GlossyPantyhoseBody assets generated successfully!");
+console.log("[JoJo-Mod] All 6 body types generated successfully!");
