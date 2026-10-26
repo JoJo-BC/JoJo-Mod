@@ -163,22 +163,16 @@ async function adaptItem(itemSpec) {
 		}
 		console.log(`   -> Generated FlatSmall (${Object.keys(fsLayers).length} layers)`);
 
-		// 2. Generate FlatMedium
+		// 2. Generate FlatMedium (all layers!)
 		const { outLayers: fmLayers } = generatePoseFlatLayers(pose, "FlatMedium", rawLayers);
-		const mediumLayers = isSingleSprite
-			? ["SingleSprite"]
-			: ["BaseColor", "EdgeLine", "EdgeShade", "A3", "D1", "D2", "BodyHue"].filter(
-					(k) => fmLayers[k]
-			  );
-
-		for (const layerKey of mediumLayers) {
+		for (const [layerKey, px] of Object.entries(fmLayers)) {
 			const suffix = isSingleSprite ? "" : `_${layerKey}`;
 			const outPath = path.join(poseOutDir, `${itemName}_FlatMedium${suffix}.png`);
-			const height = fmLayers[layerKey].length / (500 * 4);
-			fs.writeFileSync(outPath, encodePng(500, height, fmLayers[layerKey]));
+			const height = px.length / (500 * 4);
+			fs.writeFileSync(outPath, encodePng(500, height, px));
 			totalCreated++;
 		}
-		console.log(`   -> Generated FlatMedium (${mediumLayers.length} silhouette layers)`);
+		console.log(`   -> Generated FlatMedium (${Object.keys(fmLayers).length} layers)`);
 	}
 
 	console.log(`\n✅ Generated ${totalCreated} PNG files in assets/Assets/Female3DCG/${group}/!`);

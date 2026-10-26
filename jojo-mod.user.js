@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         JoJo Flat-Chest & Male Avatar Compatibility Mod (BC R133+)
 // @namespace    https://jojo-bc.github.io/JoJo-Mod/
-// @version      1.3.8
+// @version      1.3.9
 // @description  Unlocks and maps flat-chest (FlatSmall / FlatMedium) clothes and restraints in Bondage Club (Glossy Bodystocking, Echo Latex Top 乳胶衣 & Latex Bottom, Pantyhose fullBody, etc.), 100% ModSDK & BCX compliant.
 // @author       JoJo-BC
 // @match        https://*.bondageprojects.elementfx.com/R*/*
@@ -24,17 +24,17 @@
 		window.CommonDrawAppearanceBuild = window.CommonDrawAppearanceBuild.__jojoOrigBuild;
 	}
 
-	if (window.__JoJoFlatModLoaded === "1.3.8") {
-		console.log("[JoJo-Mod] v1.3.8 already active, refreshing characters.");
+	if (window.__JoJoFlatModLoaded === "1.3.9") {
+		console.log("[JoJo-Mod] v1.3.9 already active, refreshing characters.");
 		if (typeof window.__JoJoFlatModRefreshAll === "function") {
 			window.__JoJoFlatModRefreshAll();
 		}
 		return;
 	}
-	window.__JoJoFlatModLoaded = "1.3.8";
+	window.__JoJoFlatModLoaded = "1.3.9";
 
 	const TAG = "[JoJo-Mod]";
-	const VERSION = "1.3.8";
+	const VERSION = "1.3.9";
 	const REPO_BASE_URL = "https://jojo-bc.github.io/JoJo-Mod/";
 
 	console.log(`${TAG} v${VERSION} initializing...`);
@@ -83,11 +83,30 @@
 		"Assets/Female3DCG/Cloth/Yoked/LatexTop_FlatSmall.png",
 		"Assets/Female3DCG/ClothLower/LatexPants1_FlatMedium.png",
 		"Assets/Female3DCG/ClothLower/LatexPants1_FlatSmall.png",
+		"Assets/Female3DCG/Suit/BackBoxTie/GlossyBodystocking_FlatMedium_A2.png",
 		"Assets/Female3DCG/Suit/BackBoxTie/GlossyBodystocking_FlatMedium_A3.png",
+		"Assets/Female3DCG/Suit/BackBoxTie/GlossyBodystocking_FlatMedium_A4.png",
 		"Assets/Female3DCG/Suit/BackBoxTie/GlossyBodystocking_FlatMedium_BaseColor.png",
 		"Assets/Female3DCG/Suit/BackBoxTie/GlossyBodystocking_FlatMedium_BodyHue.png",
+		"Assets/Female3DCG/Suit/BackBoxTie/GlossyBodystocking_FlatMedium_C1.png",
+		"Assets/Female3DCG/Suit/BackBoxTie/GlossyBodystocking_FlatMedium_C10.png",
+		"Assets/Female3DCG/Suit/BackBoxTie/GlossyBodystocking_FlatMedium_C11.png",
+		"Assets/Female3DCG/Suit/BackBoxTie/GlossyBodystocking_FlatMedium_C12.png",
+		"Assets/Female3DCG/Suit/BackBoxTie/GlossyBodystocking_FlatMedium_C2.png",
+		"Assets/Female3DCG/Suit/BackBoxTie/GlossyBodystocking_FlatMedium_C3.png",
+		"Assets/Female3DCG/Suit/BackBoxTie/GlossyBodystocking_FlatMedium_C4.png",
+		"Assets/Female3DCG/Suit/BackBoxTie/GlossyBodystocking_FlatMedium_C5.png",
+		"Assets/Female3DCG/Suit/BackBoxTie/GlossyBodystocking_FlatMedium_C6.png",
+		"Assets/Female3DCG/Suit/BackBoxTie/GlossyBodystocking_FlatMedium_C7.png",
+		"Assets/Female3DCG/Suit/BackBoxTie/GlossyBodystocking_FlatMedium_C8.png",
+		"Assets/Female3DCG/Suit/BackBoxTie/GlossyBodystocking_FlatMedium_C9.png",
 		"Assets/Female3DCG/Suit/BackBoxTie/GlossyBodystocking_FlatMedium_D1.png",
 		"Assets/Female3DCG/Suit/BackBoxTie/GlossyBodystocking_FlatMedium_D2.png",
+		"Assets/Female3DCG/Suit/BackBoxTie/GlossyBodystocking_FlatMedium_D3.png",
+		"Assets/Female3DCG/Suit/BackBoxTie/GlossyBodystocking_FlatMedium_D4.png",
+		"Assets/Female3DCG/Suit/BackBoxTie/GlossyBodystocking_FlatMedium_D5.png",
+		"Assets/Female3DCG/Suit/BackBoxTie/GlossyBodystocking_FlatMedium_D6.png",
+		"Assets/Female3DCG/Suit/BackBoxTie/GlossyBodystocking_FlatMedium_D7.png",
 		"Assets/Female3DCG/Suit/BackBoxTie/GlossyBodystocking_FlatMedium_EdgeLine.png",
 		"Assets/Female3DCG/Suit/BackBoxTie/GlossyBodystocking_FlatMedium_EdgeShade.png",
 		"Assets/Female3DCG/Suit/BackBoxTie/GlossyBodystocking_FlatSmall_A2.png",
@@ -122,11 +141,30 @@
 		"Assets/Female3DCG/Suit/BackBoxTie/乳胶衣_FlatSmall_上底色.png",
 		"Assets/Female3DCG/Suit/BackBoxTie/乳胶衣_FlatSmall_上阴影.png",
 		"Assets/Female3DCG/Suit/BackBoxTie/乳胶衣_FlatSmall_上高光.png",
+		"Assets/Female3DCG/Suit/BackCuffs/GlossyBodystocking_FlatMedium_A2.png",
 		"Assets/Female3DCG/Suit/BackCuffs/GlossyBodystocking_FlatMedium_A3.png",
+		"Assets/Female3DCG/Suit/BackCuffs/GlossyBodystocking_FlatMedium_A4.png",
 		"Assets/Female3DCG/Suit/BackCuffs/GlossyBodystocking_FlatMedium_BaseColor.png",
 		"Assets/Female3DCG/Suit/BackCuffs/GlossyBodystocking_FlatMedium_BodyHue.png",
+		"Assets/Female3DCG/Suit/BackCuffs/GlossyBodystocking_FlatMedium_C1.png",
+		"Assets/Female3DCG/Suit/BackCuffs/GlossyBodystocking_FlatMedium_C10.png",
+		"Assets/Female3DCG/Suit/BackCuffs/GlossyBodystocking_FlatMedium_C11.png",
+		"Assets/Female3DCG/Suit/BackCuffs/GlossyBodystocking_FlatMedium_C12.png",
+		"Assets/Female3DCG/Suit/BackCuffs/GlossyBodystocking_FlatMedium_C2.png",
+		"Assets/Female3DCG/Suit/BackCuffs/GlossyBodystocking_FlatMedium_C3.png",
+		"Assets/Female3DCG/Suit/BackCuffs/GlossyBodystocking_FlatMedium_C4.png",
+		"Assets/Female3DCG/Suit/BackCuffs/GlossyBodystocking_FlatMedium_C5.png",
+		"Assets/Female3DCG/Suit/BackCuffs/GlossyBodystocking_FlatMedium_C6.png",
+		"Assets/Female3DCG/Suit/BackCuffs/GlossyBodystocking_FlatMedium_C7.png",
+		"Assets/Female3DCG/Suit/BackCuffs/GlossyBodystocking_FlatMedium_C8.png",
+		"Assets/Female3DCG/Suit/BackCuffs/GlossyBodystocking_FlatMedium_C9.png",
 		"Assets/Female3DCG/Suit/BackCuffs/GlossyBodystocking_FlatMedium_D1.png",
 		"Assets/Female3DCG/Suit/BackCuffs/GlossyBodystocking_FlatMedium_D2.png",
+		"Assets/Female3DCG/Suit/BackCuffs/GlossyBodystocking_FlatMedium_D3.png",
+		"Assets/Female3DCG/Suit/BackCuffs/GlossyBodystocking_FlatMedium_D4.png",
+		"Assets/Female3DCG/Suit/BackCuffs/GlossyBodystocking_FlatMedium_D5.png",
+		"Assets/Female3DCG/Suit/BackCuffs/GlossyBodystocking_FlatMedium_D6.png",
+		"Assets/Female3DCG/Suit/BackCuffs/GlossyBodystocking_FlatMedium_D7.png",
 		"Assets/Female3DCG/Suit/BackCuffs/GlossyBodystocking_FlatMedium_EdgeLine.png",
 		"Assets/Female3DCG/Suit/BackCuffs/GlossyBodystocking_FlatMedium_EdgeShade.png",
 		"Assets/Female3DCG/Suit/BackCuffs/GlossyBodystocking_FlatSmall_A2.png",
@@ -161,11 +199,30 @@
 		"Assets/Female3DCG/Suit/BackCuffs/乳胶衣_FlatSmall_上底色.png",
 		"Assets/Female3DCG/Suit/BackCuffs/乳胶衣_FlatSmall_上阴影.png",
 		"Assets/Female3DCG/Suit/BackCuffs/乳胶衣_FlatSmall_上高光.png",
+		"Assets/Female3DCG/Suit/BackElbowTouch/GlossyBodystocking_FlatMedium_A2.png",
 		"Assets/Female3DCG/Suit/BackElbowTouch/GlossyBodystocking_FlatMedium_A3.png",
+		"Assets/Female3DCG/Suit/BackElbowTouch/GlossyBodystocking_FlatMedium_A4.png",
 		"Assets/Female3DCG/Suit/BackElbowTouch/GlossyBodystocking_FlatMedium_BaseColor.png",
 		"Assets/Female3DCG/Suit/BackElbowTouch/GlossyBodystocking_FlatMedium_BodyHue.png",
+		"Assets/Female3DCG/Suit/BackElbowTouch/GlossyBodystocking_FlatMedium_C1.png",
+		"Assets/Female3DCG/Suit/BackElbowTouch/GlossyBodystocking_FlatMedium_C10.png",
+		"Assets/Female3DCG/Suit/BackElbowTouch/GlossyBodystocking_FlatMedium_C11.png",
+		"Assets/Female3DCG/Suit/BackElbowTouch/GlossyBodystocking_FlatMedium_C12.png",
+		"Assets/Female3DCG/Suit/BackElbowTouch/GlossyBodystocking_FlatMedium_C2.png",
+		"Assets/Female3DCG/Suit/BackElbowTouch/GlossyBodystocking_FlatMedium_C3.png",
+		"Assets/Female3DCG/Suit/BackElbowTouch/GlossyBodystocking_FlatMedium_C4.png",
+		"Assets/Female3DCG/Suit/BackElbowTouch/GlossyBodystocking_FlatMedium_C5.png",
+		"Assets/Female3DCG/Suit/BackElbowTouch/GlossyBodystocking_FlatMedium_C6.png",
+		"Assets/Female3DCG/Suit/BackElbowTouch/GlossyBodystocking_FlatMedium_C7.png",
+		"Assets/Female3DCG/Suit/BackElbowTouch/GlossyBodystocking_FlatMedium_C8.png",
+		"Assets/Female3DCG/Suit/BackElbowTouch/GlossyBodystocking_FlatMedium_C9.png",
 		"Assets/Female3DCG/Suit/BackElbowTouch/GlossyBodystocking_FlatMedium_D1.png",
 		"Assets/Female3DCG/Suit/BackElbowTouch/GlossyBodystocking_FlatMedium_D2.png",
+		"Assets/Female3DCG/Suit/BackElbowTouch/GlossyBodystocking_FlatMedium_D3.png",
+		"Assets/Female3DCG/Suit/BackElbowTouch/GlossyBodystocking_FlatMedium_D4.png",
+		"Assets/Female3DCG/Suit/BackElbowTouch/GlossyBodystocking_FlatMedium_D5.png",
+		"Assets/Female3DCG/Suit/BackElbowTouch/GlossyBodystocking_FlatMedium_D6.png",
+		"Assets/Female3DCG/Suit/BackElbowTouch/GlossyBodystocking_FlatMedium_D7.png",
 		"Assets/Female3DCG/Suit/BackElbowTouch/GlossyBodystocking_FlatMedium_EdgeLine.png",
 		"Assets/Female3DCG/Suit/BackElbowTouch/GlossyBodystocking_FlatMedium_EdgeShade.png",
 		"Assets/Female3DCG/Suit/BackElbowTouch/GlossyBodystocking_FlatSmall_A2.png",
@@ -200,11 +257,30 @@
 		"Assets/Female3DCG/Suit/BackElbowTouch/乳胶衣_FlatSmall_上底色.png",
 		"Assets/Female3DCG/Suit/BackElbowTouch/乳胶衣_FlatSmall_上阴影.png",
 		"Assets/Female3DCG/Suit/BackElbowTouch/乳胶衣_FlatSmall_上高光.png",
+		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatMedium_A2.png",
 		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatMedium_A3.png",
+		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatMedium_A4.png",
 		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatMedium_BaseColor.png",
 		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatMedium_BodyHue.png",
+		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatMedium_C1.png",
+		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatMedium_C10.png",
+		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatMedium_C11.png",
+		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatMedium_C12.png",
+		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatMedium_C2.png",
+		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatMedium_C3.png",
+		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatMedium_C4.png",
+		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatMedium_C5.png",
+		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatMedium_C6.png",
+		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatMedium_C7.png",
+		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatMedium_C8.png",
+		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatMedium_C9.png",
 		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatMedium_D1.png",
 		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatMedium_D2.png",
+		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatMedium_D3.png",
+		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatMedium_D4.png",
+		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatMedium_D5.png",
+		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatMedium_D6.png",
+		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatMedium_D7.png",
 		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatMedium_EdgeLine.png",
 		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatMedium_EdgeShade.png",
 		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatSmall_A2.png",
@@ -233,11 +309,30 @@
 		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatSmall_D7.png",
 		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatSmall_EdgeLine.png",
 		"Assets/Female3DCG/Suit/GlossyBodystocking_FlatSmall_EdgeShade.png",
+		"Assets/Female3DCG/Suit/OverTheHead/GlossyBodystocking_FlatMedium_A2.png",
 		"Assets/Female3DCG/Suit/OverTheHead/GlossyBodystocking_FlatMedium_A3.png",
+		"Assets/Female3DCG/Suit/OverTheHead/GlossyBodystocking_FlatMedium_A4.png",
 		"Assets/Female3DCG/Suit/OverTheHead/GlossyBodystocking_FlatMedium_BaseColor.png",
 		"Assets/Female3DCG/Suit/OverTheHead/GlossyBodystocking_FlatMedium_BodyHue.png",
+		"Assets/Female3DCG/Suit/OverTheHead/GlossyBodystocking_FlatMedium_C1.png",
+		"Assets/Female3DCG/Suit/OverTheHead/GlossyBodystocking_FlatMedium_C10.png",
+		"Assets/Female3DCG/Suit/OverTheHead/GlossyBodystocking_FlatMedium_C11.png",
+		"Assets/Female3DCG/Suit/OverTheHead/GlossyBodystocking_FlatMedium_C12.png",
+		"Assets/Female3DCG/Suit/OverTheHead/GlossyBodystocking_FlatMedium_C2.png",
+		"Assets/Female3DCG/Suit/OverTheHead/GlossyBodystocking_FlatMedium_C3.png",
+		"Assets/Female3DCG/Suit/OverTheHead/GlossyBodystocking_FlatMedium_C4.png",
+		"Assets/Female3DCG/Suit/OverTheHead/GlossyBodystocking_FlatMedium_C5.png",
+		"Assets/Female3DCG/Suit/OverTheHead/GlossyBodystocking_FlatMedium_C6.png",
+		"Assets/Female3DCG/Suit/OverTheHead/GlossyBodystocking_FlatMedium_C7.png",
+		"Assets/Female3DCG/Suit/OverTheHead/GlossyBodystocking_FlatMedium_C8.png",
+		"Assets/Female3DCG/Suit/OverTheHead/GlossyBodystocking_FlatMedium_C9.png",
 		"Assets/Female3DCG/Suit/OverTheHead/GlossyBodystocking_FlatMedium_D1.png",
 		"Assets/Female3DCG/Suit/OverTheHead/GlossyBodystocking_FlatMedium_D2.png",
+		"Assets/Female3DCG/Suit/OverTheHead/GlossyBodystocking_FlatMedium_D3.png",
+		"Assets/Female3DCG/Suit/OverTheHead/GlossyBodystocking_FlatMedium_D4.png",
+		"Assets/Female3DCG/Suit/OverTheHead/GlossyBodystocking_FlatMedium_D5.png",
+		"Assets/Female3DCG/Suit/OverTheHead/GlossyBodystocking_FlatMedium_D6.png",
+		"Assets/Female3DCG/Suit/OverTheHead/GlossyBodystocking_FlatMedium_D7.png",
 		"Assets/Female3DCG/Suit/OverTheHead/GlossyBodystocking_FlatMedium_EdgeLine.png",
 		"Assets/Female3DCG/Suit/OverTheHead/GlossyBodystocking_FlatMedium_EdgeShade.png",
 		"Assets/Female3DCG/Suit/OverTheHead/GlossyBodystocking_FlatSmall_A2.png",
@@ -278,11 +373,30 @@
 		"Assets/Female3DCG/Suit/OverTheHead/乳胶衣_FlatSmall_手套底色.png",
 		"Assets/Female3DCG/Suit/OverTheHead/乳胶衣_FlatSmall_手套阴影.png",
 		"Assets/Female3DCG/Suit/OverTheHead/乳胶衣_FlatSmall_手套高光.png",
+		"Assets/Female3DCG/Suit/Yoked/GlossyBodystocking_FlatMedium_A2.png",
 		"Assets/Female3DCG/Suit/Yoked/GlossyBodystocking_FlatMedium_A3.png",
+		"Assets/Female3DCG/Suit/Yoked/GlossyBodystocking_FlatMedium_A4.png",
 		"Assets/Female3DCG/Suit/Yoked/GlossyBodystocking_FlatMedium_BaseColor.png",
 		"Assets/Female3DCG/Suit/Yoked/GlossyBodystocking_FlatMedium_BodyHue.png",
+		"Assets/Female3DCG/Suit/Yoked/GlossyBodystocking_FlatMedium_C1.png",
+		"Assets/Female3DCG/Suit/Yoked/GlossyBodystocking_FlatMedium_C10.png",
+		"Assets/Female3DCG/Suit/Yoked/GlossyBodystocking_FlatMedium_C11.png",
+		"Assets/Female3DCG/Suit/Yoked/GlossyBodystocking_FlatMedium_C12.png",
+		"Assets/Female3DCG/Suit/Yoked/GlossyBodystocking_FlatMedium_C2.png",
+		"Assets/Female3DCG/Suit/Yoked/GlossyBodystocking_FlatMedium_C3.png",
+		"Assets/Female3DCG/Suit/Yoked/GlossyBodystocking_FlatMedium_C4.png",
+		"Assets/Female3DCG/Suit/Yoked/GlossyBodystocking_FlatMedium_C5.png",
+		"Assets/Female3DCG/Suit/Yoked/GlossyBodystocking_FlatMedium_C6.png",
+		"Assets/Female3DCG/Suit/Yoked/GlossyBodystocking_FlatMedium_C7.png",
+		"Assets/Female3DCG/Suit/Yoked/GlossyBodystocking_FlatMedium_C8.png",
+		"Assets/Female3DCG/Suit/Yoked/GlossyBodystocking_FlatMedium_C9.png",
 		"Assets/Female3DCG/Suit/Yoked/GlossyBodystocking_FlatMedium_D1.png",
 		"Assets/Female3DCG/Suit/Yoked/GlossyBodystocking_FlatMedium_D2.png",
+		"Assets/Female3DCG/Suit/Yoked/GlossyBodystocking_FlatMedium_D3.png",
+		"Assets/Female3DCG/Suit/Yoked/GlossyBodystocking_FlatMedium_D4.png",
+		"Assets/Female3DCG/Suit/Yoked/GlossyBodystocking_FlatMedium_D5.png",
+		"Assets/Female3DCG/Suit/Yoked/GlossyBodystocking_FlatMedium_D6.png",
+		"Assets/Female3DCG/Suit/Yoked/GlossyBodystocking_FlatMedium_D7.png",
 		"Assets/Female3DCG/Suit/Yoked/GlossyBodystocking_FlatMedium_EdgeLine.png",
 		"Assets/Female3DCG/Suit/Yoked/GlossyBodystocking_FlatMedium_EdgeShade.png",
 		"Assets/Female3DCG/Suit/Yoked/GlossyBodystocking_FlatSmall_A2.png",
@@ -398,10 +512,14 @@
 	 * @returns {string}
 	 */
 	function toCanonicalManifestPath(cleanSrc) {
-		let p = cleanSrc.replace("_FlatMedium", "_FlatSmall");
+		let p = cleanSrc;
 		try { p = decodeURIComponent(p); } catch (_) {}
-		if (p.includes("/Suit/") && p.includes("马油袜_FlatSmall_")) {
-			p = p.replace("马油袜_FlatSmall_", "GlossyBodystocking_FlatSmall_");
+		if (p.includes("/Suit/")) {
+			if (p.includes("马油袜_FlatSmall_")) {
+				p = p.replace("马油袜_FlatSmall_", "GlossyBodystocking_FlatSmall_");
+			} else if (p.includes("马油袜_FlatMedium_")) {
+				p = p.replace("马油袜_FlatMedium_", "GlossyBodystocking_FlatMedium_");
+			}
 			for (const [echoCode, vanillaName] of Object.entries(ECHO_LAYER_ALIASES)) {
 				if (p.endsWith(`_${echoCode}.png`)) {
 					p = p.slice(0, -(echoCode.length + 5)) + `_${vanillaName}.png`;
@@ -438,6 +556,14 @@
 		const canonical = toCanonicalManifestPath(cleanSrc);
 		if (CUSTOM_PNG_MANIFEST.has(canonical)) {
 			return REPO_BASE_URL + "assets/" + canonical;
+		}
+
+		// Fallback: If FlatMedium version doesn't exist for a particular layer, try FlatSmall
+		if (canonical.includes("_FlatMedium")) {
+			const fallbackSmall = canonical.replace("_FlatMedium", "_FlatSmall");
+			if (CUSTOM_PNG_MANIFEST.has(fallbackSmall)) {
+				return REPO_BASE_URL + "assets/" + fallbackSmall;
+			}
 		}
 
 		// 2. Upright restraint poses (BackElbowTouch, BackBoxTie, BackCuffs, OverTheHead, Yoked):

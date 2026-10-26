@@ -781,21 +781,24 @@ function generatePoseFlatLayers(pose, targetSize, rawLayers) {
 				}
 			}
 		} else if (name === "A2") {
+			const isSmall = targetSize === "FlatSmall";
+			const maxPecDist = isSmall ? 48 : 55;
+			const pecBaseY = isSmall ? 332 : 334;
 			for (let y = 310; y <= 364; y++) {
 				const vBlendOrig = y <= 344 ? 0 : (y - 344) / (364 - 344);
-				for (let x = 194; x <= 306; x++) {
+				for (let x = 190; x <= 310; x++) {
 					const idx = (y * 500 + x) * 4;
 					const origA = px[idx + 3];
-					const hInterior = Math.pow(Math.sin(((x - 194) / 112) * Math.PI), 0.75);
+					const hInterior = Math.pow(Math.sin(((x - 190) / 120) * Math.PI), 0.75);
 					const replaceW = (1 - vBlendOrig) * hInterior;
 					const distFromCenter = Math.abs(x - 250);
-					const pecY = 332 + Math.min(1, Math.max(0, (distFromCenter - 4) / 36)) * 8;
+					const pecY = pecBaseY + Math.min(1, Math.max(0, (distFromCenter - 4) / (maxPecDist - 12))) * 8;
 					let pecShadow = 0;
-					if (distFromCenter > 3 && distFromCenter < 50 && y >= pecY - 4 && y <= pecY + 22) {
+					if (distFromCenter > 3 && distFromCenter < maxPecDist && y >= pecY - 4 && y <= pecY + 22) {
 						const dy = (y - pecY) / 18;
 						const vFalloff = dy >= 0 ? Math.max(0, 1 - dy) : Math.max(0, 1 + dy * 2.5);
-						const hFalloff = Math.sin(((distFromCenter - 3) / 47) * Math.PI);
-						pecShadow = Math.round(42 * vFalloff * hFalloff);
+						const hFalloff = Math.sin(((distFromCenter - 3) / (maxPecDist - 3)) * Math.PI);
+						pecShadow = Math.round((isSmall ? 42 : 52) * vFalloff * hFalloff);
 					}
 					px[idx] = 255; px[idx + 1] = 255; px[idx + 2] = 255;
 					px[idx + 3] = Math.round(pecShadow * replaceW + origA * (1 - replaceW));
@@ -818,18 +821,20 @@ function generatePoseFlatLayers(pose, targetSize, rawLayers) {
 			}
 		} else if (name === "C4" || name === "C6") {
 			px = Buffer.alloc(px.length);
-			const peakAlpha = name === "C4" ? 38 : 24;
+			const isSmall = targetSize === "FlatSmall";
+			const maxPecDist = isSmall ? 48 : 55;
+			const peakAlpha = name === "C4" ? (isSmall ? 38 : 44) : (isSmall ? 24 : 30);
 			const spreadY = name === "C4" ? 5.5 : 10.0;
 			for (let y = 275; y <= 348; y++) {
-				for (let x = 196; x <= 304; x++) {
+				for (let x = 192; x <= 308; x++) {
 					if (getAlpha(warp.dBU, x, y) < 200) continue;
 					const dist = Math.abs(x - 250);
-					if (dist < 4 || dist > 48) continue;
-					let curveY = dist <= 36 ? 329 + ((dist - 4) / 32) * 9 : 338 - Math.pow((dist - 36) / 12, 2) * 24;
+					if (dist < 4 || dist > maxPecDist) continue;
+					let curveY = dist <= 38 ? 329 + ((dist - 4) / 34) * 9 : 338 - Math.pow((dist - 38) / 14, 2) * 24;
 					const dy = y - curveY;
 					const sigma = dy < 0 ? spreadY * 1.3 : spreadY * 0.85;
 					const vVal = Math.exp(-(dy * dy) / (2 * sigma * sigma));
-					const hEnv = Math.sin(((dist - 4) / 44) * Math.PI);
+					const hEnv = Math.sin(((dist - 4) / (maxPecDist - 4)) * Math.PI);
 					const a = Math.round(peakAlpha * vVal * Math.pow(hEnv, 1.1));
 					if (a > 0) {
 						const i = (y * 500 + x) * 4;
@@ -851,15 +856,17 @@ function generatePoseFlatLayers(pose, targetSize, rawLayers) {
 		} else if (name === "D3" || name === "D4" || name === "D5") {
 			px = Buffer.alloc(px.length);
 			if (name === "D4") {
-				for (let y = 325; y <= 340; y++) {
-					for (let x = 200; x <= 300; x++) {
+				const isSmall = targetSize === "FlatSmall";
+				const maxPecDist = isSmall ? 44 : 52;
+				for (let y = 325; y <= 342; y++) {
+					for (let x = 196; x <= 304; x++) {
 						const dist = Math.abs(x - 250);
-						if (dist < 6 || dist > 44) continue;
-						const pecY = 329 + ((dist - 6) / 38) * 8;
+						if (dist < 6 || dist > maxPecDist) continue;
+						const pecY = 329 + ((dist - 6) / (maxPecDist - 6)) * 8;
 						const dy = Math.abs(y - pecY);
 						if (dy < 3.0) {
 							const i = (y * 500 + x) * 4;
-							const a = Math.round(13 * (1 - dy / 3.0) * Math.sin(((dist - 6) / 38) * Math.PI));
+							const a = Math.round((isSmall ? 13 : 16) * (1 - dy / 3.0) * Math.sin(((dist - 6) / (maxPecDist - 6)) * Math.PI));
 							px[i] = 255; px[i + 1] = 255; px[i + 2] = 255;
 							px[i + 3] = a;
 						}
