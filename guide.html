@@ -161,45 +161,13 @@
 		<a class="nav-back" href="index.html">← Back to Main Page</a>
 
 		<div class="card">
-			<h1>📖 JoJo-Mod User &amp; Creator Guide</h1>
-			<p>Everything you need to activate the mod, test it with friends, inspect items in-game, and create custom clothing/restraints.</p>
+			<h1>📖 JoJo-Mod Asset Inspector &amp; Creator Guide</h1>
+			<p>How to identify in-game clothing/restraint IDs for male chest adaptation and technical rules for creating custom artwork.</p>
 		</div>
 
-		<!-- Section 1 -->
+		<!-- Section 1: Item Identification -->
 		<div class="card">
-			<h2>1. How to Activate the Mod (For You &amp; Friends)</h2>
-			<p>JoJo-Mod runs on all Bondage Club servers (Asia, Europe, America) with zero conflicts, full ModSDK compliance, and BCX compatibility.</p>
-
-			<div class="step-box">
-				<div class="step-title">⚡ Method A: Instant 1-Click Bookmarklet (No Extension Required)</div>
-				<p>The easiest option for friends or quick tests:</p>
-				<ol style="margin: 0; padding-left: 20px; color: var(--muted);">
-					<li>Go to the <a href="index.html" style="color:var(--accent);">Main Page</a> and drag the <strong>"🔖 Activate JoJo-Mod"</strong> purple button into your browser Bookmarks Bar.</li>
-					<li>Whenever you are in Bondage Club, simply click that bookmark.</li>
-					<li>The mod immediately activates and unlocks flat-chest items for your avatar!</li>
-				</ol>
-			</div>
-
-			<div class="step-box">
-				<div class="step-title">💻 Method B: Browser Console (F12)</div>
-				<p>Press <code>F12</code> in your browser, switch to the <strong>Console</strong> tab, paste this line and press Enter:</p>
-				<pre id="code-console">import("https://jojo-bc.github.io/JoJo-Mod/jojo-mod.user.js?t=" + Date.now())</pre>
-				<button class="btn" onclick="copySnippet('code-console', this)">📋 Copy Console Command</button>
-			</div>
-
-			<div class="step-box">
-				<div class="step-title">🔄 Method C: Violentmonkey / Tampermonkey (Automatic Loading)</div>
-				<p>For regular players who want the mod to load automatically on every visit:</p>
-				<ol style="margin: 0; padding-left: 20px; color: var(--muted);">
-					<li>Install the <strong>Violentmonkey</strong> or <strong>Tampermonkey</strong> browser extension.</li>
-					<li>Click <a href="https://jojo-bc.github.io/JoJo-Mod/jojo-mod.user.js" class="btn btn-primary" style="padding:4px 10px; font-size:0.8rem; margin:0 4px;">Install jojo-mod.user.js</a> to subscribe to automatic updates.</li>
-				</ol>
-			</div>
-		</div>
-
-		<!-- Section 2 -->
-		<div class="card">
-			<h2>2. How to Identify Any In-Game Item for Adaptation</h2>
+			<h2>1. How to Identify Any In-Game Item for Adaptation</h2>
 			<p>Bondage Club internal asset names often differ from the English or localized display titles (for instance, <em>Latex Top</em> is technically <code>Suit / 乳胶衣</code>). Use this snippet to inspect exact internal names:</p>
 
 			<div class="step-box">
@@ -226,9 +194,9 @@
 			<p>Simply copy the line output by the console (e.g. <code>Group: "Suit" | Name: "乳胶衣" | Title: "Latex Top"</code>) and share it. We will run our automated 2D warp engine to generate both <code>FlatSmall</code> and <code>FlatMedium</code> versions across all 6 poses.</p>
 		</div>
 
-		<!-- Section 3 -->
+		<!-- Section 2: Drawing Rules -->
 		<div class="card">
-			<h2>3. Technical Rules &amp; Testing in JoJo-Studio</h2>
+			<h2>2. Technical Rules &amp; Testing in JoJo-Studio</h2>
 			<p>To design clothes or restraints from scratch:</p>
 
 			<table>
