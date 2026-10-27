@@ -66,31 +66,31 @@ function getMannequinCanvas(upperSize, legSizes) {
   return canvas;
 }
 
-function create400x800Mask(size) {
+function create400x800Mask(size, legSizeOverride) {
   let upperSize = size;
-  let legSizes = ["Normal"];
-  if (size === "FlatMedium") {
-    legSizes = ["Normal", "Large"];
-  } else if (size === "FlatSmall") {
-    legSizes = ["Small", "Normal"];
-  } else if (size === "Small") {
-    legSizes = ["Small", "Normal"];
-  } else if (size === "Normal") {
-    legSizes = ["Normal", "Large"];
-  } else if (size === "Large") {
-    legSizes = ["Large", "XLarge"];
-  } else if (size === "XLarge") {
-    legSizes = ["XLarge"];
+  let legSize = legSizeOverride;
+  if (!legSize) {
+    if (size === "Small" || size === "FlatSmall") {
+      legSize = "Small";
+    } else if (size === "Normal" || size === "FlatMedium") {
+      legSize = "Normal";
+    } else if (size === "Large") {
+      legSize = "Large";
+    } else if (size === "XLarge") {
+      legSize = "XLarge";
+    } else {
+      legSize = "Normal";
+    }
   }
 
-  const manCanvas = getMannequinCanvas(upperSize, legSizes);
+  const manCanvas = getMannequinCanvas(upperSize, [legSize]);
 
   // 1. Exact min and max X for each row y (0..799)
   const rawMin = new Int32Array(800).fill(999);
   const rawMax = new Int32Array(800).fill(-1);
 
-  // BodyUpper starts at y_ia = 14 (canvasY = 214)
-  for (let y = 14; y < 800; y++) {
+  // BodyUpper starts at y_ia = 7 (canvasY = 207)
+  for (let y = 7; y < 800; y++) {
     const cY = y + 200;
     if (cY < 1000) {
       for (let x = 0; x < 400; x++) {
@@ -112,17 +112,39 @@ function create400x800Mask(size) {
     smoothMax[y] = rawMax[y];
   }
 
-  for (let y = 265; y <= 728; y++) {
-    if (rawMin[y] <= rawMax[y] && rawMin[y - 1] <= rawMax[y - 1] && rawMin[y + 1] <= rawMax[y + 1]) {
-      // 3-point envelope with 1px margin expansion strictly for the calves
-      smoothMin[y] = Math.min(rawMin[y], rawMin[y - 1], rawMin[y + 1]) - 1;
-      smoothMax[y] = Math.max(rawMax[y], rawMax[y - 1], rawMax[y + 1]) + 1;
+  // Clamping shoulder bounds for female bodies at y=30..70 (cY=230..270)
+  // to avoid lateral overflow beyond natural arm/shoulder contour
+  const isFemale = ["Small", "Normal", "Large", "XLarge"].includes(upperSize);
+  if (isFemale) {
+    const refShoulderMax = {
+      30: 246, 31: 249, 32: 252, 33: 255, 34: 257,
+      35: 260, 36: 261, 37: 262, 38: 264, 39: 265,
+      40: 266, 41: 267, 42: 267, 43: 268, 44: 268,
+      45: 269, 46: 270, 47: 270, 48: 271, 49: 271,
+      50: 272, 51: 272, 52: 273, 53: 273, 54: 273,
+      55: 274, 56: 274, 57: 274, 58: 274, 59: 274,
+      60: 275, 61: 275, 62: 275, 63: 275, 64: 275,
+      65: 275, 66: 275, 67: 274, 68: 274, 69: 274,
+      70: 274
+    };
+    for (let y = 30; y <= 70; y++) {
+      if (refShoulderMax[y] !== undefined && smoothMax[y] > refShoulderMax[y]) {
+        smoothMax[y] = refShoulderMax[y];
+      }
     }
   }
 
-  // 3. Build snug form-fitting mask with clean anti-aliasing (terminates cleanly at the soles y = 757 without excess)
+  // Smooth leg contour with weighted average without extra dilation margin (+1/-1 removed for form fit)
+  for (let y = 265; y <= 728; y++) {
+    if (rawMin[y] <= rawMax[y] && rawMin[y - 1] <= rawMax[y - 1] && rawMin[y + 1] <= rawMax[y + 1]) {
+      smoothMin[y] = Math.round((rawMin[y - 1] + rawMin[y] * 2 + rawMin[y + 1]) / 4);
+      smoothMax[y] = Math.round((rawMax[y - 1] + rawMax[y] * 2 + rawMax[y + 1]) / 4);
+    }
+  }
+
+  // 3. Build snug form-fitting mask with clean anti-aliasing (starts at y = 7, terminates at y = 757 without excess)
   const mask = Buffer.alloc(400 * 800);
-  for (let y = 14; y <= 757; y++) {
+  for (let y = 7; y <= 757; y++) {
     if (smoothMin[y] > smoothMax[y]) continue;
     for (let x = smoothMin[y]; x <= smoothMax[y]; x++) {
       mask[y * 400 + x] = 255;
@@ -177,8 +199,9 @@ function gaussianBlurAlpha(srcBuf, width, height, radius) {
   return dst;
 }
 
-function generate400x800Layers(size) {
-  const mask = create400x800Mask(size);
+function generate400x800Layers(upperSize, legSizeOverride) {
+  const size = upperSize;
+  const mask = create400x800Mask(upperSize, legSizeOverride);
 
   const rawBounds = [];
   for (let y = 0; y < 800; y++) {
@@ -221,42 +244,49 @@ function generate400x800Layers(size) {
 
   // 2D specular hotspots (in 400x800 coordinates) - soft silky nylon glows matching Shiss example
   let chestHotspots = [];
-  if (size === "FlatSmall") {
+  if (upperSize === "FlatSmall") {
     chestHotspots = [
       { xRatio: -0.22, y: 110, sigmaX: 0.12, sigmaY: 16, peak: 40 },
       { xRatio: 0.22, y: 110, sigmaX: 0.12, sigmaY: 16, peak: 40 },
     ];
-  } else if (size === "FlatMedium") {
+  } else if (upperSize === "FlatMedium") {
     chestHotspots = [
       { xRatio: -0.24, y: 115, sigmaX: 0.12, sigmaY: 16, peak: 45 },
       { xRatio: 0.24, y: 115, sigmaX: 0.12, sigmaY: 16, peak: 45 },
     ];
-  } else if (size === "Small") {
+  } else if (upperSize === "Small") {
     chestHotspots = [
       { xRatio: -0.28, y: 115, sigmaX: 0.12, sigmaY: 20, peak: 45 },
       { xRatio: 0.28, y: 115, sigmaX: 0.12, sigmaY: 20, peak: 45 },
     ];
-  } else if (size === "Normal") {
+  } else if (upperSize === "Normal") {
     chestHotspots = [
       { xRatio: -0.30, y: 120, sigmaX: 0.12, sigmaY: 22, peak: 50 },
       { xRatio: 0.30, y: 120, sigmaX: 0.12, sigmaY: 22, peak: 50 },
     ];
-  } else if (size === "Large") {
+  } else if (upperSize === "Large") {
     chestHotspots = [
       { xRatio: -0.32, y: 125, sigmaX: 0.13, sigmaY: 24, peak: 55 },
       { xRatio: 0.32, y: 125, sigmaX: 0.13, sigmaY: 24, peak: 55 },
     ];
-  } else if (size === "XLarge") {
+  } else if (upperSize === "XLarge") {
     chestHotspots = [
       { xRatio: -0.34, y: 130, sigmaX: 0.14, sigmaY: 26, peak: 60 },
       { xRatio: 0.34, y: 130, sigmaX: 0.14, sigmaY: 26, peak: 60 },
     ];
   }
 
-  const hotspots = [
-    { xRatio: -0.32, y: 48, sigmaX: 0.10, sigmaY: 16, peak: 40 },  // Left shoulder
-    { xRatio: 0.32, y: 48, sigmaX: 0.10, sigmaY: 16, peak: 40 },   // Right shoulder
-    ...chestHotspots,
+  const isSlenderLegs = legSizeOverride === "Small" || (!legSizeOverride && (upperSize === "Small" || upperSize === "FlatSmall"));
+  const legHotspots = isSlenderLegs ? [
+    { xRatio: -0.28, y: 320, sigmaX: 0.08, sigmaY: 30, peak: 45 }, // Upper Thigh L
+    { xRatio: 0.28, y: 320, sigmaX: 0.08, sigmaY: 30, peak: 45 },  // Upper Thigh R
+    { xRatio: -0.27, y: 400, sigmaX: 0.08, sigmaY: 35, peak: 50 }, // Mid Thigh L
+    { xRatio: 0.27, y: 400, sigmaX: 0.08, sigmaY: 35, peak: 50 },  // Mid Thigh R
+    { xRatio: -0.27, y: 520, sigmaX: 0.09, sigmaY: 22, peak: 55 }, // Knee L
+    { xRatio: 0.27, y: 520, sigmaX: 0.09, sigmaY: 22, peak: 55 },  // Knee R
+    { xRatio: -0.27, y: 620, sigmaX: 0.07, sigmaY: 35, peak: 45 }, // Shin L
+    { xRatio: 0.27, y: 620, sigmaX: 0.07, sigmaY: 35, peak: 45 },  // Shin R
+  ] : [
     { xRatio: -0.30, y: 320, sigmaX: 0.08, sigmaY: 30, peak: 45 }, // Upper Thigh L
     { xRatio: 0.30, y: 320, sigmaX: 0.08, sigmaY: 30, peak: 45 },  // Upper Thigh R
     { xRatio: -0.28, y: 400, sigmaX: 0.08, sigmaY: 35, peak: 50 }, // Mid Thigh L
@@ -267,7 +297,14 @@ function generate400x800Layers(size) {
     { xRatio: 0.28, y: 620, sigmaX: 0.07, sigmaY: 35, peak: 45 },  // Shin R
   ];
 
-  for (let y = 14; y < 770; y++) {
+  const hotspots = [
+    { xRatio: -0.32, y: 48, sigmaX: 0.10, sigmaY: 16, peak: 40 },  // Left shoulder
+    { xRatio: 0.32, y: 48, sigmaX: 0.10, sigmaY: 16, peak: 40 },   // Right shoulder
+    ...chestHotspots,
+    ...legHotspots,
+  ];
+
+  for (let y = 7; y < 770; y++) {
     const { left, right, width, center } = smoothBounds[y];
     if (left === -1 || width < 10) continue;
 
@@ -423,10 +460,21 @@ function generate400x800Layers(size) {
 
 console.log("[JoJo-Mod] Generating 400x800 translucent GlossyPantyhoseBody assets...");
 
-const allSizes = ["FlatSmall", "FlatMedium", "Small", "Normal", "Large", "XLarge"];
-for (const size of allSizes) {
-  console.log(`- Building 400x800 layers for ${size}...`);
-  const layers = generate400x800Layers(size);
+const configs = [
+  { name: "FlatSmall", upper: "FlatSmall", leg: "Small" },
+  { name: "FlatMedium", upper: "FlatMedium", leg: "Normal" },
+  { name: "FlatMedium_LegsSmall", upper: "FlatMedium", leg: "Small" },
+  { name: "Small", upper: "Small", leg: "Small" },
+  { name: "Normal", upper: "Normal", leg: "Normal" },
+  { name: "Normal_LegsSmall", upper: "Normal", leg: "Small" },
+  { name: "Large", upper: "Large", leg: "Large" },
+  { name: "Large_LegsSmall", upper: "Large", leg: "Small" },
+  { name: "XLarge", upper: "XLarge", leg: "XLarge" },
+];
+
+for (const cfg of configs) {
+  console.log(`- Building 400x800 layers for ${cfg.name} (upper=${cfg.upper}, leg=${cfg.leg})...`);
+  const layers = generate400x800Layers(cfg.upper, cfg.leg);
 
   const encBase = encodePng(400, 800, layers.baseColor);
   const encShd = encodePng(400, 800, layers.shadow);
@@ -434,17 +482,19 @@ for (const size of allSizes) {
   const encComp = encodePng(400, 800, layers.composite);
 
   // Write to ItemArms
-  fs.writeFileSync(path.join(OUT_DIR, `GlossyPantyhoseBody_${size}_BaseColor.png`), encBase);
-  fs.writeFileSync(path.join(OUT_DIR, `GlossyPantyhoseBody_${size}_Shadow.png`), encShd);
-  fs.writeFileSync(path.join(OUT_DIR, `GlossyPantyhoseBody_${size}_Highlight.png`), encHlt);
-  fs.writeFileSync(path.join(OUT_DIR, `GlossyPantyhoseBody_${size}.png`), encComp);
-  fs.writeFileSync(path.join(OUT_DIR, `PantyhoseBody_${size}.png`), encComp);
+  fs.writeFileSync(path.join(OUT_DIR, `GlossyPantyhoseBody_${cfg.name}_BaseColor.png`), encBase);
+  fs.writeFileSync(path.join(OUT_DIR, `GlossyPantyhoseBody_${cfg.name}_Shadow.png`), encShd);
+  fs.writeFileSync(path.join(OUT_DIR, `GlossyPantyhoseBody_${cfg.name}_Highlight.png`), encHlt);
+  fs.writeFileSync(path.join(OUT_DIR, `GlossyPantyhoseBody_${cfg.name}.png`), encComp);
+  if (!cfg.name.includes("_LegsSmall")) {
+    fs.writeFileSync(path.join(OUT_DIR, `PantyhoseBody_${cfg.name}.png`), encComp);
+  }
 
   // Write to ItemTorso
-  fs.writeFileSync(path.join(TORSO_OUT_DIR, `GlossyPantyhoseBody_${size}_BaseColor.png`), encBase);
-  fs.writeFileSync(path.join(TORSO_OUT_DIR, `GlossyPantyhoseBody_${size}_Shadow.png`), encShd);
-  fs.writeFileSync(path.join(TORSO_OUT_DIR, `GlossyPantyhoseBody_${size}_Highlight.png`), encHlt);
-  fs.writeFileSync(path.join(TORSO_OUT_DIR, `GlossyPantyhoseBody_${size}.png`), encComp);
+  fs.writeFileSync(path.join(TORSO_OUT_DIR, `GlossyPantyhoseBody_${cfg.name}_BaseColor.png`), encBase);
+  fs.writeFileSync(path.join(TORSO_OUT_DIR, `GlossyPantyhoseBody_${cfg.name}_Shadow.png`), encShd);
+  fs.writeFileSync(path.join(TORSO_OUT_DIR, `GlossyPantyhoseBody_${cfg.name}_Highlight.png`), encHlt);
+  fs.writeFileSync(path.join(TORSO_OUT_DIR, `GlossyPantyhoseBody_${cfg.name}.png`), encComp);
 }
 
 // Generate High-Quality Selection Preview thumbnails (221x221, matching vanilla BC format)

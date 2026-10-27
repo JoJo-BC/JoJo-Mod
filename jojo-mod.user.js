@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         JoJo Flat-Chest & Male Avatar Compatibility Mod (BC R133+)
 // @namespace    https://jojo-bc.github.io/JoJo-Mod/
-// @version      1.4.9
+// @version      1.5.0
 // @description  Unlocks and maps flat-chest (FlatSmall / FlatMedium) and all body sizes clothes and restraints in Bondage Club (Glossy Bodystocking, Echo Latex Top 乳胶衣 & Latex Bottom, Pantyhose fullBody, Glossy Fullbody Pantyhose, etc.), 100% ModSDK & BCX compliant.
 // @author       JoJo-BC
 // @match        https://*.bondageprojects.elementfx.com/R*/*
@@ -24,17 +24,17 @@
 		window.CommonDrawAppearanceBuild = window.CommonDrawAppearanceBuild.__jojoOrigBuild;
 	}
 
-	if (window.__JoJoFlatModLoaded === "1.4.9") {
-		console.log("[JoJo-Mod] v1.4.9 already active, refreshing characters.");
+	if (window.__JoJoFlatModLoaded === "1.5.0") {
+		console.log("[JoJo-Mod] v1.5.0 already active, refreshing characters.");
 		if (typeof window.__JoJoFlatModRefreshAll === "function") {
 			window.__JoJoFlatModRefreshAll();
 		}
 		return;
 	}
-	window.__JoJoFlatModLoaded = "1.4.9";
+	window.__JoJoFlatModLoaded = "1.5.0";
 
 	const TAG = "[JoJo-Mod]";
-	const VERSION = "1.4.9";
+	const VERSION = "1.5.0";
 	const REPO_BASE_URL = "https://jojo-bc.github.io/JoJo-Mod/";
 
 	console.log(`${TAG} v${VERSION} initializing...`);
@@ -90,6 +90,10 @@
 		"Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_FlatMedium.png",
 		"Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_FlatMedium_BaseColor.png",
 		"Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_FlatMedium_Highlight.png",
+		"Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_FlatMedium_LegsSmall.png",
+		"Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_FlatMedium_LegsSmall_BaseColor.png",
+		"Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_FlatMedium_LegsSmall_Highlight.png",
+		"Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_FlatMedium_LegsSmall_Shadow.png",
 		"Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_FlatMedium_Shadow.png",
 		"Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_FlatSmall.png",
 		"Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_FlatSmall_BaseColor.png",
@@ -98,10 +102,18 @@
 		"Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_Large.png",
 		"Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_Large_BaseColor.png",
 		"Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_Large_Highlight.png",
+		"Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_Large_LegsSmall.png",
+		"Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_Large_LegsSmall_BaseColor.png",
+		"Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_Large_LegsSmall_Highlight.png",
+		"Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_Large_LegsSmall_Shadow.png",
 		"Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_Large_Shadow.png",
 		"Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_Normal.png",
 		"Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_Normal_BaseColor.png",
 		"Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_Normal_Highlight.png",
+		"Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_Normal_LegsSmall.png",
+		"Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_Normal_LegsSmall_BaseColor.png",
+		"Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_Normal_LegsSmall_Highlight.png",
+		"Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_Normal_LegsSmall_Shadow.png",
 		"Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_Normal_Shadow.png",
 		"Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_Small.png",
 		"Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_Small_BaseColor.png",
@@ -121,6 +133,10 @@
 		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_FlatMedium.png",
 		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_FlatMedium_BaseColor.png",
 		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_FlatMedium_Highlight.png",
+		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_FlatMedium_LegsSmall.png",
+		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_FlatMedium_LegsSmall_BaseColor.png",
+		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_FlatMedium_LegsSmall_Highlight.png",
+		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_FlatMedium_LegsSmall_Shadow.png",
 		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_FlatMedium_Shadow.png",
 		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_FlatSmall.png",
 		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_FlatSmall_BaseColor.png",
@@ -129,10 +145,18 @@
 		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_Large.png",
 		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_Large_BaseColor.png",
 		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_Large_Highlight.png",
+		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_Large_LegsSmall.png",
+		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_Large_LegsSmall_BaseColor.png",
+		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_Large_LegsSmall_Highlight.png",
+		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_Large_LegsSmall_Shadow.png",
 		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_Large_Shadow.png",
 		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_Normal.png",
 		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_Normal_BaseColor.png",
 		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_Normal_Highlight.png",
+		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_Normal_LegsSmall.png",
+		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_Normal_LegsSmall_BaseColor.png",
+		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_Normal_LegsSmall_Highlight.png",
+		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_Normal_LegsSmall_Shadow.png",
 		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_Normal_Shadow.png",
 		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_Small.png",
 		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_Small_BaseColor.png",
@@ -590,6 +614,21 @@
 		return p;
 	}
 
+	let currentDrawingCharacter = null;
+
+	/**
+	 * Detects the leg size (BodyLower) of a character.
+	 * @param {Character|null} C
+	 * @returns {string|null}
+	 */
+	function getCharacterBodyLowerSize(C) {
+		if (!C || !Array.isArray(C.Appearance)) return null;
+		const item = C.Appearance.find(
+			(a) => a && a.Asset && a.Asset.Group && a.Asset.Group.Name === "BodyLower"
+		);
+		return item && item.Asset ? item.Asset.Name : null;
+	}
+
 	/**
 	 * Remaps an image URL if it targets _FlatSmall or _FlatMedium for a supported asset.
 	 * @param {string} src
@@ -607,23 +646,38 @@
 		const cleanSrc =
 			assetsIdx !== -1 ? decoded.slice(assetsIdx) : decoded.startsWith("./") ? decoded.slice(2) : decoded;
 
-		// 1. Direct exact match in custom repository manifest (covers custom assets, layers, and previews)
-		if (CUSTOM_PNG_MANIFEST.has(cleanSrc)) {
-			return REPO_BASE_URL + "assets/" + cleanSrc;
-		}
-
 		// Normalize ItemTorso/GlossyPantyhoseBody to ItemArms/GlossyPantyhoseBody
 		let canonicalSrc = cleanSrc;
 		if (canonicalSrc.includes("ItemTorso/") && canonicalSrc.includes("GlossyPantyhoseBody")) {
 			canonicalSrc = canonicalSrc.replace("ItemTorso/", "ItemArms/");
-			if (CUSTOM_PNG_MANIFEST.has(canonicalSrc)) {
-				return REPO_BASE_URL + "assets/" + canonicalSrc;
-			}
 		}
 
 		// Preview fallback for GlossyPantyhoseBody
 		if (canonicalSrc.includes("GlossyPantyhoseBody") && canonicalSrc.includes("/Preview/")) {
 			return REPO_BASE_URL + "assets/Assets/Female3DCG/ItemArms/Preview/GlossyPantyhoseBody.png";
+		}
+
+		// Tailored leg fit: when character has slender legs (BodyLower: "Small") on a non-small upper body
+		if (canonicalSrc.includes("GlossyPantyhoseBody")) {
+			const legSize = getCharacterBodyLowerSize(currentDrawingCharacter);
+			if (legSize === "Small" && !canonicalSrc.includes("_LegsSmall")) {
+				let tailored = null;
+				if (canonicalSrc.includes("_Normal")) {
+					tailored = canonicalSrc.replace("_Normal", "_Normal_LegsSmall");
+				} else if (canonicalSrc.includes("_FlatMedium")) {
+					tailored = canonicalSrc.replace("_FlatMedium", "_FlatMedium_LegsSmall");
+				} else if (canonicalSrc.includes("_Large")) {
+					tailored = canonicalSrc.replace("_Large", "_Large_LegsSmall");
+				}
+				if (tailored && CUSTOM_PNG_MANIFEST.has(tailored)) {
+					return REPO_BASE_URL + "assets/" + tailored;
+				}
+			}
+		}
+
+		// 1. Direct exact match in custom repository manifest (covers custom assets, layers, and previews)
+		if (CUSTOM_PNG_MANIFEST.has(canonicalSrc)) {
+			return REPO_BASE_URL + "assets/" + canonicalSrc;
 		}
 
 		if (canonicalSrc.includes("Icons/Previews/TightenLoosen.png")) {
@@ -981,30 +1035,36 @@
 
 			// 1. Hook CommonDrawAppearanceBuild via ModSDK
 			mod.hookFunction("CommonDrawAppearanceBuild", 20, (args, next) => {
-				const callbacks = args[1];
-				if (callbacks && typeof callbacks === "object") {
-					const wrapDrawCb = (fn) => {
-						if (typeof fn !== "function") return fn;
-						return function (src, x, y, opts, ...more) {
-							const mappedSrc = remapImageUrl(src);
-							if (opts && Array.isArray(opts.TextureAlphaMask)) {
-								opts = {
-									...opts,
-									TextureAlphaMask: remapMaskArray(opts.TextureAlphaMask),
-								};
-							}
-							return fn.call(this, mappedSrc, x, y, opts, ...more);
+				const prevChar = currentDrawingCharacter;
+				currentDrawingCharacter = args[0];
+				try {
+					const callbacks = args[1];
+					if (callbacks && typeof callbacks === "object") {
+						const wrapDrawCb = (fn) => {
+							if (typeof fn !== "function") return fn;
+							return function (src, x, y, opts, ...more) {
+								const mappedSrc = remapImageUrl(src);
+								if (opts && Array.isArray(opts.TextureAlphaMask)) {
+									opts = {
+										...opts,
+										TextureAlphaMask: remapMaskArray(opts.TextureAlphaMask),
+									};
+								}
+								return fn.call(this, mappedSrc, x, y, opts, ...more);
+							};
 						};
-					};
-					args[1] = {
-						...callbacks,
-						drawImage: wrapDrawCb(callbacks.drawImage),
-						drawImageBlink: wrapDrawCb(callbacks.drawImageBlink),
-						drawImageColorize: wrapDrawCb(callbacks.drawImageColorize),
-						drawImageColorizeBlink: wrapDrawCb(callbacks.drawImageColorizeBlink),
-					};
+						args[1] = {
+							...callbacks,
+							drawImage: wrapDrawCb(callbacks.drawImage),
+							drawImageBlink: wrapDrawCb(callbacks.drawImageBlink),
+							drawImageColorize: wrapDrawCb(callbacks.drawImageColorize),
+							drawImageColorizeBlink: wrapDrawCb(callbacks.drawImageColorizeBlink),
+						};
+					}
+					return next(args);
+				} finally {
+					currentDrawingCharacter = prevChar;
 				}
-				return next(args);
 			});
 
 			// 2. Priority 20 runs BEFORE Echo's Priority 10 hooks!
