@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         JoJo Flat-Chest & Male Avatar Compatibility Mod (BC R133+)
 // @namespace    https://jojo-bc.github.io/JoJo-Mod/
-// @version      1.4.7
+// @version      1.4.8
 // @description  Unlocks and maps flat-chest (FlatSmall / FlatMedium) and all body sizes clothes and restraints in Bondage Club (Glossy Bodystocking, Echo Latex Top 乳胶衣 & Latex Bottom, Pantyhose fullBody, Glossy Fullbody Pantyhose, etc.), 100% ModSDK & BCX compliant.
 // @author       JoJo-BC
 // @match        https://*.bondageprojects.elementfx.com/R*/*
@@ -24,17 +24,17 @@
 		window.CommonDrawAppearanceBuild = window.CommonDrawAppearanceBuild.__jojoOrigBuild;
 	}
 
-	if (window.__JoJoFlatModLoaded === "1.4.7") {
-		console.log("[JoJo-Mod] v1.4.7 already active, refreshing characters.");
+	if (window.__JoJoFlatModLoaded === "1.4.8") {
+		console.log("[JoJo-Mod] v1.4.8 already active, refreshing characters.");
 		if (typeof window.__JoJoFlatModRefreshAll === "function") {
 			window.__JoJoFlatModRefreshAll();
 		}
 		return;
 	}
-	window.__JoJoFlatModLoaded = "1.4.7";
+	window.__JoJoFlatModLoaded = "1.4.8";
 
 	const TAG = "[JoJo-Mod]";
-	const VERSION = "1.4.7";
+	const VERSION = "1.4.8";
 	const REPO_BASE_URL = "https://jojo-bc.github.io/JoJo-Mod/";
 
 	console.log(`${TAG} v${VERSION} initializing...`);
@@ -626,6 +626,10 @@
 			return REPO_BASE_URL + "assets/Assets/Female3DCG/ItemArms/Preview/GlossyPantyhoseBody.png";
 		}
 
+		if (canonicalSrc.includes("Icons/Previews/TightenLoosen.png")) {
+			return "Icons/TightenLoosen.png";
+		}
+
 		// Fallback for custom asset without size suffix (e.g. GlossyPantyhoseBody_BaseColor.png -> _Normal_BaseColor.png or _Small_BaseColor.png)
 		if (
 			canonicalSrc.includes("GlossyPantyhoseBody_") &&
@@ -708,6 +712,7 @@
 		const groupArms = AssetGroupGet("Female3DCG", "ItemArms");
 		let armsAsset = AssetGet("Female3DCG", "ItemArms", "GlossyPantyhoseBody");
 		if (armsAsset) {
+			armsAsset.Extended = true;
 			armsAsset.AllowTighten = true;
 			armsAsset.SetPose = ["BackElbowTouch", "LegsClosed"];
 			armsAsset.AllowPose = ["BackElbowTouch", "BackBoxTie", "BackCuffs", "Yoked", "OverTheHead", "LegsClosed"];
@@ -734,6 +739,7 @@
 				RemoveTime: 20,
 				AllowLock: true,
 				AllowTighten: true,
+				Extended: true,
 				SetPose: ["BackElbowTouch", "LegsClosed"],
 				AllowPose: [
 					"BackElbowTouch",
@@ -780,6 +786,7 @@
 		const groupTorso = AssetGroupGet("Female3DCG", "ItemTorso");
 		let torsoAsset = AssetGet("Female3DCG", "ItemTorso", "GlossyPantyhoseBody");
 		if (torsoAsset) {
+			torsoAsset.Extended = true;
 			torsoAsset.AllowTighten = true;
 			torsoAsset.SetPose = ["BackElbowTouch", "LegsClosed"];
 			torsoAsset.AllowPose = [
@@ -821,6 +828,7 @@
 				RemoveTime: 20,
 				AllowLock: true,
 				AllowTighten: true,
+				Extended: true,
 				SetPose: ["BackElbowTouch", "LegsClosed"],
 				AllowPose: [
 					"BackElbowTouch",
@@ -1153,15 +1161,42 @@
 							typeof window.DialogGetFavoriteStateDetails === "function"
 								? window.DialogGetFavoriteStateDetails(args[0], asset)
 								: { UsableOrder: 1 };
-						dialogItem.SortOrder = `${fav.UsableOrder}${asset.Description}${
+						dialogItem.SortOrder = `${dialogItem.Worn ? "0" : fav.UsableOrder}${asset.Description}${
 							dialogItem.Craft?.Name ?? ""
 						}`;
+					}
+					if (asset && asset.Name === "GlossyPantyhoseBody" && asset.AllowTighten && dialogItem) {
+						if (!Array.isArray(dialogItem.Icons)) dialogItem.Icons = [];
+						if (!dialogItem.Icons.includes("TightenLoosen")) {
+							dialogItem.Icons.push("TightenLoosen");
+						}
+						if (dialogItem.Worn) {
+							dialogItem.SortOrder = `0${asset.Description}${dialogItem.Craft?.Name ?? ""}`;
+						}
 					}
 					return dialogItem;
 				});
 			}
 
-			// Ensure Tighten / Loosen button is accessible for GlossyPantyhoseBody
+			// Restraints screen: Always sort currently worn / equipped items to the very top (index 0)
+			if (typeof window.DialogInventorySort === "function") {
+				mod.hookFunction("DialogInventorySort", 20, (args, next) => {
+					next(args);
+					if (Array.isArray(window.DialogInventory)) {
+						window.DialogInventory.sort((a, b) => {
+							const aWorn = a && a.Worn ? 1 : 0;
+							const bWorn = b && b.Worn ? 1 : 0;
+							if (aWorn !== bWorn) return bWorn - aWorn;
+							return (a?.SortOrder || "").localeCompare(b?.SortOrder || "", undefined, {
+								numeric: true,
+								sensitivity: "base",
+							});
+						});
+					}
+				});
+			}
+
+			// Ensure Tighten / Loosen button is accessible in top menu for GlossyPantyhoseBody even when hands bound
 			if (typeof window.DialogMenuButtonBuild === "function") {
 				mod.hookFunction("DialogMenuButtonBuild", 20, (args, next) => {
 					const res = next(args);
@@ -1169,12 +1204,32 @@
 					if (C && C.FocusGroup && Array.isArray(window.DialogMenuButton)) {
 						const item = typeof InventoryGet === "function" ? InventoryGet(C, C.FocusGroup.Name) : null;
 						if (item && item.Asset && item.Asset.Name === "GlossyPantyhoseBody" && item.Asset.AllowTighten) {
-							if (!window.DialogMenuButton.includes("TightenLoosen") && !window.DialogMenuButton.includes("Exit")) {
+							if (!window.DialogMenuButton.includes("TightenLoosen")) {
 								window.DialogMenuButton.push("TightenLoosen");
 							}
 						}
 					}
 					return res;
+				});
+			}
+
+			// Clicking worn GlossyPantyhoseBody directly opens BC's native Tighten / Loosen screen
+			if (typeof window.DialogItemClick === "function") {
+				mod.hookFunction("DialogItemClick", 25, (args, next) => {
+					const [ClickItem, C, CurrentItem] = args;
+					const targetItem = ClickItem || CurrentItem;
+					if (targetItem?.Asset?.Name === "GlossyPantyhoseBody" && targetItem.Asset.AllowTighten) {
+						const equipped = CurrentItem || (C && C.FocusGroup && typeof InventoryGet === "function" ? InventoryGet(C, C.FocusGroup.Name) : null);
+						if (equipped && equipped.Asset && equipped.Asset.Name === "GlossyPantyhoseBody") {
+							if (ClickItem?.Worn || ClickItem?.Asset?.Name === "GlossyPantyhoseBody" || !ClickItem) {
+								if (typeof DialogSetTightenLoosenItem === "function") {
+									DialogSetTightenLoosenItem(equipped);
+									return;
+								}
+							}
+						}
+					}
+					return next(args);
 				});
 			}
 
@@ -1194,14 +1249,21 @@
 									invItem = {
 										Asset: asset,
 										Worn: worn,
-										Icons: [],
-										SortOrder: `1${asset.Description}`,
+										Icons: ["TightenLoosen"],
+										SortOrder: `${worn ? "0" : "1"}${asset.Description}`,
 									};
 									window.DialogInventory.push(invItem);
 								} else {
-									invItem.SortOrder = `1${asset.Description}`;
+									invItem.Worn = worn;
+									invItem.SortOrder = `${worn ? "0" : "1"}${asset.Description}`;
+									if (unl.name === "GlossyPantyhoseBody" && Array.isArray(invItem.Icons) && !invItem.Icons.includes("TightenLoosen")) {
+										invItem.Icons.push("TightenLoosen");
+									}
 								}
 							}
+						}
+						if (typeof window.DialogInventorySort === "function") {
+							window.DialogInventorySort();
 						}
 					}
 					return res;
@@ -1230,8 +1292,12 @@
 								if (item && item.Asset && UNLOCKED_FLAT_NAMES.has(item.Asset.Name)) {
 									const currentItem = typeof InventoryGet === "function" ? InventoryGet(C, C.FocusGroup.Name) : null;
 									const worn = !!currentItem && currentItem.Asset.Name === item.Asset.Name;
-									if (worn && currentItem.Asset.Extended && typeof DialogExtendItem === "function") {
+									if (worn && currentItem.Asset.Name === "GlossyPantyhoseBody" && currentItem.Asset.AllowTighten && typeof DialogSetTightenLoosenItem === "function") {
+										DialogSetTightenLoosenItem(currentItem);
+										return;
+									} else if (worn && currentItem.Asset.Extended && typeof DialogExtendItem === "function") {
 										DialogExtendItem(currentItem);
+										return;
 									} else {
 										if (typeof CharacterAppearanceSetItem === "function") {
 											CharacterAppearanceSetItem(C, C.FocusGroup.Name, item.Asset);
@@ -1266,6 +1332,14 @@
 							}
 						}
 					}
+					return next(args);
+				});
+			}
+
+			// 10. Interface texts for custom previews and badges
+			if (typeof window.InterfaceTextGet === "function") {
+				mod.hookFunction("InterfaceTextGet", 20, (args, next) => {
+					if (args[0] === "PreviewIconTightenLoosen") return "Stringi / Allenta (Tightness)";
 					return next(args);
 				});
 			}

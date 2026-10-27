@@ -103,7 +103,8 @@ function create400x800Mask(size) {
     }
   }
 
-  // 2. Smooth outer contours along the legs to eliminate single-pixel jagged staircases/sbavature
+  // 2. Smooth outer contours along the calves (y=265 to 728) to eliminate single-pixel jagged staircases/sbavature
+  // From y >= 729 down to 757, follow the exact natural tapering contours of the ankles and feet without lateral expansion!
   const smoothMin = new Int32Array(800);
   const smoothMax = new Int32Array(800);
   for (let y = 0; y < 800; y++) {
@@ -111,22 +112,22 @@ function create400x800Mask(size) {
     smoothMax[y] = rawMax[y];
   }
 
-  for (let y = 265; y < 758; y++) {
+  for (let y = 265; y <= 728; y++) {
     if (rawMin[y] <= rawMax[y] && rawMin[y - 1] <= rawMax[y - 1] && rawMin[y + 1] <= rawMax[y + 1]) {
-      // 3-point envelope with 1px margin expansion for 100% complete coverage without skin slivers
+      // 3-point envelope with 1px margin expansion strictly for the calves
       smoothMin[y] = Math.min(rawMin[y], rawMin[y - 1], rawMin[y + 1]) - 1;
       smoothMax[y] = Math.max(rawMax[y], rawMax[y - 1], rawMax[y + 1]) + 1;
     }
   }
 
-  // 3. Build snug form-fitting mask with clean anti-aliasing
+  // 3. Build snug form-fitting mask with clean anti-aliasing (terminates cleanly at the soles y = 757 without excess)
   const mask = Buffer.alloc(400 * 800);
-  for (let y = 14; y < 765; y++) {
+  for (let y = 14; y <= 757; y++) {
     if (smoothMin[y] > smoothMax[y]) continue;
     for (let x = smoothMin[y]; x <= smoothMax[y]; x++) {
       mask[y * 400 + x] = 255;
     }
-    // Anti-aliased outer edge on the dilated boundary
+    // Anti-aliased outer edge on the boundary
     mask[y * 400 + smoothMin[y]] = 210;
     mask[y * 400 + smoothMax[y]] = 210;
   }
@@ -366,8 +367,8 @@ function generate400x800Layers(size) {
       }
     }
 
-    // Central seam line
-    if (mask[y * 400 + 200] > 50) {
+    // Central seam line (stops at ankle y=745, no seam under soles)
+    if (y <= 745 && mask[y * 400 + 200] > 50) {
       const idx = (y * 400 + 200) * 4;
       rawShadow[idx] = 0;
       rawShadow[idx + 1] = 0;
