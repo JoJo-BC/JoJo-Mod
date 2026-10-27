@@ -21,13 +21,27 @@ const OUT_DIR = path.join(MOD_DIR, "assets", "Assets", "Female3DCG", "ItemArms")
 const PREVIEW_DIR = path.join(OUT_DIR, "Preview");
 const TORSO_OUT_DIR = path.join(MOD_DIR, "assets", "Assets", "Female3DCG", "ItemTorso");
 const TORSO_PREVIEW_DIR = path.join(TORSO_OUT_DIR, "Preview");
+const TORSO2_OUT_DIR = path.join(MOD_DIR, "assets", "Assets", "Female3DCG", "ItemTorso2");
+const TORSO2_PREVIEW_DIR = path.join(TORSO2_OUT_DIR, "Preview");
 
 fs.mkdirSync(OUT_DIR, { recursive: true });
 fs.mkdirSync(PREVIEW_DIR, { recursive: true });
 fs.mkdirSync(TORSO_OUT_DIR, { recursive: true });
 fs.mkdirSync(TORSO_PREVIEW_DIR, { recursive: true });
+fs.mkdirSync(TORSO2_OUT_DIR, { recursive: true });
+fs.mkdirSync(TORSO2_PREVIEW_DIR, { recursive: true });
 
 const vanillaPanty = parsePng(fs.readFileSync(path.join(REF_DIR, "ItemArms", "PantyhoseBody_Small.png")));
+const vMin = new Int32Array(800).fill(999);
+const vMax = new Int32Array(800).fill(-1);
+for (let y = 0; y < 800; y++) {
+  for (let x = 0; x < 400; x++) {
+    if (vanillaPanty.pixels[(y * 400 + x) * 4 + 3] > 15) {
+      if (x < vMin[y]) vMin[y] = x;
+      if (x > vMax[y]) vMax[y] = x;
+    }
+  }
+}
 
 function getMannequinCanvas(upperSize, legSizes) {
   const canvas = Buffer.alloc(500 * 1000);
@@ -89,8 +103,8 @@ function create400x800Mask(size, legSizeOverride) {
   const rawMin = new Int32Array(800).fill(999);
   const rawMax = new Int32Array(800).fill(-1);
 
-  // BodyUpper starts at y_ia = 7 (canvasY = 207)
-  for (let y = 7; y < 800; y++) {
+  // Starts at neckline y_ia = 23 (canvasY = 223), cleanly avoiding the neck column and chin!
+  for (let y = 23; y < 800; y++) {
     const cY = y + 200;
     if (cY < 1000) {
       for (let x = 0; x < 400; x++) {
@@ -103,8 +117,7 @@ function create400x800Mask(size, legSizeOverride) {
     }
   }
 
-  // 2. Smooth outer contours along the calves (y=265 to 728) to eliminate single-pixel jagged staircases/sbavature
-  // From y >= 729 down to 757, follow the exact natural tapering contours of the ankles and feet without lateral expansion!
+  // 2. Smooth outer contours
   const smoothMin = new Int32Array(800);
   const smoothMax = new Int32Array(800);
   for (let y = 0; y < 800; y++) {
@@ -112,39 +125,55 @@ function create400x800Mask(size, legSizeOverride) {
     smoothMax[y] = rawMax[y];
   }
 
-  // Clamping shoulder bounds for female bodies at y=30..70 (cY=230..270)
-  // to avoid lateral overflow beyond natural arm/shoulder contour
-  const isFemale = ["Small", "Normal", "Large", "XLarge"].includes(upperSize);
-  if (isFemale) {
-    const refShoulderMax = {
-      30: 246, 31: 249, 32: 252, 33: 255, 34: 257,
-      35: 260, 36: 261, 37: 262, 38: 264, 39: 265,
-      40: 266, 41: 267, 42: 267, 43: 268, 44: 268,
-      45: 269, 46: 270, 47: 270, 48: 271, 49: 271,
-      50: 272, 51: 272, 52: 273, 53: 273, 54: 273,
-      55: 274, 56: 274, 57: 274, 58: 274, 59: 274,
-      60: 275, 61: 275, 62: 275, 63: 275, 64: 275,
-      65: 275, 66: 275, 67: 274, 68: 274, 69: 274,
-      70: 274
-    };
-    for (let y = 30; y <= 70; y++) {
-      if (refShoulderMax[y] !== undefined && smoothMax[y] > refShoulderMax[y]) {
-        smoothMax[y] = refShoulderMax[y];
-      }
+  // Clavicle & shoulders (y = 23..70):
+  // Ensure full, seamless coverage of avatar's body and arms with zero exposed skin pixels!
+  for (let y = 23; y <= 70; y++) {
+    if (rawMin[y] <= rawMax[y]) {
+      smoothMin[y] = Math.min(rawMin[y], vMin[y]);
+      smoothMax[y] = Math.max(rawMax[y], vMax[y]);
     }
   }
 
-  // Smooth leg contour with weighted average without extra dilation margin (+1/-1 removed for form fit)
-  for (let y = 265; y <= 728; y++) {
+  // Torso and calves smoothing (y = 71..649)
+  for (let y = 71; y <= 649; y++) {
     if (rawMin[y] <= rawMax[y] && rawMin[y - 1] <= rawMax[y - 1] && rawMin[y + 1] <= rawMax[y + 1]) {
       smoothMin[y] = Math.round((rawMin[y - 1] + rawMin[y] * 2 + rawMin[y + 1]) / 4);
       smoothMax[y] = Math.round((rawMax[y - 1] + rawMax[y] * 2 + rawMax[y + 1]) / 4);
     }
   }
 
-  // 3. Build snug form-fitting mask with clean anti-aliasing (starts at y = 7, terminates at y = 757 without excess)
+  // Ankles & feet (y = 650..755):
+  // Snug elastic contour matching vanilla pantyhose silhouette, tightening around ankles and soles
+  let legOffset = 0;
+  let maxY = 752;
+  if (legSize === "Normal") {
+    legOffset = 2;
+    maxY = 753;
+  } else if (legSize === "Large") {
+    legOffset = 4;
+    maxY = 754;
+  } else if (legSize === "XLarge") {
+    legOffset = 6;
+    maxY = 755;
+  }
+
+  for (let y = 650; y <= maxY; y++) {
+    if (vMin[y] <= vMax[y]) {
+      smoothMin[y] = vMin[y] - legOffset;
+      smoothMax[y] = vMax[y] + legOffset;
+    } else {
+      smoothMin[y] = 999;
+      smoothMax[y] = -1;
+    }
+  }
+  for (let y = maxY + 1; y < 800; y++) {
+    smoothMin[y] = 999;
+    smoothMax[y] = -1;
+  }
+
+  // 3. Build snug form-fitting mask with clean anti-aliasing (starts at y = 23, terminates cleanly at maxY)
   const mask = Buffer.alloc(400 * 800);
-  for (let y = 7; y <= 757; y++) {
+  for (let y = 23; y <= maxY; y++) {
     if (smoothMin[y] > smoothMax[y]) continue;
     for (let x = smoothMin[y]; x <= smoothMax[y]; x++) {
       mask[y * 400 + x] = 255;
@@ -304,7 +333,7 @@ function generate400x800Layers(upperSize, legSizeOverride) {
     ...legHotspots,
   ];
 
-  for (let y = 7; y < 770; y++) {
+  for (let y = 23; y < 770; y++) {
     const { left, right, width, center } = smoothBounds[y];
     if (left === -1 || width < 10) continue;
 
@@ -495,6 +524,12 @@ for (const cfg of configs) {
   fs.writeFileSync(path.join(TORSO_OUT_DIR, `GlossyPantyhoseBody_${cfg.name}_Shadow.png`), encShd);
   fs.writeFileSync(path.join(TORSO_OUT_DIR, `GlossyPantyhoseBody_${cfg.name}_Highlight.png`), encHlt);
   fs.writeFileSync(path.join(TORSO_OUT_DIR, `GlossyPantyhoseBody_${cfg.name}.png`), encComp);
+
+  // Write to ItemTorso2
+  fs.writeFileSync(path.join(TORSO2_OUT_DIR, `GlossyPantyhoseBody_${cfg.name}_BaseColor.png`), encBase);
+  fs.writeFileSync(path.join(TORSO2_OUT_DIR, `GlossyPantyhoseBody_${cfg.name}_Shadow.png`), encShd);
+  fs.writeFileSync(path.join(TORSO2_OUT_DIR, `GlossyPantyhoseBody_${cfg.name}_Highlight.png`), encHlt);
+  fs.writeFileSync(path.join(TORSO2_OUT_DIR, `GlossyPantyhoseBody_${cfg.name}.png`), encComp);
 }
 
 // Generate High-Quality Selection Preview thumbnails (221x221, matching vanilla BC format)
@@ -613,8 +648,9 @@ function generatePreviewThumbnail() {
   const encodedThumb = encodePng(221, 221, thumb221);
   fs.writeFileSync(path.join(PREVIEW_DIR, "GlossyPantyhoseBody.png"), encodedThumb);
   fs.writeFileSync(path.join(TORSO_PREVIEW_DIR, "GlossyPantyhoseBody.png"), encodedThumb);
+  fs.writeFileSync(path.join(TORSO2_PREVIEW_DIR, "GlossyPantyhoseBody.png"), encodedThumb);
 }
 
 generatePreviewThumbnail();
 
-console.log("[JoJo-Mod] All assets and previews generated successfully for ItemArms and ItemTorso!");
+console.log("[JoJo-Mod] All assets and previews generated successfully for ItemArms, ItemTorso, and ItemTorso2!");

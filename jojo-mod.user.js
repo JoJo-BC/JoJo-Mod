@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         JoJo Flat-Chest & Male Avatar Compatibility Mod (BC R133+)
 // @namespace    https://jojo-bc.github.io/JoJo-Mod/
-// @version      1.5.0
+// @version      1.5.1
 // @description  Unlocks and maps flat-chest (FlatSmall / FlatMedium) and all body sizes clothes and restraints in Bondage Club (Glossy Bodystocking, Echo Latex Top 乳胶衣 & Latex Bottom, Pantyhose fullBody, Glossy Fullbody Pantyhose, etc.), 100% ModSDK & BCX compliant.
 // @author       JoJo-BC
 // @match        https://*.bondageprojects.elementfx.com/R*/*
@@ -24,17 +24,17 @@
 		window.CommonDrawAppearanceBuild = window.CommonDrawAppearanceBuild.__jojoOrigBuild;
 	}
 
-	if (window.__JoJoFlatModLoaded === "1.5.0") {
-		console.log("[JoJo-Mod] v1.5.0 already active, refreshing characters.");
+	if (window.__JoJoFlatModLoaded === "1.5.1") {
+		console.log("[JoJo-Mod] v1.5.1 already active, refreshing characters.");
 		if (typeof window.__JoJoFlatModRefreshAll === "function") {
 			window.__JoJoFlatModRefreshAll();
 		}
 		return;
 	}
-	window.__JoJoFlatModLoaded = "1.5.0";
+	window.__JoJoFlatModLoaded = "1.5.1";
 
 	const TAG = "[JoJo-Mod]";
-	const VERSION = "1.5.0";
+	const VERSION = "1.5.1";
 	const REPO_BASE_URL = "https://jojo-bc.github.io/JoJo-Mod/";
 
 	console.log(`${TAG} v${VERSION} initializing...`);
@@ -61,9 +61,10 @@
 		{ group: "ItemArms", name: "PantyhoseBody", fallbackToSmall: true, makeFreeInSession: true },
 		{ group: "ItemArms", name: "PantyhoseBodyOpen", fallbackToSmall: true, makeFreeInSession: true },
 
-		// Custom Restraints: Glossy Fullbody Pantyhose (Both ItemArms and ItemTorso slots)
+		// Custom Restraints: Glossy Fullbody Pantyhose (ItemArms, ItemTorso, and ItemTorso2 slots)
 		{ group: "ItemArms", name: "GlossyPantyhoseBody", fallbackToSmall: true, makeFreeInSession: true },
 		{ group: "ItemTorso", name: "GlossyPantyhoseBody", fallbackToSmall: true, makeFreeInSession: true },
+		{ group: "ItemTorso2", name: "GlossyPantyhoseBody", fallbackToSmall: true, makeFreeInSession: true },
 	];
 
 	/**
@@ -167,6 +168,43 @@
 		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_XLarge_Highlight.png",
 		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_XLarge_Shadow.png",
 		"Assets/Female3DCG/ItemTorso/Preview/GlossyPantyhoseBody.png",
+		"Assets/Female3DCG/ItemTorso2/GlossyPantyhoseBody_FlatMedium.png",
+		"Assets/Female3DCG/ItemTorso2/GlossyPantyhoseBody_FlatMedium_BaseColor.png",
+		"Assets/Female3DCG/ItemTorso2/GlossyPantyhoseBody_FlatMedium_Highlight.png",
+		"Assets/Female3DCG/ItemTorso2/GlossyPantyhoseBody_FlatMedium_LegsSmall.png",
+		"Assets/Female3DCG/ItemTorso2/GlossyPantyhoseBody_FlatMedium_LegsSmall_BaseColor.png",
+		"Assets/Female3DCG/ItemTorso2/GlossyPantyhoseBody_FlatMedium_LegsSmall_Highlight.png",
+		"Assets/Female3DCG/ItemTorso2/GlossyPantyhoseBody_FlatMedium_LegsSmall_Shadow.png",
+		"Assets/Female3DCG/ItemTorso2/GlossyPantyhoseBody_FlatMedium_Shadow.png",
+		"Assets/Female3DCG/ItemTorso2/GlossyPantyhoseBody_FlatSmall.png",
+		"Assets/Female3DCG/ItemTorso2/GlossyPantyhoseBody_FlatSmall_BaseColor.png",
+		"Assets/Female3DCG/ItemTorso2/GlossyPantyhoseBody_FlatSmall_Highlight.png",
+		"Assets/Female3DCG/ItemTorso2/GlossyPantyhoseBody_FlatSmall_Shadow.png",
+		"Assets/Female3DCG/ItemTorso2/GlossyPantyhoseBody_Large.png",
+		"Assets/Female3DCG/ItemTorso2/GlossyPantyhoseBody_Large_BaseColor.png",
+		"Assets/Female3DCG/ItemTorso2/GlossyPantyhoseBody_Large_Highlight.png",
+		"Assets/Female3DCG/ItemTorso2/GlossyPantyhoseBody_Large_LegsSmall.png",
+		"Assets/Female3DCG/ItemTorso2/GlossyPantyhoseBody_Large_LegsSmall_BaseColor.png",
+		"Assets/Female3DCG/ItemTorso2/GlossyPantyhoseBody_Large_LegsSmall_Highlight.png",
+		"Assets/Female3DCG/ItemTorso2/GlossyPantyhoseBody_Large_LegsSmall_Shadow.png",
+		"Assets/Female3DCG/ItemTorso2/GlossyPantyhoseBody_Large_Shadow.png",
+		"Assets/Female3DCG/ItemTorso2/GlossyPantyhoseBody_Normal.png",
+		"Assets/Female3DCG/ItemTorso2/GlossyPantyhoseBody_Normal_BaseColor.png",
+		"Assets/Female3DCG/ItemTorso2/GlossyPantyhoseBody_Normal_Highlight.png",
+		"Assets/Female3DCG/ItemTorso2/GlossyPantyhoseBody_Normal_LegsSmall.png",
+		"Assets/Female3DCG/ItemTorso2/GlossyPantyhoseBody_Normal_LegsSmall_BaseColor.png",
+		"Assets/Female3DCG/ItemTorso2/GlossyPantyhoseBody_Normal_LegsSmall_Highlight.png",
+		"Assets/Female3DCG/ItemTorso2/GlossyPantyhoseBody_Normal_LegsSmall_Shadow.png",
+		"Assets/Female3DCG/ItemTorso2/GlossyPantyhoseBody_Normal_Shadow.png",
+		"Assets/Female3DCG/ItemTorso2/GlossyPantyhoseBody_Small.png",
+		"Assets/Female3DCG/ItemTorso2/GlossyPantyhoseBody_Small_BaseColor.png",
+		"Assets/Female3DCG/ItemTorso2/GlossyPantyhoseBody_Small_Highlight.png",
+		"Assets/Female3DCG/ItemTorso2/GlossyPantyhoseBody_Small_Shadow.png",
+		"Assets/Female3DCG/ItemTorso2/GlossyPantyhoseBody_XLarge.png",
+		"Assets/Female3DCG/ItemTorso2/GlossyPantyhoseBody_XLarge_BaseColor.png",
+		"Assets/Female3DCG/ItemTorso2/GlossyPantyhoseBody_XLarge_Highlight.png",
+		"Assets/Female3DCG/ItemTorso2/GlossyPantyhoseBody_XLarge_Shadow.png",
+		"Assets/Female3DCG/ItemTorso2/Preview/GlossyPantyhoseBody.png",
 		"Assets/Female3DCG/Suit/BackBoxTie/GlossyBodystocking_FlatMedium_A2.png",
 		"Assets/Female3DCG/Suit/BackBoxTie/GlossyBodystocking_FlatMedium_A3.png",
 		"Assets/Female3DCG/Suit/BackBoxTie/GlossyBodystocking_FlatMedium_A4.png",
@@ -646,10 +684,13 @@
 		const cleanSrc =
 			assetsIdx !== -1 ? decoded.slice(assetsIdx) : decoded.startsWith("./") ? decoded.slice(2) : decoded;
 
-		// Normalize ItemTorso/GlossyPantyhoseBody to ItemArms/GlossyPantyhoseBody
+		// Normalize ItemTorso/GlossyPantyhoseBody and ItemTorso2/GlossyPantyhoseBody to ItemArms/GlossyPantyhoseBody
 		let canonicalSrc = cleanSrc;
-		if (canonicalSrc.includes("ItemTorso/") && canonicalSrc.includes("GlossyPantyhoseBody")) {
-			canonicalSrc = canonicalSrc.replace("ItemTorso/", "ItemArms/");
+		if (
+			(canonicalSrc.includes("ItemTorso/") || canonicalSrc.includes("ItemTorso2/")) &&
+			canonicalSrc.includes("GlossyPantyhoseBody")
+		) {
+			canonicalSrc = canonicalSrc.replace(/ItemTorso2?\//, "ItemArms/");
 		}
 
 		// Preview fallback for GlossyPantyhoseBody
@@ -926,6 +967,97 @@
 				if (Array.isArray(window.Asset)) window.Asset.push(torsoAsset);
 			}
 			console.log(`${TAG} Registered custom restraint: ItemTorso / GlossyPantyhoseBody`);
+		}
+
+		// 3. ItemTorso2 slot (second torso slot)
+		const groupTorso2 = AssetGroupGet("Female3DCG", "ItemTorso2");
+		let torso2Asset = AssetGet("Female3DCG", "ItemTorso2", "GlossyPantyhoseBody");
+		if (torso2Asset) {
+			torso2Asset.Extended = false;
+			torso2Asset.AllowTighten = true;
+			torso2Asset.IsRestraint = true;
+			torso2Asset.SetPose = ["BackElbowTouch", "LegsClosed"];
+			torso2Asset.AllowPose = [
+				"BackElbowTouch",
+				"BackBoxTie",
+				"BackCuffs",
+				"Yoked",
+				"OverTheHead",
+				"LegsClosed",
+			];
+			torso2Asset.Effect = ["Block", "BlockWardrobe", "Slow"];
+			torso2Asset.Block = [
+				"ItemHands",
+				"ItemHandheld",
+				"ItemVulva",
+				"ItemButt",
+				"ItemVulvaPiercings",
+				"ItemNipplesPiercings",
+			];
+			torso2Asset.Left = 50;
+			torso2Asset.Top = 200;
+			torso2Asset.DrawingLeft = 50;
+			torso2Asset.DrawingTop = 200;
+		} else if (groupTorso2 && Array.isArray(groupTorso2.Asset)) {
+			torso2Asset = {
+				Name: "GlossyPantyhoseBody",
+				Description: "Glossy Fullbody Pantyhose (Torso 2)",
+				Group: groupTorso2,
+				ParentItem: groupTorso2.Name,
+				Left: 50,
+				Top: 200,
+				DrawingLeft: 50,
+				DrawingTop: 200,
+				AllowColorize: true,
+				Value: 0,
+				Difficulty: 6,
+				SelfBondage: 0,
+				Time: 25,
+				RemoveTime: 20,
+				IsRestraint: true,
+				AllowLock: true,
+				AllowTighten: true,
+				Extended: false,
+				SetPose: ["BackElbowTouch", "LegsClosed"],
+				AllowPose: [
+					"BackElbowTouch",
+					"BackBoxTie",
+					"BackCuffs",
+					"Yoked",
+					"OverTheHead",
+					"LegsClosed",
+				],
+				Effect: ["Block", "BlockWardrobe", "Slow"],
+				Hide: ["Cloth", "ClothLower", "Suit", "SuitLower", "Garters"],
+				Block: [
+					"ItemHands",
+					"ItemHandheld",
+					"ItemVulva",
+					"ItemButt",
+					"ItemVulvaPiercings",
+					"ItemNipplesPiercings",
+				],
+				Audio: "ClothSlip",
+				Layer: [
+					{ Name: "BaseColor", AllowColorize: true, Left: 50, Top: 200, DrawingLeft: 50, DrawingTop: 200 },
+					{ Name: "Shadow", AllowColorize: false, Left: 50, Top: 200, DrawingLeft: 50, DrawingTop: 200 },
+					{ Name: "Highlight", AllowColorize: false, Left: 50, Top: 200, DrawingLeft: 50, DrawingTop: 200 },
+				],
+				DefaultColor: ["#1e1e24"],
+			};
+
+			if (typeof window.AssetAdd === "function") {
+				try {
+					window.AssetAdd(groupTorso2, torso2Asset);
+				} catch (_) {
+					groupTorso2.Asset.push(torso2Asset);
+					if (Array.isArray(window.Asset)) window.Asset.push(torso2Asset);
+				}
+			} else {
+				groupTorso2.Asset.push(torso2Asset);
+				if (Array.isArray(window.Asset)) window.Asset.push(torso2Asset);
+			}
+			console.log(`${TAG} Registered custom restraint: ItemTorso2 / GlossyPantyhoseBody`);
 		}
 	}
 
