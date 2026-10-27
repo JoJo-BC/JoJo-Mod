@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         JoJo Flat-Chest & Male Avatar Compatibility Mod (BC R133+)
 // @namespace    https://jojo-bc.github.io/JoJo-Mod/
-// @version      1.4.8
+// @version      1.4.9
 // @description  Unlocks and maps flat-chest (FlatSmall / FlatMedium) and all body sizes clothes and restraints in Bondage Club (Glossy Bodystocking, Echo Latex Top 乳胶衣 & Latex Bottom, Pantyhose fullBody, Glossy Fullbody Pantyhose, etc.), 100% ModSDK & BCX compliant.
 // @author       JoJo-BC
 // @match        https://*.bondageprojects.elementfx.com/R*/*
@@ -24,17 +24,17 @@
 		window.CommonDrawAppearanceBuild = window.CommonDrawAppearanceBuild.__jojoOrigBuild;
 	}
 
-	if (window.__JoJoFlatModLoaded === "1.4.8") {
-		console.log("[JoJo-Mod] v1.4.8 already active, refreshing characters.");
+	if (window.__JoJoFlatModLoaded === "1.4.9") {
+		console.log("[JoJo-Mod] v1.4.9 already active, refreshing characters.");
 		if (typeof window.__JoJoFlatModRefreshAll === "function") {
 			window.__JoJoFlatModRefreshAll();
 		}
 		return;
 	}
-	window.__JoJoFlatModLoaded = "1.4.8";
+	window.__JoJoFlatModLoaded = "1.4.9";
 
 	const TAG = "[JoJo-Mod]";
-	const VERSION = "1.4.8";
+	const VERSION = "1.4.9";
 	const REPO_BASE_URL = "https://jojo-bc.github.io/JoJo-Mod/";
 
 	console.log(`${TAG} v${VERSION} initializing...`);
@@ -737,9 +737,10 @@
 				SelfBondage: 0,
 				Time: 25,
 				RemoveTime: 20,
+				IsRestraint: true,
 				AllowLock: true,
 				AllowTighten: true,
-				Extended: true,
+				Extended: false,
 				SetPose: ["BackElbowTouch", "LegsClosed"],
 				AllowPose: [
 					"BackElbowTouch",
@@ -786,8 +787,9 @@
 		const groupTorso = AssetGroupGet("Female3DCG", "ItemTorso");
 		let torsoAsset = AssetGet("Female3DCG", "ItemTorso", "GlossyPantyhoseBody");
 		if (torsoAsset) {
-			torsoAsset.Extended = true;
+			torsoAsset.Extended = false;
 			torsoAsset.AllowTighten = true;
+			torsoAsset.IsRestraint = true;
 			torsoAsset.SetPose = ["BackElbowTouch", "LegsClosed"];
 			torsoAsset.AllowPose = [
 				"BackElbowTouch",
@@ -826,9 +828,10 @@
 				SelfBondage: 0,
 				Time: 25,
 				RemoveTime: 20,
+				IsRestraint: true,
 				AllowLock: true,
 				AllowTighten: true,
-				Extended: true,
+				Extended: false,
 				SetPose: ["BackElbowTouch", "LegsClosed"],
 				AllowPose: [
 					"BackElbowTouch",
@@ -1160,38 +1163,25 @@
 						const fav =
 							typeof window.DialogGetFavoriteStateDetails === "function"
 								? window.DialogGetFavoriteStateDetails(args[0], asset)
-								: { UsableOrder: 1 };
-						dialogItem.SortOrder = `${dialogItem.Worn ? "0" : fav.UsableOrder}${asset.Description}${
+								: { UsableOrder: 6 };
+						dialogItem.SortOrder = `${dialogItem.Worn ? "1" : (fav?.UsableOrder ?? 6)}${asset.Description}${
 							dialogItem.Craft?.Name ?? ""
 						}`;
-					}
-					if (asset && asset.Name === "GlossyPantyhoseBody" && asset.AllowTighten && dialogItem) {
-						if (!Array.isArray(dialogItem.Icons)) dialogItem.Icons = [];
-						if (!dialogItem.Icons.includes("TightenLoosen")) {
-							dialogItem.Icons.push("TightenLoosen");
-						}
-						if (dialogItem.Worn) {
-							dialogItem.SortOrder = `0${asset.Description}${dialogItem.Craft?.Name ?? ""}`;
-						}
 					}
 					return dialogItem;
 				});
 			}
 
-			// Restraints screen: Always sort currently worn / equipped items to the very top (index 0)
+			// Restraints screen: If an item is currently worn, ensure it is at index 0 (top-left)
 			if (typeof window.DialogInventorySort === "function") {
 				mod.hookFunction("DialogInventorySort", 20, (args, next) => {
 					next(args);
 					if (Array.isArray(window.DialogInventory)) {
-						window.DialogInventory.sort((a, b) => {
-							const aWorn = a && a.Worn ? 1 : 0;
-							const bWorn = b && b.Worn ? 1 : 0;
-							if (aWorn !== bWorn) return bWorn - aWorn;
-							return (a?.SortOrder || "").localeCompare(b?.SortOrder || "", undefined, {
-								numeric: true,
-								sensitivity: "base",
-							});
-						});
+						const wornIdx = window.DialogInventory.findIndex((i) => i && i.Worn === true);
+						if (wornIdx > 0) {
+							const [wornItem] = window.DialogInventory.splice(wornIdx, 1);
+							window.DialogInventory.unshift(wornItem);
+						}
 					}
 				});
 			}
@@ -1217,15 +1207,11 @@
 			if (typeof window.DialogItemClick === "function") {
 				mod.hookFunction("DialogItemClick", 25, (args, next) => {
 					const [ClickItem, C, CurrentItem] = args;
-					const targetItem = ClickItem || CurrentItem;
-					if (targetItem?.Asset?.Name === "GlossyPantyhoseBody" && targetItem.Asset.AllowTighten) {
-						const equipped = CurrentItem || (C && C.FocusGroup && typeof InventoryGet === "function" ? InventoryGet(C, C.FocusGroup.Name) : null);
-						if (equipped && equipped.Asset && equipped.Asset.Name === "GlossyPantyhoseBody") {
-							if (ClickItem?.Worn || ClickItem?.Asset?.Name === "GlossyPantyhoseBody" || !ClickItem) {
-								if (typeof DialogSetTightenLoosenItem === "function") {
-									DialogSetTightenLoosenItem(equipped);
-									return;
-								}
+					if (CurrentItem && CurrentItem.Asset && CurrentItem.Asset.Name === "GlossyPantyhoseBody" && CurrentItem.Asset.AllowTighten) {
+						if (ClickItem && ClickItem.Asset && ClickItem.Asset.Name === "GlossyPantyhoseBody") {
+							if (typeof DialogSetTightenLoosenItem === "function") {
+								DialogSetTightenLoosenItem(CurrentItem);
+								return;
 							}
 						}
 					}
@@ -1237,6 +1223,10 @@
 			if (typeof window.DialogInventoryBuild === "function") {
 				mod.hookFunction("DialogInventoryBuild", 25, (args, next) => {
 					const res = next(args);
+					// ONLY run in Wardrobe / Appearance screen (Cloth mode)! NEVER in restraints mode!
+					if (typeof window.CharacterAppearanceMode === "undefined" || window.CharacterAppearanceMode !== "Cloth") {
+						return res;
+					}
 					const C = args[0] || window.CharacterAppearanceSelection || (typeof Player !== "undefined" ? Player : null);
 					if (C && C.FocusGroup && Array.isArray(window.DialogInventory)) {
 						for (const unl of UNLOCKED_FLAT_ASSETS) {
@@ -1249,21 +1239,15 @@
 									invItem = {
 										Asset: asset,
 										Worn: worn,
-										Icons: ["TightenLoosen"],
-										SortOrder: `${worn ? "0" : "1"}${asset.Description}`,
+										Icons: [],
+										SortOrder: `${worn ? "1" : "6"}${asset.Description}`,
 									};
 									window.DialogInventory.push(invItem);
 								} else {
 									invItem.Worn = worn;
-									invItem.SortOrder = `${worn ? "0" : "1"}${asset.Description}`;
-									if (unl.name === "GlossyPantyhoseBody" && Array.isArray(invItem.Icons) && !invItem.Icons.includes("TightenLoosen")) {
-										invItem.Icons.push("TightenLoosen");
-									}
+									invItem.SortOrder = `${worn ? "1" : "6"}${asset.Description}`;
 								}
 							}
-						}
-						if (typeof window.DialogInventorySort === "function") {
-							window.DialogInventorySort();
 						}
 					}
 					return res;
@@ -1404,7 +1388,7 @@
 			}
 
 			// If Wardrobe / Appearance screen is currently open, refresh grouped assets and live DialogInventory
-			if (typeof window.DialogInventory !== "undefined" && Array.isArray(window.DialogInventory)) {
+			if (typeof window.CharacterAppearanceMode !== "undefined" && window.CharacterAppearanceMode === "Cloth" && Array.isArray(window.DialogInventory)) {
 				for (const item of window.DialogInventory) {
 					if (item && item.Asset && UNLOCKED_FLAT_NAMES.has(item.Asset.Name)) {
 						const fav =
@@ -1414,8 +1398,8 @@
 										window.CharacterAppearanceSelection || window.Player,
 										item.Asset
 								  )
-								: { UsableOrder: 1 };
-						item.SortOrder = `${fav.UsableOrder}${item.Asset.Description}${
+								: { UsableOrder: 6 };
+						item.SortOrder = `${item.Worn ? "1" : (fav?.UsableOrder ?? 6)}${item.Asset.Description}${
 							item.Craft?.Name ?? ""
 						}`;
 					}
