@@ -11,11 +11,11 @@ Tutte le immagini sorgente del mod si trovano sul tuo computer nella cartella:
 C:\Users\Admin\Documents\BC\JoJo-Mod\assets\Assets\Female3DCG\
 ```
 
-Per il restraint **Glossy Pantyhose Body** (corpo intero elastico lucido con braccia bloccate dietro la schiena), i file master si trovano in:
+Per il restraint **Glossy Pantyhose Body** (corpo intero elastico lucido con braccia bloccate dietro la schiena), tutti i file si trovano **esclusivamente** in:
 ```text
 C:\Users\Admin\Documents\BC\JoJo-Mod\assets\Assets\Female3DCG\ItemArms\
 ```
-*(Le cartelle `ItemTorso/` e `ItemTorso2/` contengono le repliche speculari identiche per i due slot del torso).*
+*(Grazie alla proprietà nativa di Bondage Club `DynamicGroupName: "ItemArms"`, i due slot `ItemTorso` e `ItemTorso2` attingono direttamente e in automatico da questa stessa cartella: **non serve copiare o duplicare nulla!**).*
 
 ---
 
@@ -42,17 +42,27 @@ Ogni variante corporea è suddivisa in **3 livelli (layers)** trasparenti (risol
 
 ## 💾 3. Mi basta modificarla e salvarla con lo stesso nome?
 
-**SÌ, assolutamente!**
-1. Apri il PNG con il tuo programma di grafica preferito (es. Photoshop o GIMP).
+**SÌ, al 100%!**
+1. Apri il file PNG desiderato dentro `ItemArms/` con il tuo programma di grafica preferito (es. Photoshop o GIMP).
 2. Effettua le correzioni (es. togli o aggiungi pixel al bordo, regola la trasparenza).
-3. Salva sovrascrivendo il file con lo **stesso identico nome** e in formato **PNG RGBA (32-bit trasparente)**.
-4. Per aggiornare anche gli slot del torso: puoi copiare il file modificato dentro `ItemTorso/` e `ItemTorso2/` oppure eseguire da terminale:
-   ```bash
-   node JoJo-Mod/tools/build-glossy-pantyhose.js
-   ```
-5. Per pubblicare subito la modifica su GitHub Pages e vederla nel gioco reale:
+3. Salva sovrascrivendo il file con lo **stesso identico nome** in formato **PNG RGBA (32-bit trasparente)**.
+4. **Non devi fare nient'altro per gli slot del torso!** Essendo condivisi, la modifica viene applicata istantaneamente a tutti e tre gli slot (`ItemArms`, `ItemTorso`, `ItemTorso2`).
+5. Per pubblicare la modifica online e vederla nel gioco reale:
    ```bash
    node JoJo-Mod/publish.js push "Rifinito bordo spalle e piedi"
+   ```
+
+---
+
+## 🌐 4. Perché i file sono anche su GitHub?
+
+Quando giochi a Bondage Club nel browser, il gioco viene eseguito online e carica le immagini via web (HTTP/HTTPS). 
+Il tuo script `jojo-mod.user.js` intercetta le richieste di disegno e, quando deve mostrare il restraint, scarica i PNG trasparenti direttamente dal tuo repository GitHub Pages:
+```text
+https://jojo-bc.github.io/JoJo-Mod/assets/Assets/Female3DCG/...
+```
+- **In Locale (sul tuo PC)**: Modifichi i file grafici e puoi provarli all'istante aprendo [JoJo-Studio](studio/index.html) o trascinando l'immagine (Drag & Drop) senza passare per internet.
+- **Su GitHub (Online)**: Il comando `node JoJo-Mod/publish.js push` carica i file modificati sul tuo GitHub in 3 secondi, così quando apri Bondage Club nel browser il gioco scarica subito la versione aggiornata!
    ```
 
 ---

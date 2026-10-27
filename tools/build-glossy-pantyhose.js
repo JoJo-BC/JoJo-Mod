@@ -510,7 +510,7 @@ for (const cfg of configs) {
   const encHlt = encodePng(400, 800, layers.highlight);
   const encComp = encodePng(400, 800, layers.composite);
 
-  // Write to ItemArms
+  // Write to ItemArms (single source of truth; ItemTorso and ItemTorso2 reference this via DynamicGroupName)
   fs.writeFileSync(path.join(OUT_DIR, `GlossyPantyhoseBody_${cfg.name}_BaseColor.png`), encBase);
   fs.writeFileSync(path.join(OUT_DIR, `GlossyPantyhoseBody_${cfg.name}_Shadow.png`), encShd);
   fs.writeFileSync(path.join(OUT_DIR, `GlossyPantyhoseBody_${cfg.name}_Highlight.png`), encHlt);
@@ -518,18 +518,6 @@ for (const cfg of configs) {
   if (!cfg.name.includes("_LegsSmall")) {
     fs.writeFileSync(path.join(OUT_DIR, `PantyhoseBody_${cfg.name}.png`), encComp);
   }
-
-  // Write to ItemTorso
-  fs.writeFileSync(path.join(TORSO_OUT_DIR, `GlossyPantyhoseBody_${cfg.name}_BaseColor.png`), encBase);
-  fs.writeFileSync(path.join(TORSO_OUT_DIR, `GlossyPantyhoseBody_${cfg.name}_Shadow.png`), encShd);
-  fs.writeFileSync(path.join(TORSO_OUT_DIR, `GlossyPantyhoseBody_${cfg.name}_Highlight.png`), encHlt);
-  fs.writeFileSync(path.join(TORSO_OUT_DIR, `GlossyPantyhoseBody_${cfg.name}.png`), encComp);
-
-  // Write to ItemTorso2
-  fs.writeFileSync(path.join(TORSO2_OUT_DIR, `GlossyPantyhoseBody_${cfg.name}_BaseColor.png`), encBase);
-  fs.writeFileSync(path.join(TORSO2_OUT_DIR, `GlossyPantyhoseBody_${cfg.name}_Shadow.png`), encShd);
-  fs.writeFileSync(path.join(TORSO2_OUT_DIR, `GlossyPantyhoseBody_${cfg.name}_Highlight.png`), encHlt);
-  fs.writeFileSync(path.join(TORSO2_OUT_DIR, `GlossyPantyhoseBody_${cfg.name}.png`), encComp);
 }
 
 // Generate High-Quality Selection Preview thumbnails (221x221, matching vanilla BC format)
@@ -647,10 +635,8 @@ function generatePreviewThumbnail() {
 
   const encodedThumb = encodePng(221, 221, thumb221);
   fs.writeFileSync(path.join(PREVIEW_DIR, "GlossyPantyhoseBody.png"), encodedThumb);
-  fs.writeFileSync(path.join(TORSO_PREVIEW_DIR, "GlossyPantyhoseBody.png"), encodedThumb);
-  fs.writeFileSync(path.join(TORSO2_PREVIEW_DIR, "GlossyPantyhoseBody.png"), encodedThumb);
 }
 
 generatePreviewThumbnail();
 
-console.log("[JoJo-Mod] All assets and previews generated successfully for ItemArms, ItemTorso, and ItemTorso2!");
+console.log("[JoJo-Mod] All assets and previews generated successfully for ItemArms (shared with ItemTorso & ItemTorso2)!");
