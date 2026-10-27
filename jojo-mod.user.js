@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         JoJo Flat-Chest & Male Avatar Compatibility Mod (BC R133+)
 // @namespace    https://jojo-bc.github.io/JoJo-Mod/
-// @version      1.4.6
+// @version      1.4.7
 // @description  Unlocks and maps flat-chest (FlatSmall / FlatMedium) and all body sizes clothes and restraints in Bondage Club (Glossy Bodystocking, Echo Latex Top 乳胶衣 & Latex Bottom, Pantyhose fullBody, Glossy Fullbody Pantyhose, etc.), 100% ModSDK & BCX compliant.
 // @author       JoJo-BC
 // @match        https://*.bondageprojects.elementfx.com/R*/*
@@ -24,17 +24,17 @@
 		window.CommonDrawAppearanceBuild = window.CommonDrawAppearanceBuild.__jojoOrigBuild;
 	}
 
-	if (window.__JoJoFlatModLoaded === "1.4.6") {
-		console.log("[JoJo-Mod] v1.4.6 already active, refreshing characters.");
+	if (window.__JoJoFlatModLoaded === "1.4.7") {
+		console.log("[JoJo-Mod] v1.4.7 already active, refreshing characters.");
 		if (typeof window.__JoJoFlatModRefreshAll === "function") {
 			window.__JoJoFlatModRefreshAll();
 		}
 		return;
 	}
-	window.__JoJoFlatModLoaded = "1.4.6";
+	window.__JoJoFlatModLoaded = "1.4.7";
 
 	const TAG = "[JoJo-Mod]";
-	const VERSION = "1.4.6";
+	const VERSION = "1.4.7";
 	const REPO_BASE_URL = "https://jojo-bc.github.io/JoJo-Mod/";
 
 	console.log(`${TAG} v${VERSION} initializing...`);
@@ -708,6 +708,7 @@
 		const groupArms = AssetGroupGet("Female3DCG", "ItemArms");
 		let armsAsset = AssetGet("Female3DCG", "ItemArms", "GlossyPantyhoseBody");
 		if (armsAsset) {
+			armsAsset.AllowTighten = true;
 			armsAsset.SetPose = ["BackElbowTouch", "LegsClosed"];
 			armsAsset.AllowPose = ["BackElbowTouch", "BackBoxTie", "BackCuffs", "Yoked", "OverTheHead", "LegsClosed"];
 			armsAsset.Effect = ["Block", "BlockWardrobe", "Slow"];
@@ -732,6 +733,7 @@
 				Time: 25,
 				RemoveTime: 20,
 				AllowLock: true,
+				AllowTighten: true,
 				SetPose: ["BackElbowTouch", "LegsClosed"],
 				AllowPose: [
 					"BackElbowTouch",
@@ -778,6 +780,7 @@
 		const groupTorso = AssetGroupGet("Female3DCG", "ItemTorso");
 		let torsoAsset = AssetGet("Female3DCG", "ItemTorso", "GlossyPantyhoseBody");
 		if (torsoAsset) {
+			torsoAsset.AllowTighten = true;
 			torsoAsset.SetPose = ["BackElbowTouch", "LegsClosed"];
 			torsoAsset.AllowPose = [
 				"BackElbowTouch",
@@ -817,6 +820,7 @@
 				Time: 25,
 				RemoveTime: 20,
 				AllowLock: true,
+				AllowTighten: true,
 				SetPose: ["BackElbowTouch", "LegsClosed"],
 				AllowPose: [
 					"BackElbowTouch",
@@ -1154,6 +1158,23 @@
 						}`;
 					}
 					return dialogItem;
+				});
+			}
+
+			// Ensure Tighten / Loosen button is accessible for GlossyPantyhoseBody
+			if (typeof window.DialogMenuButtonBuild === "function") {
+				mod.hookFunction("DialogMenuButtonBuild", 20, (args, next) => {
+					const res = next(args);
+					const C = args[0];
+					if (C && C.FocusGroup && Array.isArray(window.DialogMenuButton)) {
+						const item = typeof InventoryGet === "function" ? InventoryGet(C, C.FocusGroup.Name) : null;
+						if (item && item.Asset && item.Asset.Name === "GlossyPantyhoseBody" && item.Asset.AllowTighten) {
+							if (!window.DialogMenuButton.includes("TightenLoosen") && !window.DialogMenuButton.includes("Exit")) {
+								window.DialogMenuButton.push("TightenLoosen");
+							}
+						}
+					}
+					return res;
 				});
 			}
 
