@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         JoJo Flat-Chest & Male Avatar Compatibility Mod (BC R133+)
 // @namespace    https://jojo-bc.github.io/JoJo-Mod/
-// @version      1.5.1
+// @version      1.5.2
 // @description  Unlocks and maps flat-chest (FlatSmall / FlatMedium) and all body sizes clothes and restraints in Bondage Club (Glossy Bodystocking, Echo Latex Top 乳胶衣 & Latex Bottom, Pantyhose fullBody, Glossy Fullbody Pantyhose, etc.), 100% ModSDK & BCX compliant.
 // @author       JoJo-BC
 // @match        https://*.bondageprojects.elementfx.com/R*/*
@@ -885,6 +885,10 @@
 			torsoAsset.Extended = false;
 			torsoAsset.AllowTighten = true;
 			torsoAsset.IsRestraint = true;
+			torsoAsset.Priority = 15;
+			torsoAsset.DynamicGroupName = "ItemTorso";
+			delete torsoAsset.ParentItem;
+			torsoAsset.RemoveItemOnRemove = [];
 			torsoAsset.SetPose = ["BackElbowTouch", "LegsClosed"];
 			torsoAsset.AllowPose = [
 				"BackElbowTouch",
@@ -907,12 +911,18 @@
 			torsoAsset.Top = 200;
 			torsoAsset.DrawingLeft = 50;
 			torsoAsset.DrawingTop = 200;
+			if (Array.isArray(torsoAsset.Layer)) {
+				for (const l of torsoAsset.Layer) {
+					l.Priority = 15;
+				}
+			}
 		} else if (groupTorso && Array.isArray(groupTorso.Asset)) {
 			torsoAsset = {
 				Name: "GlossyPantyhoseBody",
 				Description: "Glossy Fullbody Pantyhose (Torso)",
 				Group: groupTorso,
-				ParentItem: groupTorso.Name,
+				DynamicGroupName: "ItemTorso",
+				Priority: 15,
 				Left: 50,
 				Top: 200,
 				DrawingLeft: 50,
@@ -946,11 +956,12 @@
 					"ItemVulvaPiercings",
 					"ItemNipplesPiercings",
 				],
+				RemoveItemOnRemove: [],
 				Audio: "ClothSlip",
 				Layer: [
-					{ Name: "BaseColor", AllowColorize: true, Left: 50, Top: 200, DrawingLeft: 50, DrawingTop: 200 },
-					{ Name: "Shadow", AllowColorize: false, Left: 50, Top: 200, DrawingLeft: 50, DrawingTop: 200 },
-					{ Name: "Highlight", AllowColorize: false, Left: 50, Top: 200, DrawingLeft: 50, DrawingTop: 200 },
+					{ Name: "BaseColor", Priority: 15, AllowColorize: true, Left: 50, Top: 200, DrawingLeft: 50, DrawingTop: 200 },
+					{ Name: "Shadow", Priority: 15, AllowColorize: false, Left: 50, Top: 200, DrawingLeft: 50, DrawingTop: 200 },
+					{ Name: "Highlight", Priority: 15, AllowColorize: false, Left: 50, Top: 200, DrawingLeft: 50, DrawingTop: 200 },
 				],
 				DefaultColor: ["#1e1e24"],
 			};
@@ -969,13 +980,17 @@
 			console.log(`${TAG} Registered custom restraint: ItemTorso / GlossyPantyhoseBody`);
 		}
 
-		// 3. ItemTorso2 slot (second torso slot)
+		// 3. ItemTorso2 slot (second torso slot - coexists independently with ItemTorso)
 		const groupTorso2 = AssetGroupGet("Female3DCG", "ItemTorso2");
 		let torso2Asset = AssetGet("Female3DCG", "ItemTorso2", "GlossyPantyhoseBody");
 		if (torso2Asset) {
 			torso2Asset.Extended = false;
 			torso2Asset.AllowTighten = true;
 			torso2Asset.IsRestraint = true;
+			torso2Asset.Priority = 15;
+			torso2Asset.DynamicGroupName = "ItemTorso";
+			delete torso2Asset.ParentItem;
+			torso2Asset.RemoveItemOnRemove = [];
 			torso2Asset.SetPose = ["BackElbowTouch", "LegsClosed"];
 			torso2Asset.AllowPose = [
 				"BackElbowTouch",
@@ -998,12 +1013,23 @@
 			torso2Asset.Top = 200;
 			torso2Asset.DrawingLeft = 50;
 			torso2Asset.DrawingTop = 200;
+			if (Array.isArray(torso2Asset.Layer)) {
+				for (const l of torso2Asset.Layer) {
+					l.Priority = 15;
+				}
+			}
 		} else if (groupTorso2 && Array.isArray(groupTorso2.Asset)) {
 			torso2Asset = {
 				Name: "GlossyPantyhoseBody",
 				Description: "Glossy Fullbody Pantyhose (Torso 2)",
 				Group: groupTorso2,
-				ParentItem: groupTorso2.Name,
+				DynamicGroupName: "ItemTorso",
+				Priority: 15,
+				CopyConfig: {
+					AssetName: "GlossyPantyhoseBody",
+					GroupName: "ItemTorso",
+					BuyGroup: true,
+				},
 				Left: 50,
 				Top: 200,
 				DrawingLeft: 50,
@@ -1037,11 +1063,12 @@
 					"ItemVulvaPiercings",
 					"ItemNipplesPiercings",
 				],
+				RemoveItemOnRemove: [],
 				Audio: "ClothSlip",
 				Layer: [
-					{ Name: "BaseColor", AllowColorize: true, Left: 50, Top: 200, DrawingLeft: 50, DrawingTop: 200 },
-					{ Name: "Shadow", AllowColorize: false, Left: 50, Top: 200, DrawingLeft: 50, DrawingTop: 200 },
-					{ Name: "Highlight", AllowColorize: false, Left: 50, Top: 200, DrawingLeft: 50, DrawingTop: 200 },
+					{ Name: "BaseColor", Priority: 15, AllowColorize: true, Left: 50, Top: 200, DrawingLeft: 50, DrawingTop: 200 },
+					{ Name: "Shadow", Priority: 15, AllowColorize: false, Left: 50, Top: 200, DrawingLeft: 50, DrawingTop: 200 },
+					{ Name: "Highlight", Priority: 15, AllowColorize: false, Left: 50, Top: 200, DrawingLeft: 50, DrawingTop: 200 },
 				],
 				DefaultColor: ["#1e1e24"],
 			};
@@ -1058,6 +1085,13 @@
 				if (Array.isArray(window.Asset)) window.Asset.push(torso2Asset);
 			}
 			console.log(`${TAG} Registered custom restraint: ItemTorso2 / GlossyPantyhoseBody`);
+		}
+
+		// Ensure all custom assets are mapped directly in window.AssetMap for instant AssetGet retrieval
+		if (typeof window.AssetMap !== "undefined" && window.AssetMap instanceof Map) {
+			if (armsAsset) window.AssetMap.set("ItemArms/GlossyPantyhoseBody", armsAsset);
+			if (torsoAsset) window.AssetMap.set("ItemTorso/GlossyPantyhoseBody", torsoAsset);
+			if (torso2Asset) window.AssetMap.set("ItemTorso2/GlossyPantyhoseBody", torso2Asset);
 		}
 	}
 
@@ -1396,16 +1430,62 @@
 			}
 
 			// Clicking worn GlossyPantyhoseBody directly opens BC's native Tighten / Loosen screen
+			// Also ensures C.FocusGroup matches ClickItem.Asset.Group so InventoryRemove targets the exact slot
 			if (typeof window.DialogItemClick === "function") {
 				mod.hookFunction("DialogItemClick", 25, (args, next) => {
 					const [ClickItem, C, CurrentItem] = args;
-					if (CurrentItem && CurrentItem.Asset && CurrentItem.Asset.Name === "GlossyPantyhoseBody" && CurrentItem.Asset.AllowTighten) {
-						if (ClickItem && ClickItem.Asset && ClickItem.Asset.Name === "GlossyPantyhoseBody") {
-							if (typeof DialogSetTightenLoosenItem === "function") {
-								DialogSetTightenLoosenItem(CurrentItem);
-								return;
+					if (ClickItem && ClickItem.Asset && C) {
+						// Ensure C.FocusGroup matches ClickItem's actual group so DialogStruggleStop's
+						// InventoryRemove(C, C.FocusGroup.Name) removes ONLY the targeted slot and never the other torso slot!
+						if (C.FocusGroup && C.FocusGroup.Name !== ClickItem.Asset.Group.Name) {
+							if (ClickItem.Asset.Group.Name === "ItemTorso2" || ClickItem.Asset.Group.Name === "ItemTorso") {
+								const targetGroup = typeof AssetGroupGet === "function" ? AssetGroupGet(C.AssetFamily, ClickItem.Asset.Group.Name) : null;
+								if (targetGroup) {
+									C.FocusGroup = targetGroup;
+								}
 							}
 						}
+					}
+					if (CurrentItem && CurrentItem.Asset && CurrentItem.Asset.Name === "GlossyPantyhoseBody" && CurrentItem.Asset.AllowTighten) {
+						if (ClickItem && ClickItem.Asset && ClickItem.Asset.Name === "GlossyPantyhoseBody") {
+							// Only open tighten screen if clicked item is worn in the SAME slot
+							if (!ClickItem.Asset.Group || ClickItem.Asset.Group.Name === CurrentItem.Asset.Group.Name) {
+								if (typeof DialogSetTightenLoosenItem === "function") {
+									DialogSetTightenLoosenItem(CurrentItem);
+									return;
+								}
+							}
+						}
+					}
+					return next(args);
+				});
+			}
+
+			// Ensure ItemTorso and ItemTorso2 never strip each other during struggle / equipping
+			if (typeof window.InventoryRemove === "function") {
+				mod.hookFunction("InventoryRemove", 25, (args, next) => {
+					const [C, AssetGroup, Refresh] = args;
+					// If struggling or swapping an item in ItemTorso2, never let InventoryRemove remove ItemTorso
+					if (
+						AssetGroup === "ItemTorso" &&
+						typeof window.DialogStruggleNextItem !== "undefined" &&
+						window.DialogStruggleNextItem &&
+						window.DialogStruggleNextItem.Asset &&
+						window.DialogStruggleNextItem.Asset.Group &&
+						window.DialogStruggleNextItem.Asset.Group.Name === "ItemTorso2"
+					) {
+						return;
+					}
+					// Conversely, if struggling or swapping an item in ItemTorso, never let InventoryRemove remove ItemTorso2
+					if (
+						AssetGroup === "ItemTorso2" &&
+						typeof window.DialogStruggleNextItem !== "undefined" &&
+						window.DialogStruggleNextItem &&
+						window.DialogStruggleNextItem.Asset &&
+						window.DialogStruggleNextItem.Asset.Group &&
+						window.DialogStruggleNextItem.Asset.Group.Name === "ItemTorso"
+					) {
+						return;
 					}
 					return next(args);
 				});
@@ -1466,7 +1546,7 @@
 							if (mx >= X && mx < X + 225 && my >= Y && my < Y + 275) {
 								const item = window.DialogInventory[I];
 								if (item && item.Asset && UNLOCKED_FLAT_NAMES.has(item.Asset.Name)) {
-									const currentItem = typeof InventoryGet === "function" ? InventoryGet(C, C.FocusGroup.Name) : null;
+									const currentItem = typeof InventoryGet === "function" ? InventoryGet(C, item.Asset.Group.Name) : null;
 									const worn = !!currentItem && currentItem.Asset.Name === item.Asset.Name;
 									if (worn && currentItem.Asset.Name === "GlossyPantyhoseBody" && currentItem.Asset.AllowTighten && typeof DialogSetTightenLoosenItem === "function") {
 										DialogSetTightenLoosenItem(currentItem);
@@ -1476,7 +1556,7 @@
 										return;
 									} else {
 										if (typeof CharacterAppearanceSetItem === "function") {
-											CharacterAppearanceSetItem(C, C.FocusGroup.Name, item.Asset);
+											CharacterAppearanceSetItem(C, item.Asset.Group.Name, item.Asset);
 										}
 										if (typeof CharacterRefresh === "function") CharacterRefresh(C);
 										if (typeof DialogInventoryBuild === "function") DialogInventoryBuild(C, false, false);
@@ -1576,7 +1656,7 @@
 				CurrentCharacter.FocusGroup &&
 				typeof DialogInventoryBuild === "function"
 			) {
-				DialogInventoryBuild(CurrentCharacter, CurrentCharacter.FocusGroup, false, false, true);
+				DialogInventoryBuild(CurrentCharacter, false, false, true);
 			}
 
 			// If Wardrobe / Appearance screen is currently open, refresh grouped assets and live DialogInventory
