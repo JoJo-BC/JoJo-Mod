@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="it">
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>JoJo-Studio — BC Item Studio &amp; Visualizer (Flat-Chest)</title>
+	<title>JoJo-Studio — BC Item &amp; Restraints Studio v2.0</title>
 	<style>
 		:root {
 			--bg: #0b0d14;
@@ -12,15 +12,17 @@
 			--border: #262c42;
 			--accent: #d943d4;
 			--accent-hover: #f05ceb;
+			--accent-glow: rgba(217, 67, 212, 0.25);
 			--text: #e6e9f4;
 			--muted: #8e98b5;
 			--canvas-bg: #1c202e;
+			--success: #10b981;
 		}
 		* { box-sizing: border-box; }
 		body {
 			margin: 0;
 			padding: 0;
-			font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+			font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
 			background: var(--bg);
 			color: var(--text);
 			display: flex;
@@ -30,7 +32,7 @@
 
 		/* Left Sidebar - Controls */
 		.sidebar {
-			width: 340px;
+			width: 360px;
 			background: var(--panel);
 			border-right: 1px solid var(--border);
 			display: flex;
@@ -44,6 +46,7 @@
 			display: flex;
 			align-items: center;
 			justify-content: space-between;
+			background: rgba(0,0,0,0.15);
 		}
 		.sidebar-header h1 {
 			margin: 0;
@@ -58,42 +61,52 @@
 			font-size: 0.72rem;
 			padding: 2px 8px;
 			border-radius: 999px;
-			background: rgba(217, 67, 212, 0.2);
+			background: var(--accent-glow);
 			color: #f78ef3;
 			border: 1px solid rgba(217, 67, 212, 0.4);
 		}
 		.section {
-			padding: 16px 20px;
+			padding: 14px 20px;
 			border-bottom: 1px solid var(--border);
 		}
 		.section-title {
-			font-size: 0.8rem;
+			font-size: 0.78rem;
 			text-transform: uppercase;
-			letter-spacing: 0.05em;
+			letter-spacing: 0.06em;
 			color: var(--muted);
 			font-weight: 700;
-			margin-bottom: 12px;
+			margin-bottom: 10px;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
 		}
 		label {
 			display: block;
-			font-size: 0.85rem;
+			font-size: 0.83rem;
 			color: var(--text);
-			margin-bottom: 6px;
+			margin-bottom: 5px;
 			font-weight: 500;
 		}
 		select, input[type="text"] {
 			width: 100%;
-			padding: 8px 12px;
+			padding: 8px 10px;
 			background: #090a10;
 			border: 1px solid var(--border);
-			border-radius: 8px;
+			border-radius: 6px;
 			color: #fff;
-			font-size: 0.9rem;
+			font-size: 0.86rem;
 			outline: none;
-			margin-bottom: 12px;
+			margin-bottom: 10px;
+			transition: border-color 0.15s ease;
 		}
 		select:focus, input[type="text"]:focus {
 			border-color: var(--accent);
+		}
+
+		.form-grid-2 {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 10px;
 		}
 
 		/* Color picker row */
@@ -101,13 +114,13 @@
 			display: flex;
 			align-items: center;
 			gap: 10px;
-			margin-bottom: 12px;
+			margin-bottom: 8px;
 		}
 		input[type="color"] {
 			border: none;
-			width: 38px;
-			height: 38px;
-			border-radius: 8px;
+			width: 36px;
+			height: 36px;
+			border-radius: 6px;
 			background: transparent;
 			cursor: pointer;
 			padding: 0;
@@ -115,27 +128,28 @@
 		.color-presets {
 			display: flex;
 			gap: 6px;
-			margin-bottom: 12px;
+			margin-bottom: 10px;
 			flex-wrap: wrap;
 		}
 		.preset-btn {
-			width: 24px;
-			height: 24px;
-			border-radius: 6px;
+			width: 22px;
+			height: 22px;
+			border-radius: 5px;
 			border: 1px solid #444;
 			cursor: pointer;
 			transition: transform 0.1s;
 		}
 		.preset-btn:hover {
-			transform: scale(1.15);
+			transform: scale(1.18);
+			border-color: #fff;
 		}
 
 		/* Layer list */
 		.layer-list {
 			display: flex;
 			flex-direction: column;
-			gap: 6px;
-			max-height: 220px;
+			gap: 5px;
+			max-height: 200px;
 			overflow-y: auto;
 			padding-right: 4px;
 		}
@@ -143,10 +157,10 @@
 			display: flex;
 			align-items: center;
 			justify-content: space-between;
-			padding: 6px 10px;
+			padding: 5px 8px;
 			background: #0d0f17;
-			border-radius: 6px;
-			font-size: 0.82rem;
+			border-radius: 5px;
+			font-size: 0.8rem;
 			border: 1px solid #1c2132;
 		}
 		.layer-item label {
@@ -160,18 +174,38 @@
 		/* Drop Zone */
 		.drop-zone {
 			border: 2px dashed var(--border);
-			border-radius: 10px;
-			padding: 16px;
+			border-radius: 8px;
+			padding: 14px;
 			text-align: center;
-			font-size: 0.82rem;
+			font-size: 0.8rem;
 			color: var(--muted);
 			cursor: pointer;
+			background: #0d0f17;
 			transition: all 0.15s ease;
 		}
 		.drop-zone:hover, .drop-zone.dragover {
 			border-color: var(--accent);
-			background: rgba(217, 67, 212, 0.05);
+			background: rgba(217, 67, 212, 0.08);
 			color: #fff;
+		}
+
+		/* Info box */
+		.info-box {
+			background: rgba(38, 44, 66, 0.4);
+			border: 1px solid var(--border);
+			border-radius: 6px;
+			padding: 10px;
+			font-size: 0.77rem;
+			color: #b4bed4;
+			line-height: 1.45;
+			margin-top: 10px;
+		}
+		.info-box code {
+			color: #f78ef3;
+			background: rgba(0,0,0,0.4);
+			padding: 2px 4px;
+			border-radius: 4px;
+			word-break: break-all;
 		}
 
 		/* Buttons */
@@ -181,16 +215,16 @@
 			justify-content: center;
 			gap: 6px;
 			width: 100%;
-			padding: 10px 14px;
-			border-radius: 8px;
-			font-size: 0.88rem;
+			padding: 9px 12px;
+			border-radius: 6px;
+			font-size: 0.84rem;
 			font-weight: 600;
 			cursor: pointer;
 			border: 1px solid var(--border);
 			background: #1b2030;
 			color: #fff;
 			transition: all 0.15s ease;
-			margin-bottom: 8px;
+			margin-bottom: 6px;
 			text-decoration: none;
 		}
 		.btn:hover {
@@ -221,24 +255,25 @@
 			display: flex;
 			align-items: center;
 			justify-content: space-between;
-			padding: 0 20px;
+			padding: 0 16px;
 		}
 		.zoom-controls {
 			display: flex;
 			align-items: center;
-			gap: 8px;
+			gap: 6px;
 		}
 		.zoom-btn {
 			background: #1c2132;
 			border: 1px solid var(--border);
 			color: #fff;
-			padding: 4px 10px;
-			border-radius: 6px;
+			padding: 4px 8px;
+			border-radius: 5px;
 			cursor: pointer;
-			font-size: 0.82rem;
+			font-size: 0.78rem;
 		}
-		.zoom-btn:hover {
-			background: #272e45;
+		.zoom-btn:hover, .zoom-btn.active {
+			background: var(--accent);
+			border-color: var(--accent);
 		}
 
 		.canvas-container {
@@ -247,19 +282,23 @@
 			align-items: center;
 			justify-content: center;
 			overflow: auto;
-			padding: 20px;
+			padding: 24px;
+			position: relative;
 		}
 		#mainCanvas {
 			background: repeating-conic-gradient(#171a26 0% 25%, #10131c 0% 50%) 50% / 20px 20px;
 			border: 1px solid var(--border);
-			border-radius: 10px;
+			border-radius: 8px;
 			box-shadow: 0 12px 36px rgba(0,0,0,0.6);
 			transform-origin: center center;
 			transition: transform 0.1s ease-out;
 		}
 		.status-text {
-			font-size: 0.8rem;
+			font-size: 0.78rem;
 			color: var(--muted);
+			display: flex;
+			align-items: center;
+			gap: 8px;
 		}
 	</style>
 </head>
@@ -268,96 +307,170 @@
 	<!-- Sidebar -->
 	<aside class="sidebar">
 		<div class="sidebar-header">
-			<h1>JoJo-Studio <span class="badge">v1.3</span></h1>
-			<a href="../index.html" style="color:var(--muted); text-decoration:none; font-size:0.82rem;">← Mod Home</a>
+			<h1>JoJo-Studio <span class="badge">v2.0 Full</span></h1>
+			<a href="../index.html" style="color:var(--muted); text-decoration:none; font-size:0.8rem;">← Mod Home</a>
 		</div>
 
-		<!-- Configuration Section -->
+		<!-- Oggetto da testare -->
 		<div class="section">
-			<div class="section-title">Avatar &amp; Pose</div>
-			<label for="poseSelect">Arm Pose</label>
-			<select id="poseSelect">
-				<option value="Standing">Standing (Default upright)</option>
-				<option value="Yoked">Yoked (T-Pose / Yoke)</option>
-				<option value="OverTheHead">OverTheHead (Hands raised)</option>
-				<option value="BackBoxTie">BackBoxTie (Bound behind back)</option>
-				<option value="BackCuffs">BackCuffs (Cuffed behind back)</option>
-				<option value="BackElbowTouch">BackElbowTouch (Elbows tied)</option>
+			<div class="section-title">Oggetto &amp; Modalità</div>
+			<label for="itemModeSelect">Tipo Oggetto</label>
+			<select id="itemModeSelect">
+				<option value="GlossyPantyhoseBody" selected>🔒 GlossyPantyhoseBody (Restraint Torso/Braccia)</option>
+				<option value="GlossyBodystocking">👗 GlossyBodystocking (Suit Catsuit Vanilla)</option>
+				<option value="CustomOnly">📁 Solo Immagine Trascinata (Custom Artwork)</option>
 			</select>
+		</div>
 
-			<label for="sizeSelect">Body / Chest Type</label>
-			<select id="sizeSelect">
-				<option value="FlatSmall">FlatSmall (Slender Flat Chest)</option>
-				<option value="FlatMedium">FlatMedium (Athletic Male Chest)</option>
-				<option value="FemaleSmall">FemaleSmall (Female Chest)</option>
-			</select>
+		<!-- Configurazione Corpo Avatar -->
+		<div class="section">
+			<div class="section-title">Forma del Corpo &amp; Manichino</div>
+			
+			<div class="form-grid-2">
+				<div>
+					<label for="chestSelect">Petto / Torso</label>
+					<select id="chestSelect">
+						<option value="Normal" selected>Femminile Standard (Normal)</option>
+						<option value="Small">Femminile Piccolo (Small)</option>
+						<option value="Large">Femminile Prosperoso (Large)</option>
+						<option value="XLarge">Femminile Molto Grande (XLarge)</option>
+						<option value="FlatMedium">Maschile Atletico (FlatMedium)</option>
+						<option value="FlatSmall">Maschile Magro (FlatSmall)</option>
+					</select>
+				</div>
+				<div>
+					<label for="legsSelect">Gambe / Cosce</label>
+					<select id="legsSelect">
+						<option value="Normal" selected>Gambe Standard (Normal)</option>
+						<option value="Small">Gambe Sottili (LegsSmall)</option>
+						<option value="Large">Gambe Formose (Large)</option>
+						<option value="XLarge">Gambe Extra (XLarge)</option>
+					</select>
+				</div>
+			</div>
 
-			<label>Base Body Mannequin</label>
-			<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
-				<span style="font-size:0.85rem; color:var(--muted);">Show Guide Mannequin</span>
-				<input type="checkbox" id="showMannequin" checked style="width:18px; height:18px; cursor:pointer;">
+			<div class="form-grid-2">
+				<div>
+					<label for="sexSelect">Sesso / Pelvi</label>
+					<select id="sexSelect">
+						<option value="Female" selected>Femminile (Liscio)</option>
+						<option value="Bulge">Maschile (Bulge standard)</option>
+						<option value="SkinTight">Maschile (SkinTight marcato)</option>
+						<option value="Tucked">Maschile (Tucked)</option>
+					</select>
+				</div>
+				<div>
+					<label for="poseSelect">Posa Braccia</label>
+					<select id="poseSelect">
+						<option value="BackElbowTouch" selected>Gomiti uniti dietro (Restraint)</option>
+						<option value="Standing">In piedi (Standard)</option>
+						<option value="BackBoxTie">BoxTie dietro</option>
+						<option value="BackCuffs">Manette dietro</option>
+						<option value="OverTheHead">Mani sopra la testa</option>
+						<option value="Yoked">Braccia a T / Giogo</option>
+					</select>
+				</div>
+			</div>
+
+			<div style="display:flex; align-items:center; justify-content:space-between; margin-top:4px;">
+				<label style="margin:0; cursor:pointer;" for="showMannequin">Mostra Manichino Guida</label>
+				<input type="checkbox" id="showMannequin" checked style="width:17px; height:17px; cursor:pointer;">
+			</div>
+
+			<div style="margin-top:10px;">
+				<label for="skinColorSelect">Tonalità Manichino</label>
+				<select id="skinColorSelect">
+					<option value="#f0cdb9">Pelle Chiara (BC Vanilla Default)</option>
+					<option value="#d8a783">Pelle Media / Ambrata</option>
+					<option value="#8c5338">Pelle Scura</option>
+					<option value="#a0a5b5">Grigio Manichino Tecnico</option>
+				</select>
 			</div>
 		</div>
 
-		<!-- Clothing & Tint Section -->
+		<!-- Tinta & Colore Restraint -->
 		<div class="section">
-			<div class="section-title">Outfit Color (BC Simulation)</div>
-			<label>BaseColor Tint</label>
+			<div class="section-title">Colore Vestito / Restraint</div>
+			<label>Tinta BaseColor (Simulazione BC)</label>
 			<div class="color-row">
-				<input type="color" id="tintColor" value="#4b3a37">
-				<input type="text" id="tintHex" value="#4b3a37" style="margin:0; width:110px;">
+				<input type="color" id="tintColor" value="#1a1a24">
+				<input type="text" id="tintHex" value="#1a1a24" style="margin:0; width:110px;">
 			</div>
 			<div class="color-presets">
-				<div class="preset-btn" style="background:#4b3a37;" title="Dark Brown / Black" onclick="setTint('#4b3a37')"></div>
-				<div class="preset-btn" style="background:#151515;" title="Vinyl Black" onclick="setTint('#151515')"></div>
-				<div class="preset-btn" style="background:#ffffff;" title="White" onclick="setTint('#ffffff')"></div>
-				<div class="preset-btn" style="background:#d943d4;" title="Pink / Magenta" onclick="setTint('#d943d4')"></div>
-				<div class="preset-btn" style="background:#2463eb;" title="Electric Blue" onclick="setTint('#2463eb')"></div>
-				<div class="preset-btn" style="background:#dc2626;" title="Vivid Red" onclick="setTint('#dc2626')"></div>
-				<div class="preset-btn" style="background:#16a34a;" title="Emerald Green" onclick="setTint('#16a34a')"></div>
+				<div class="preset-btn" style="background:#151515;" title="Nero Vinile / Calza Scura" onclick="setTint('#151515')"></div>
+				<div class="preset-btn" style="background:#2b2226;" title="Marrone Fumo Scuro" onclick="setTint('#2b2226')"></div>
+				<div class="preset-btn" style="background:#4b3a37;" title="Pantyhose Coffee" onclick="setTint('#4b3a37')"></div>
+				<div class="preset-btn" style="background:#ffffff;" title="Bianco Neve" onclick="setTint('#ffffff')"></div>
+				<div class="preset-btn" style="background:#d943d4;" title="Rosa Magenta JoJo" onclick="setTint('#d943d4')"></div>
+				<div class="preset-btn" style="background:#2463eb;" title="Blu Elettrico" onclick="setTint('#2463eb')"></div>
+				<div class="preset-btn" style="background:#dc2626;" title="Rosso Lacca" onclick="setTint('#dc2626')"></div>
+				<div class="preset-btn" style="background:#16a34a;" title="Verde Smeraldo" onclick="setTint('#16a34a')"></div>
 			</div>
 		</div>
 
-		<!-- Layer Visibility Inspector -->
+		<!-- Livelli Visibili -->
 		<div class="section">
-			<div class="section-title">Layer Inspector</div>
+			<div class="section-title">Ispettore Livelli (Layers)</div>
 			<div class="layer-list" id="layerList">
-				<!-- Dynamically filled -->
+				<!-- Riempito dinamicamente -->
 			</div>
 		</div>
 
-		<!-- Custom Drop Zone -->
+		<!-- Drop Zone per Testare file PNG personalizzati -->
 		<div class="section">
-			<div class="section-title">Test Custom Artwork</div>
+			<div class="section-title">Prova PNG Modificato Live</div>
 			<div class="drop-zone" id="dropZone">
-				📁 Drag &amp; drop your PNG here<br>to test it on the mannequin live!
+				📁 Trascina qui il tuo PNG modificato!<br>
+				<span style="font-size:0.75rem; color:#888;">(BaseColor, Highlight, Shadow o Restraint intero)</span>
 			</div>
 			<input type="file" id="fileInput" accept="image/png" style="display:none;">
+
+			<div id="dropFileInfo" style="display:none; margin-top:8px; font-size:0.78rem;">
+				<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+					<span id="droppedFileName" style="color:#f78ef3; font-weight:600;"></span>
+					<button onclick="clearCustomImage()" style="background:transparent; border:none; color:#dc2626; cursor:pointer; font-size:0.75rem;">✕ Rimuovi</button>
+				</div>
+				<label for="customLayerTarget">Usa questo file come:</label>
+				<select id="customLayerTarget" style="margin-bottom:4px;">
+					<option value="overlay">Sovrapposizione Diretta (Top Layer)</option>
+					<option value="baseColor">Sostituisci BaseColor (Silhouette + Tinta)</option>
+					<option value="highlight">Sostituisci Highlight (Riflessi)</option>
+					<option value="shadow">Sostituisci Shadow (Ombre)</option>
+				</select>
+			</div>
+
+			<div class="info-box">
+				💡 <strong>Modifiche Personali</strong>:<br>
+				Modifica il file con Photoshop o GIMP e salvalo con lo <strong>stesso nome</strong> nella cartella:<br>
+				<code>JoJo-Mod/assets/Assets/Female3DCG/ItemArms/</code><br>
+				Poi trascinalo qui sopra per provarlo subito sul manichino!
+			</div>
 		</div>
 
-		<!-- Actions -->
+		<!-- Azioni & Esportazione -->
 		<div class="section" style="border:none;">
 			<button class="btn btn-primary" onclick="exportComposite()">
-				💾 Export Composite PNG (500x1000)
+				💾 Esporta Composito PNG (500x1000)
+			</button>
+			<button class="btn" onclick="exportRestraintOnly()">
+				🖼️ Esporta Solo Restraint (400x800)
 			</button>
 			<button class="btn" onclick="copyConsoleCmd()">
-				📋 Copy BC Console Command
+				📋 Copia Comando Console BC
 			</button>
-			<a class="btn" href="../templates/DRAWING_GUIDE.md" target="_blank">
-				📖 Open Drawing Guide
-			</a>
 		</div>
 	</aside>
 
 	<!-- Main Viewport -->
 	<main class="viewport">
 		<div class="viewport-toolbar">
-			<div class="status-text" id="statusText">Ready. Canvas dimensions: 500 × 1000 px</div>
+			<div class="status-text" id="statusText">Caricamento studio in corso...</div>
 			<div class="zoom-controls">
-				<button class="zoom-btn" onclick="setZoom(0.6)">60%</button>
-				<button class="zoom-btn" onclick="setZoom(0.8)">80%</button>
-				<button class="zoom-btn" onclick="setZoom(1.0)">100% (1:1)</button>
-				<button class="zoom-btn" onclick="setZoom(1.4)">140%</button>
+				<button class="zoom-btn" onclick="setZoom(0.5)">50%</button>
+				<button class="zoom-btn" onclick="setZoom(0.75)">75%</button>
+				<button class="zoom-btn active" id="btnZoom100" onclick="setZoom(1.0)">100% (1:1)</button>
+				<button class="zoom-btn" onclick="setZoom(1.5)">150%</button>
+				<button class="zoom-btn" onclick="setZoom(2.0)">200% (Zoom Pixel)</button>
 			</div>
 		</div>
 
@@ -369,42 +482,60 @@
 	<script>
 		const canvas = document.getElementById("mainCanvas");
 		const ctx = canvas.getContext("2d");
-		let currentZoom = 0.8;
+		let currentZoom = 1.0;
 
+		const itemModeSelect = document.getElementById("itemModeSelect");
+		const chestSelect = document.getElementById("chestSelect");
+		const legsSelect = document.getElementById("legsSelect");
+		const sexSelect = document.getElementById("sexSelect");
 		const poseSelect = document.getElementById("poseSelect");
-		const sizeSelect = document.getElementById("sizeSelect");
 		const showMannequinCheckbox = document.getElementById("showMannequin");
+		const skinColorSelect = document.getElementById("skinColorSelect");
 		const tintColor = document.getElementById("tintColor");
 		const tintHex = document.getElementById("tintHex");
 		const statusText = document.getElementById("statusText");
 		const layerList = document.getElementById("layerList");
 		const dropZone = document.getElementById("dropZone");
 		const fileInput = document.getElementById("fileInput");
+		const dropFileInfo = document.getElementById("dropFileInfo");
+		const droppedFileName = document.getElementById("droppedFileName");
+		const customLayerTarget = document.getElementById("customLayerTarget");
 
 		let customDroppedImage = null;
 
-		const LAYERS_INFO = [
-			{ id: "BodyHue", label: "BodyHue (Skin Underlay)", defaultOn: true, blend: "source-over" },
-			{ id: "BaseColor", label: "BaseColor (Tint Silhouette)", defaultOn: true, blend: "source-over", isTinted: true },
-			{ id: "EdgeShade", label: "EdgeShade (Edge Shadows)", defaultOn: true, blend: "source-over" },
-			{ id: "A2", label: "A2 (Chest / Pec Shadow)", defaultOn: true, blend: "source-over" },
-			{ id: "A3", label: "A3 (Arm Shadow)", defaultOn: true, blend: "source-over" },
-			{ id: "C1", label: "C1..C12 (Vinyl Specular Highlights)", defaultOn: true, blend: "source-over" },
-			{ id: "D1", label: "D1..D7 (Creases & Sheen)", defaultOn: true, blend: "source-over" },
-			{ id: "EdgeLine", label: "EdgeLine (Outlines)", defaultOn: true, blend: "source-over" },
+		// Configurazione Layer per ciascuna modalità
+		const PANTYHOSE_LAYERS = [
+			{ id: "Mannequin", label: "Corpo Manichino Base", defaultOn: true },
+			{ id: "BaseColor", label: "BaseColor (Sagoma ricolorabile)", defaultOn: true, isTinted: true },
+			{ id: "Shadow", label: "Shadow (Ombreggiature & pieghe)", defaultOn: true },
+			{ id: "Highlight", label: "Highlight (Riflessi lucidi / glossy)", defaultOn: true },
+		];
+
+		const SUIT_LAYERS = [
+			{ id: "Mannequin", label: "Corpo Manichino Base", defaultOn: true },
+			{ id: "BodyHue", label: "BodyHue (Skin Underlay)", defaultOn: true },
+			{ id: "BaseColor", label: "BaseColor (Silhouette)", defaultOn: true, isTinted: true },
+			{ id: "EdgeShade", label: "EdgeShade (Ombre bordi)", defaultOn: true },
+			{ id: "A2", label: "A2 (Ombra Torace/Pec)", defaultOn: true },
+			{ id: "A3", label: "A3 (Ombra Braccia)", defaultOn: true },
+			{ id: "C1", label: "C1..C12 (Riflessi Vinile)", defaultOn: true },
+			{ id: "D1", label: "D1..D7 (Pieghe e lucentezza)", defaultOn: true },
+			{ id: "EdgeLine", label: "EdgeLine (Linee contorno)", defaultOn: true },
 		];
 
 		const layerState = {};
-		LAYERS_INFO.forEach(l => layerState[l.id] = l.defaultOn);
+		PANTYHOSE_LAYERS.forEach(l => layerState[l.id] = l.defaultOn);
+		SUIT_LAYERS.forEach(l => { if (layerState[l.id] === undefined) layerState[l.id] = l.defaultOn; });
 
 		function initLayerUI() {
 			layerList.innerHTML = "";
-			LAYERS_INFO.forEach(l => {
+			const currentLayers = (itemModeSelect.value === "GlossyBodystocking") ? SUIT_LAYERS : PANTYHOSE_LAYERS;
+			currentLayers.forEach(l => {
 				const item = document.createElement("div");
 				item.className = "layer-item";
 				item.innerHTML = `
 					<label>
-						<input type="checkbox" id="chk_${l.id}" ${layerState[l.id] ? "checked" : ""}>
+						<input type="checkbox" id="chk_${l.id}" ${layerState[l.id] !== false ? "checked" : ""}>
 						<span>${l.label}</span>
 					</label>
 				`;
@@ -419,9 +550,9 @@
 		function setZoom(z) {
 			currentZoom = z;
 			canvas.style.transform = `scale(${z})`;
-			statusText.textContent = `Zoom: ${Math.round(z * 100)}% | Canvas: 500 × 1000 px`;
+			document.querySelectorAll(".zoom-btn").forEach(b => b.classList.remove("active"));
+			statusText.textContent = `Zoom: ${Math.round(z * 100)}% | Canvas: 500 × 1000 px | Restraint Offset: X=50, Y=200`;
 		}
-		setZoom(0.8);
 
 		function setTint(hex) {
 			tintColor.value = hex;
@@ -437,13 +568,22 @@
 			render();
 		});
 
+		itemModeSelect.addEventListener("change", () => {
+			initLayerUI();
+			render();
+		});
+		chestSelect.addEventListener("change", render);
+		legsSelect.addEventListener("change", render);
+		sexSelect.addEventListener("change", render);
 		poseSelect.addEventListener("change", render);
-		sizeSelect.addEventListener("change", render);
 		showMannequinCheckbox.addEventListener("change", render);
+		skinColorSelect.addEventListener("change", render);
+		customLayerTarget.addEventListener("change", render);
 
-		// Image cache to avoid re-fetching
+		// Cache immagini per non ricaricare da disco continuamente
 		const imgCache = new Map();
 		function loadImage(src) {
+			if (!src) return Promise.resolve(null);
 			if (imgCache.has(src)) return Promise.resolve(imgCache.get(src));
 			return new Promise((resolve) => {
 				const img = new Image();
@@ -466,103 +606,198 @@
 			};
 		}
 
-		async function render() {
-			const pose = poseSelect.value;
-			const size = sizeSelect.value;
-			const poseSubdir = pose === "Standing" ? "" : pose + "/";
+		// Tinting in tempo reale su canvas offscreen
+		function drawTintedImage(targetCtx, img, dx, dy, dw, dh, hexColor) {
+			const off = document.createElement("canvas");
+			off.width = dw;
+			off.height = dh;
+			const offCtx = off.getContext("2d");
+			offCtx.drawImage(img, 0, 0, dw, dh);
 
-			ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-			// 1. Render Mannequin
-			if (showMannequinCheckbox.checked) {
-				const manSrc = `../templates/mannequins/mannequin_${size}_${pose}.png?v=1.3.5`;
-				const manImg = await loadImage(manSrc);
-				if (manImg) {
-					ctx.drawImage(manImg, 0, 0);
+			const tint = hexToRgb(hexColor);
+			const imgData = offCtx.getImageData(0, 0, dw, dh);
+			const d = imgData.data;
+			for (let i = 0; i < d.length; i += 4) {
+				if (d[i + 3] > 0) {
+					d[i] = Math.round((d[i] * tint.r) / 255);
+					d[i + 1] = Math.round((d[i + 1] * tint.g) / 255);
+					d[i + 2] = Math.round((d[i + 2] * tint.b) / 255);
 				}
 			}
-
-			// 2. Render Bodystocking Layers
-			const basePath = size === "FemaleSmall"
-				? `../reference_samples/Assets/Female3DCG/Suit/${poseSubdir}GlossyBodystocking_Small_`
-				: `../assets/Assets/Female3DCG/Suit/${poseSubdir}GlossyBodystocking_${size}_`;
-
-			// Helper to draw tinted BaseColor
-			if (layerState["BaseColor"]) {
-				const baseImg = await loadImage(basePath + "BaseColor.png");
-				if (baseImg) {
-					const off = document.createElement("canvas");
-					off.width = 500;
-					off.height = 1000;
-					const offCtx = off.getContext("2d");
-					offCtx.drawImage(baseImg, 0, 0);
-
-					const tint = hexToRgb(tintColor.value);
-					const imgData = offCtx.getImageData(0, 0, 500, 1000);
-					const d = imgData.data;
-					for (let i = 0; i < d.length; i += 4) {
-						if (d[i + 3] > 0) {
-							d[i] = Math.round((d[i] * tint.r) / 255);
-							d[i + 1] = Math.round((d[i + 1] * tint.g) / 255);
-							d[i + 2] = Math.round((d[i + 2] * tint.b) / 255);
-						}
-					}
-					offCtx.putImageData(imgData, 0, 0);
-					ctx.drawImage(off, 0, 0);
-				}
-			}
-
-			// BodyHue
-			if (layerState["BodyHue"]) {
-				const img = await loadImage(basePath + "BodyHue.png");
-				if (img) ctx.drawImage(img, 0, 0);
-			}
-
-			// EdgeShade
-			if (layerState["EdgeShade"]) {
-				const img = await loadImage(basePath + "EdgeShade.png");
-				if (img) ctx.drawImage(img, 0, 0);
-			}
-
-			// A2 / A3
-			if (layerState["A2"]) {
-				const img = await loadImage(basePath + "A2.png");
-				if (img) ctx.drawImage(img, 0, 0);
-			}
-			if (layerState["A3"]) {
-				const img = await loadImage(basePath + "A3.png");
-				if (img) ctx.drawImage(img, 0, 0);
-			}
-
-			// Highlights C1..C12
-			if (layerState["C1"]) {
-				for (let c = 1; c <= 12; c++) {
-					const img = await loadImage(basePath + `C${c}.png`);
-					if (img) ctx.drawImage(img, 0, 0);
-				}
-			}
-
-			// Accents D1..D7
-			if (layerState["D1"]) {
-				for (let d = 1; d <= 7; d++) {
-					const img = await loadImage(basePath + `D${d}.png`);
-					if (img) ctx.drawImage(img, 0, 0);
-				}
-			}
-
-			// EdgeLine (Contours)
-			if (layerState["EdgeLine"]) {
-				const img = await loadImage(basePath + "EdgeLine.png");
-				if (img) ctx.drawImage(img, 0, 0);
-			}
-
-			// 3. Render Custom Dropped PNG (if any)
-			if (customDroppedImage) {
-				ctx.drawImage(customDroppedImage, 0, 0);
-			}
+			offCtx.putImageData(imgData, 0, 0);
+			targetCtx.drawImage(off, dx, dy);
 		}
 
-		// Drag & Drop handlers
+		async function render() {
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+			const mode = itemModeSelect.value;
+			const chest = chestSelect.value;
+			const legs = legsSelect.value;
+			const sex = sexSelect.value;
+			const pose = poseSelect.value;
+			const skinColor = skinColorSelect.value;
+
+			// 1. RENDER MANICHINO
+			if (showMannequinCheckbox.checked && layerState["Mannequin"] !== false) {
+				// Proviamo prima il manichino pre-renderizzato
+				const manSrc = `../templates/mannequins/mannequin_${chest}_${pose}.png?v=2.0`;
+				let manImg = await loadImage(manSrc);
+
+				if (manImg) {
+					// Disegniamo il manichino con eventuale tinta pelle
+					if (skinColor === "#f0cdb9") {
+						ctx.drawImage(manImg, 0, 0);
+					} else {
+						drawTintedImage(ctx, manImg, 0, 0, 500, 1000, skinColor);
+					}
+				} else {
+					// Fallback composizione dinamica parti del corpo
+					const uImg = await loadImage(`../reference_samples/Assets/Female3DCG/BodyUpper/${chest}_White.png`);
+					if (uImg) drawTintedImage(ctx, uImg, 0, 0, 500, 1000, skinColor);
+
+					const lImg = await loadImage(`../reference_samples/Assets/Female3DCG/BodyLower/LegsClosed/${legs}_White.png`);
+					if (lImg) drawTintedImage(ctx, lImg, 0, 462, 500, lImg.height, skinColor);
+
+					const armSize = (chest === "FlatSmall" || chest === "FlatMedium") ? chest : "Small";
+					const aLImg = await loadImage(`../reference_samples/Assets/Female3DCG/Override/EchoV2/ArmsLeft/${pose}/${armSize}_White.png`);
+					if (aLImg) drawTintedImage(ctx, aLImg, 0, 0, 500, 1000, skinColor);
+					const aRImg = await loadImage(`../reference_samples/Assets/Female3DCG/Override/EchoV2/ArmsRight/${pose}/${armSize}_White.png`);
+					if (aRImg) drawTintedImage(ctx, aRImg, 0, 0, 500, 1000, skinColor);
+				}
+
+				// Overlay Pelvi / Sesso / Bulge maschile se richiesto
+				if (sex !== "Female") {
+					const bulgeFile = (sex === "Bulge") ? "Bulge.png" : (sex === "SkinTight" ? "SkinTight.png" : "Tucked.png");
+					const bImg = await loadImage(`../templates/bulge/${bulgeFile}`);
+					if (bImg) {
+						// Bulge centrato a X=140, Y=462
+						drawTintedImage(ctx, bImg, 140, 462, bImg.width, bImg.height, skinColor);
+					}
+				}
+			}
+
+			// 2. RENDER RESTRAINT GLOSSYPANTYHOSEBODY
+			if (mode === "GlossyPantyhoseBody") {
+				// Risoluzione nome file risorsa
+				let assetChest = chest;
+				let legSuffix = (legs === "Small") ? "_LegsSmall" : "";
+
+				// Mappatura nomi file effettivi
+				let baseName = `GlossyPantyhoseBody_${assetChest}${legSuffix}`;
+				let basePath = `../assets/Assets/Female3DCG/ItemArms/${baseName}_`;
+
+				// BaseColor (Silhouette & Tinta)
+				if (layerState["BaseColor"] !== false) {
+					let baseImg = null;
+					if (customDroppedImage && customLayerTarget.value === "baseColor") {
+						baseImg = customDroppedImage;
+					} else {
+						baseImg = await loadImage(basePath + "BaseColor.png");
+						if (!baseImg && legSuffix) {
+							// Fallback se legs non ha file separato
+							baseImg = await loadImage(`../assets/Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_${assetChest}_BaseColor.png`);
+						}
+					}
+					if (baseImg) {
+						const dx = (baseImg.width === 400) ? 50 : 0;
+						const dy = (baseImg.height === 800) ? 200 : 0;
+						drawTintedImage(ctx, baseImg, dx, dy, baseImg.width, baseImg.height, tintColor.value);
+					}
+				}
+
+				// Shadow
+				if (layerState["Shadow"] !== false) {
+					let shdImg = null;
+					if (customDroppedImage && customLayerTarget.value === "shadow") {
+						shdImg = customDroppedImage;
+					} else {
+						shdImg = await loadImage(basePath + "Shadow.png");
+						if (!shdImg && legSuffix) {
+							shdImg = await loadImage(`../assets/Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_${assetChest}_Shadow.png`);
+						}
+					}
+					if (shdImg) {
+						const dx = (shdImg.width === 400) ? 50 : 0;
+						const dy = (shdImg.height === 800) ? 200 : 0;
+						ctx.drawImage(shdImg, dx, dy, shdImg.width, shdImg.height);
+					}
+				}
+
+				// Highlight
+				if (layerState["Highlight"] !== false) {
+					let hltImg = null;
+					if (customDroppedImage && customLayerTarget.value === "highlight") {
+						hltImg = customDroppedImage;
+					} else {
+						hltImg = await loadImage(basePath + "Highlight.png");
+						if (!hltImg && legSuffix) {
+							hltImg = await loadImage(`../assets/Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_${assetChest}_Highlight.png`);
+						}
+					}
+					if (hltImg) {
+						const dx = (hltImg.width === 400) ? 50 : 0;
+						const dy = (hltImg.height === 800) ? 200 : 0;
+						ctx.drawImage(hltImg, dx, dy, hltImg.width, hltImg.height);
+					}
+				}
+			}
+
+			// 3. RENDER VESTITO GLOSSYBODYSTOCKING
+			else if (mode === "GlossyBodystocking") {
+				const poseSubdir = pose === "Standing" ? "" : pose + "/";
+				const suitSize = (chest === "FlatSmall" || chest === "FlatMedium") ? chest : "Small";
+				const basePath = `../assets/Assets/Female3DCG/Suit/${poseSubdir}GlossyBodystocking_${suitSize}_`;
+
+				if (layerState["BaseColor"] !== false) {
+					const baseImg = await loadImage(basePath + "BaseColor.png");
+					if (baseImg) drawTintedImage(ctx, baseImg, 0, 0, 500, 1000, tintColor.value);
+				}
+				if (layerState["BodyHue"] !== false) {
+					const img = await loadImage(basePath + "BodyHue.png");
+					if (img) ctx.drawImage(img, 0, 0);
+				}
+				if (layerState["EdgeShade"] !== false) {
+					const img = await loadImage(basePath + "EdgeShade.png");
+					if (img) ctx.drawImage(img, 0, 0);
+				}
+				if (layerState["A2"] !== false) {
+					const img = await loadImage(basePath + "A2.png");
+					if (img) ctx.drawImage(img, 0, 0);
+				}
+				if (layerState["A3"] !== false) {
+					const img = await loadImage(basePath + "A3.png");
+					if (img) ctx.drawImage(img, 0, 0);
+				}
+				if (layerState["C1"] !== false) {
+					for (let c = 1; c <= 12; c++) {
+						const img = await loadImage(basePath + `C${c}.png`);
+						if (img) ctx.drawImage(img, 0, 0);
+					}
+				}
+				if (layerState["D1"] !== false) {
+					for (let d = 1; d <= 7; d++) {
+						const img = await loadImage(basePath + `D${d}.png`);
+						if (img) ctx.drawImage(img, 0, 0);
+					}
+				}
+				if (layerState["EdgeLine"] !== false) {
+					const img = await loadImage(basePath + "EdgeLine.png");
+					if (img) ctx.drawImage(img, 0, 0);
+				}
+			}
+
+			// 4. RENDER CUSTOM DROPPED PNG (Overlay diretto)
+			if (customDroppedImage && (customLayerTarget.value === "overlay" || mode === "CustomOnly")) {
+				const dx = (customDroppedImage.width === 400) ? 50 : 0;
+				const dy = (customDroppedImage.height === 800) ? 200 : 0;
+				ctx.drawImage(customDroppedImage, dx, dy, customDroppedImage.width, customDroppedImage.height);
+			}
+
+			statusText.textContent = `Visualizzazione: ${mode} | Petto: ${chest} | Gambe: ${legs} | Sesso: ${sex} | Posa: ${pose}`;
+		}
+
+		// Gestione Drag & Drop
 		dropZone.addEventListener("click", () => fileInput.click());
 		dropZone.addEventListener("dragover", (e) => {
 			e.preventDefault();
@@ -588,7 +823,15 @@
 				const img = new Image();
 				img.onload = () => {
 					customDroppedImage = img;
-					dropZone.innerHTML = `✅ Loaded: <strong>${file.name}</strong><br><span style="font-size:0.75rem; color:#888;">Click to replace</span>`;
+					dropFileInfo.style.display = "block";
+					droppedFileName.textContent = `Caricato: ${file.name} (${img.width}x${img.height})`;
+
+					// Rilevamento automatico tipo di layer dal nome file
+					if (file.name.includes("BaseColor")) customLayerTarget.value = "baseColor";
+					else if (file.name.includes("Highlight")) customLayerTarget.value = "highlight";
+					else if (file.name.includes("Shadow")) customLayerTarget.value = "shadow";
+					else customLayerTarget.value = "overlay";
+
 					render();
 				};
 				img.src = evt.target.result;
@@ -596,17 +839,37 @@
 			reader.readAsDataURL(file);
 		}
 
+		function clearCustomImage() {
+			customDroppedImage = null;
+			dropFileInfo.style.display = "none";
+			fileInput.value = "";
+			render();
+		}
+
 		function exportComposite() {
 			const link = document.createElement("a");
-			link.download = `jojo_${sizeSelect.value}_${poseSelect.value}.png`;
+			link.download = `jojo_composite_${chestSelect.value}_${poseSelect.value}.png`;
 			link.href = canvas.toDataURL("image/png");
+			link.click();
+		}
+
+		function exportRestraintOnly() {
+			const off = document.createElement("canvas");
+			off.width = 400;
+			off.height = 800;
+			const offCtx = off.getContext("2d");
+			// Ritaglia esattamente l'area del restraint a (50, 200, 400, 800)
+			offCtx.drawImage(canvas, 50, 200, 400, 800, 0, 0, 400, 800);
+			const link = document.createElement("a");
+			link.download = `restraint_400x800_${chestSelect.value}.png`;
+			link.href = off.toDataURL("image/png");
 			link.click();
 		}
 
 		function copyConsoleCmd() {
 			const cmd = 'import("https://jojo-bc.github.io/JoJo-Mod/jojo-mod.user.js?t=" + Date.now())';
 			navigator.clipboard.writeText(cmd).then(() => {
-				alert("Command copied to clipboard! Paste it into your browser console (F12) to test in Bondage Club.");
+				alert("Comando copiato negli appunti! Incollalo nella console del browser (F12) per testare in Bondage Club.");
 			});
 		}
 
