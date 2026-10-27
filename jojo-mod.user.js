@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         JoJo Flat-Chest & Male Avatar Compatibility Mod (BC R133+)
 // @namespace    https://jojo-bc.github.io/JoJo-Mod/
-// @version      1.4.5
+// @version      1.4.6
 // @description  Unlocks and maps flat-chest (FlatSmall / FlatMedium) and all body sizes clothes and restraints in Bondage Club (Glossy Bodystocking, Echo Latex Top 乳胶衣 & Latex Bottom, Pantyhose fullBody, Glossy Fullbody Pantyhose, etc.), 100% ModSDK & BCX compliant.
 // @author       JoJo-BC
 // @match        https://*.bondageprojects.elementfx.com/R*/*
@@ -24,17 +24,17 @@
 		window.CommonDrawAppearanceBuild = window.CommonDrawAppearanceBuild.__jojoOrigBuild;
 	}
 
-	if (window.__JoJoFlatModLoaded === "1.4.5") {
-		console.log("[JoJo-Mod] v1.4.5 already active, refreshing characters.");
+	if (window.__JoJoFlatModLoaded === "1.4.6") {
+		console.log("[JoJo-Mod] v1.4.6 already active, refreshing characters.");
 		if (typeof window.__JoJoFlatModRefreshAll === "function") {
 			window.__JoJoFlatModRefreshAll();
 		}
 		return;
 	}
-	window.__JoJoFlatModLoaded = "1.4.5";
+	window.__JoJoFlatModLoaded = "1.4.6";
 
 	const TAG = "[JoJo-Mod]";
-	const VERSION = "1.4.5";
+	const VERSION = "1.4.6";
 	const REPO_BASE_URL = "https://jojo-bc.github.io/JoJo-Mod/";
 
 	console.log(`${TAG} v${VERSION} initializing...`);
@@ -612,19 +612,36 @@
 			return REPO_BASE_URL + "assets/" + cleanSrc;
 		}
 
-		// Fallback for custom asset without size suffix (e.g. GlossyPantyhoseBody_BaseColor.png -> _Small_BaseColor.png)
-		if (cleanSrc.includes("GlossyPantyhoseBody_") && !cleanSrc.includes("_Flat") && !cleanSrc.includes("_Small")) {
-			const smallFallback = cleanSrc.replace("GlossyPantyhoseBody_", "GlossyPantyhoseBody_Small_");
-			if (CUSTOM_PNG_MANIFEST.has(smallFallback)) {
-				return REPO_BASE_URL + "assets/" + smallFallback;
+		// Normalize ItemTorso/GlossyPantyhoseBody to ItemArms/GlossyPantyhoseBody
+		let canonicalSrc = cleanSrc;
+		if (canonicalSrc.includes("ItemTorso/") && canonicalSrc.includes("GlossyPantyhoseBody")) {
+			canonicalSrc = canonicalSrc.replace("ItemTorso/", "ItemArms/");
+			if (CUSTOM_PNG_MANIFEST.has(canonicalSrc)) {
+				return REPO_BASE_URL + "assets/" + canonicalSrc;
 			}
 		}
 
-		// Fallback for ItemTorso/GlossyPantyhoseBody -> ItemArms/GlossyPantyhoseBody
-		if (cleanSrc.includes("ItemTorso/") && cleanSrc.includes("GlossyPantyhoseBody")) {
-			const armsFallback = cleanSrc.replace("ItemTorso/", "ItemArms/");
-			if (CUSTOM_PNG_MANIFEST.has(armsFallback)) {
-				return REPO_BASE_URL + "assets/" + armsFallback;
+		// Preview fallback for GlossyPantyhoseBody
+		if (canonicalSrc.includes("GlossyPantyhoseBody") && canonicalSrc.includes("/Preview/")) {
+			return REPO_BASE_URL + "assets/Assets/Female3DCG/ItemArms/Preview/GlossyPantyhoseBody.png";
+		}
+
+		// Fallback for custom asset without size suffix (e.g. GlossyPantyhoseBody_BaseColor.png -> _Normal_BaseColor.png or _Small_BaseColor.png)
+		if (
+			canonicalSrc.includes("GlossyPantyhoseBody_") &&
+			!canonicalSrc.includes("_Flat") &&
+			!canonicalSrc.includes("_Small") &&
+			!canonicalSrc.includes("_Normal") &&
+			!canonicalSrc.includes("_Large") &&
+			!canonicalSrc.includes("_XLarge")
+		) {
+			const normalFallback = canonicalSrc.replace("GlossyPantyhoseBody_", "GlossyPantyhoseBody_Normal_");
+			if (CUSTOM_PNG_MANIFEST.has(normalFallback)) {
+				return REPO_BASE_URL + "assets/" + normalFallback;
+			}
+			const smallFallback = canonicalSrc.replace("GlossyPantyhoseBody_", "GlossyPantyhoseBody_Small_");
+			if (CUSTOM_PNG_MANIFEST.has(smallFallback)) {
+				return REPO_BASE_URL + "assets/" + smallFallback;
 			}
 		}
 
@@ -689,8 +706,21 @@
 
 		// 1. ItemArms slot (standalone fullbody restraint with arms bound behind back)
 		const groupArms = AssetGroupGet("Female3DCG", "ItemArms");
-		if (groupArms && Array.isArray(groupArms.Asset) && !AssetGet("Female3DCG", "ItemArms", "GlossyPantyhoseBody")) {
-			const armsAsset = {
+		let armsAsset = AssetGet("Female3DCG", "ItemArms", "GlossyPantyhoseBody");
+		if (armsAsset) {
+			armsAsset.SetPose = ["BackElbowTouch", "LegsClosed"];
+			armsAsset.AllowPose = ["BackElbowTouch", "BackBoxTie", "BackCuffs", "Yoked", "OverTheHead", "LegsClosed"];
+			armsAsset.Effect = ["Block", "BlockWardrobe", "Slow"];
+			armsAsset.Block = [
+				"ItemHands",
+				"ItemHandheld",
+				"ItemVulva",
+				"ItemButt",
+				"ItemVulvaPiercings",
+				"ItemNipplesPiercings",
+			];
+		} else if (groupArms && Array.isArray(groupArms.Asset)) {
+			armsAsset = {
 				Name: "GlossyPantyhoseBody",
 				Description: "Glossy Fullbody Pantyhose (Arms)",
 				Group: groupArms,
@@ -703,6 +733,14 @@
 				RemoveTime: 20,
 				AllowLock: true,
 				SetPose: ["BackElbowTouch", "LegsClosed"],
+				AllowPose: [
+					"BackElbowTouch",
+					"BackBoxTie",
+					"BackCuffs",
+					"Yoked",
+					"OverTheHead",
+					"LegsClosed",
+				],
 				Effect: ["Block", "BlockWardrobe", "Slow"],
 				Hide: ["Cloth", "ClothLower", "Suit", "SuitLower", "Garters"],
 				Block: [
@@ -738,8 +776,32 @@
 
 		// 2. ItemTorso slot (foundation restraint layer: leaves arms and legs free for other restraints!)
 		const groupTorso = AssetGroupGet("Female3DCG", "ItemTorso");
-		if (groupTorso && Array.isArray(groupTorso.Asset) && !AssetGet("Female3DCG", "ItemTorso", "GlossyPantyhoseBody")) {
-			const torsoAsset = {
+		let torsoAsset = AssetGet("Female3DCG", "ItemTorso", "GlossyPantyhoseBody");
+		if (torsoAsset) {
+			torsoAsset.SetPose = ["BackElbowTouch", "LegsClosed"];
+			torsoAsset.AllowPose = [
+				"BackElbowTouch",
+				"BackBoxTie",
+				"BackCuffs",
+				"Yoked",
+				"OverTheHead",
+				"LegsClosed",
+			];
+			torsoAsset.Effect = ["Block", "BlockWardrobe", "Slow"];
+			torsoAsset.Block = [
+				"ItemHands",
+				"ItemHandheld",
+				"ItemVulva",
+				"ItemButt",
+				"ItemVulvaPiercings",
+				"ItemNipplesPiercings",
+			];
+			torsoAsset.Left = 50;
+			torsoAsset.Top = 200;
+			torsoAsset.DrawingLeft = 50;
+			torsoAsset.DrawingTop = 200;
+		} else if (groupTorso && Array.isArray(groupTorso.Asset)) {
+			torsoAsset = {
 				Name: "GlossyPantyhoseBody",
 				Description: "Glossy Fullbody Pantyhose (Torso)",
 				Group: groupTorso,
@@ -755,11 +817,20 @@
 				Time: 25,
 				RemoveTime: 20,
 				AllowLock: true,
-				SetPose: ["LegsClosed"],
-				AllowPose: ["BackElbowTouch", "BackBoxTie", "BackCuffs", "Yoked", "OverTheHead"],
-				Effect: ["BlockWardrobe", "Slow"],
+				SetPose: ["BackElbowTouch", "LegsClosed"],
+				AllowPose: [
+					"BackElbowTouch",
+					"BackBoxTie",
+					"BackCuffs",
+					"Yoked",
+					"OverTheHead",
+					"LegsClosed",
+				],
+				Effect: ["Block", "BlockWardrobe", "Slow"],
 				Hide: ["Cloth", "ClothLower", "Suit", "SuitLower", "Garters"],
 				Block: [
+					"ItemHands",
+					"ItemHandheld",
 					"ItemVulva",
 					"ItemButt",
 					"ItemVulvaPiercings",
@@ -974,7 +1045,45 @@
 				});
 			}
 
-			// 6. Ensure unlocked flat items are always available & selectable in Wardrobe
+			// 6. Hook ElementButton._ParseImage, ElementCreate & DrawPreviewBox so DOM & canvas previews load from GitHub Pages
+			if (window.ElementButton && typeof window.ElementButton._ParseImage === "function") {
+				mod.hookFunction("ElementButton._ParseImage", 20, (args, next) => {
+					if (typeof args[1] === "string") {
+						args[1] = remapImageUrl(args[1]);
+					}
+					return next(args);
+				});
+			}
+
+			if (typeof window.ElementCreate === "function") {
+				mod.hookFunction("ElementCreate", 20, (args, next) => {
+					const opts = args[0];
+					if (opts && typeof opts === "object") {
+						if (opts.attributes && typeof opts.attributes.src === "string") {
+							opts.attributes.src = remapImageUrl(opts.attributes.src);
+						}
+						if (opts.style && typeof opts.style === "object") {
+							for (const key of ["background-image", "mask-image"]) {
+								if (typeof opts.style[key] === "string" && opts.style[key].includes("GlossyPantyhoseBody")) {
+									opts.style[key] = opts.style[key].replace(/url\(["']?([^"')]+)["']?\)/g, (_, u) => `url("${remapImageUrl(u)}")`);
+								}
+							}
+						}
+					}
+					return next(args);
+				});
+			}
+
+			if (typeof window.DrawPreviewBox === "function") {
+				mod.hookFunction("DrawPreviewBox", 20, (args, next) => {
+					if (typeof args[2] === "string") {
+						args[2] = remapImageUrl(args[2]);
+					}
+					return next(args);
+				});
+			}
+
+			// 7. Ensure unlocked flat items are always available & selectable in Wardrobe
 			if (typeof window.InventoryAllow === "function") {
 				mod.hookFunction("InventoryAllow", 20, (args, next) => {
 					const [C, asset] = args;
@@ -1172,6 +1281,12 @@
 							}
 						}
 					}
+				}
+			}
+			if (typeof document !== "undefined") {
+				const previewImgs = document.querySelectorAll("img[src*='GlossyPantyhoseBody']");
+				for (const img of previewImgs) {
+					img.src = remapImageUrl(img.src);
 				}
 			}
 			if (typeof Player !== "undefined" && Player) {
