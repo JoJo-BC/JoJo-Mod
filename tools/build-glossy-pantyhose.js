@@ -19,9 +19,13 @@ const MOD_DIR = path.resolve(__dirname, "..");
 const REF_DIR = path.join(MOD_DIR, "reference_samples", "Assets", "Female3DCG");
 const OUT_DIR = path.join(MOD_DIR, "assets", "Assets", "Female3DCG", "ItemArms");
 const PREVIEW_DIR = path.join(OUT_DIR, "Preview");
+const TORSO_OUT_DIR = path.join(MOD_DIR, "assets", "Assets", "Female3DCG", "ItemTorso");
+const TORSO_PREVIEW_DIR = path.join(TORSO_OUT_DIR, "Preview");
 
 fs.mkdirSync(OUT_DIR, { recursive: true });
 fs.mkdirSync(PREVIEW_DIR, { recursive: true });
+fs.mkdirSync(TORSO_OUT_DIR, { recursive: true });
+fs.mkdirSync(TORSO_PREVIEW_DIR, { recursive: true });
 
 const vanillaPanty = parsePng(fs.readFileSync(path.join(REF_DIR, "ItemArms", "PantyhoseBody_Small.png")));
 
@@ -403,31 +407,143 @@ for (const size of allSizes) {
   console.log(`- Building 400x800 layers for ${size}...`);
   const layers = generate400x800Layers(size);
 
-  fs.writeFileSync(path.join(OUT_DIR, `GlossyPantyhoseBody_${size}_BaseColor.png`), encodePng(400, 800, layers.baseColor));
-  fs.writeFileSync(path.join(OUT_DIR, `GlossyPantyhoseBody_${size}_Shadow.png`), encodePng(400, 800, layers.shadow));
-  fs.writeFileSync(path.join(OUT_DIR, `GlossyPantyhoseBody_${size}_Highlight.png`), encodePng(400, 800, layers.highlight));
+  const encBase = encodePng(400, 800, layers.baseColor);
+  const encShd = encodePng(400, 800, layers.shadow);
+  const encHlt = encodePng(400, 800, layers.highlight);
+  const encComp = encodePng(400, 800, layers.composite);
 
-  fs.writeFileSync(path.join(OUT_DIR, `GlossyPantyhoseBody_${size}.png`), encodePng(400, 800, layers.composite));
+  // Write to ItemArms
+  fs.writeFileSync(path.join(OUT_DIR, `GlossyPantyhoseBody_${size}_BaseColor.png`), encBase);
+  fs.writeFileSync(path.join(OUT_DIR, `GlossyPantyhoseBody_${size}_Shadow.png`), encShd);
+  fs.writeFileSync(path.join(OUT_DIR, `GlossyPantyhoseBody_${size}_Highlight.png`), encHlt);
+  fs.writeFileSync(path.join(OUT_DIR, `GlossyPantyhoseBody_${size}.png`), encComp);
+  fs.writeFileSync(path.join(OUT_DIR, `PantyhoseBody_${size}.png`), encComp);
 
-  // Also write for vanilla PantyhoseBody override
-  fs.writeFileSync(path.join(OUT_DIR, `PantyhoseBody_${size}.png`), encodePng(400, 800, layers.composite));
+  // Write to ItemTorso
+  fs.writeFileSync(path.join(TORSO_OUT_DIR, `GlossyPantyhoseBody_${size}_BaseColor.png`), encBase);
+  fs.writeFileSync(path.join(TORSO_OUT_DIR, `GlossyPantyhoseBody_${size}_Shadow.png`), encShd);
+  fs.writeFileSync(path.join(TORSO_OUT_DIR, `GlossyPantyhoseBody_${size}_Highlight.png`), encHlt);
+  fs.writeFileSync(path.join(TORSO_OUT_DIR, `GlossyPantyhoseBody_${size}.png`), encComp);
 }
 
-// Generate Preview thumbnail (100x100)
-console.log("- Generating Preview thumbnail...");
-const compSmall = parsePng(fs.readFileSync(path.join(OUT_DIR, "GlossyPantyhoseBody_FlatSmall.png")));
-const thumb = Buffer.alloc(100 * 100 * 4);
-for (let y = 0; y < 100; y++) {
-  const srcY = y * 8;
-  for (let x = 0; x < 100; x++) {
-    const srcX = x * 4;
-    const srcIdx = (srcY * 400 + srcX) * 4;
-    const dstIdx = (y * 100 + x) * 4;
-    for (let c = 0; c < 4; c++) {
-      thumb[dstIdx + c] = compSmall.pixels[srcIdx + c];
+// Generate High-Quality Selection Preview thumbnails (221x221, matching vanilla BC format)
+console.log("- Generating High-Quality Selection Preview thumbnails (221x221)...");
+function generatePreviewThumbnail() {
+  const upper = parsePng(fs.readFileSync(path.join(REF_DIR, "BodyUpper", "FlatMedium_White.png")));
+  const aLeft = parsePng(fs.readFileSync(path.join(REF_DIR, "Override", "EchoV2", "ArmsLeft", "BackElbowTouch", "FlatMedium_White.png")));
+  const aRight = parsePng(fs.readFileSync(path.join(REF_DIR, "Override", "EchoV2", "ArmsRight", "BackElbowTouch", "FlatMedium_White.png")));
+  const leg = parsePng(fs.readFileSync(path.join(REF_DIR, "BodyLower", "LegsClosed", "Normal_White.png")));
+
+  const baseImg = parsePng(fs.readFileSync(path.join(OUT_DIR, "GlossyPantyhoseBody_FlatMedium_BaseColor.png")));
+  const shdImg = parsePng(fs.readFileSync(path.join(OUT_DIR, "GlossyPantyhoseBody_FlatMedium_Shadow.png")));
+  const hltImg = parsePng(fs.readFileSync(path.join(OUT_DIR, "GlossyPantyhoseBody_FlatMedium_Highlight.png")));
+
+  const fullCanvas = Buffer.alloc(500 * 1000 * 4);
+
+  function drawSkin(img, ox, oy) {
+    for (let y = 0; y < img.height; y++) {
+      const dstY = y + oy;
+      if (dstY >= 1000) continue;
+      for (let x = 0; x < img.width; x++) {
+        const dstX = x + ox;
+        if (dstX >= 500) continue;
+        const srcIdx = (y * img.width + x) * 4;
+        const dstIdx = (dstY * 500 + dstX) * 4;
+        const a = img.pixels[srcIdx + 3] / 255;
+        if (a > 0.05) {
+          fullCanvas[dstIdx] = 232;
+          fullCanvas[dstIdx + 1] = 188;
+          fullCanvas[dstIdx + 2] = 162;
+          fullCanvas[dstIdx + 3] = Math.round(a * 255);
+        }
+      }
     }
   }
-}
-fs.writeFileSync(path.join(PREVIEW_DIR, "GlossyPantyhoseBody.png"), encodePng(100, 100, thumb));
 
-console.log("[JoJo-Mod] All 6 body types generated successfully at 400x800 with sheer translucency!");
+  drawSkin(upper, 0, 0);
+  drawSkin(aLeft, 0, 0);
+  drawSkin(aRight, 0, 0);
+  drawSkin(leg, 0, 462);
+
+  for (let y = 0; y < 800; y++) {
+    const dstY = y + 200;
+    for (let x = 0; x < 400; x++) {
+      const dstX = x + 50;
+      const srcIdx = (y * 400 + x) * 4;
+      const dstIdx = (dstY * 500 + dstX) * 4;
+
+      const bA = baseImg.pixels[srcIdx + 3] / 255;
+      if (bA > 0) {
+        const r = 25, g = 25, b = 32;
+        const curA = fullCanvas[dstIdx + 3] / 255;
+        if (curA > 0) {
+          fullCanvas[dstIdx] = Math.round(fullCanvas[dstIdx] * (1 - bA) + r * bA);
+          fullCanvas[dstIdx + 1] = Math.round(fullCanvas[dstIdx + 1] * (1 - bA) + g * bA);
+          fullCanvas[dstIdx + 2] = Math.round(fullCanvas[dstIdx + 2] * (1 - bA) + b * bA);
+        } else {
+          fullCanvas[dstIdx] = r;
+          fullCanvas[dstIdx + 1] = g;
+          fullCanvas[dstIdx + 2] = b;
+          fullCanvas[dstIdx + 3] = Math.round(bA * 255);
+        }
+      }
+
+      const sA = shdImg.pixels[srcIdx + 3] / 255;
+      if (sA > 0) {
+        fullCanvas[dstIdx] = Math.round(fullCanvas[dstIdx] * (1 - sA));
+        fullCanvas[dstIdx + 1] = Math.round(fullCanvas[dstIdx + 1] * (1 - sA));
+        fullCanvas[dstIdx + 2] = Math.round(fullCanvas[dstIdx + 2] * (1 - sA));
+      }
+
+      const hA = hltImg.pixels[srcIdx + 3] / 255;
+      if (hA > 0) {
+        fullCanvas[dstIdx] = Math.min(255, Math.round(fullCanvas[dstIdx] + 255 * hA));
+        fullCanvas[dstIdx + 1] = Math.min(255, Math.round(fullCanvas[dstIdx + 1] + 255 * hA));
+        fullCanvas[dstIdx + 2] = Math.min(255, Math.round(fullCanvas[dstIdx + 2] + 255 * hA));
+      }
+    }
+  }
+
+  const thumb221 = Buffer.alloc(221 * 221 * 4);
+  const scale = 215 / 760;
+  const srcMinY = 205;
+  const srcCenterX = 250;
+  const dstCenterX = 110;
+  const dstMinY = 3;
+
+  for (let dy = 0; dy < 221; dy++) {
+    const sy = (dy - dstMinY) / scale + srcMinY;
+    if (sy < 0 || sy >= 1000) continue;
+    const sy0 = Math.floor(sy);
+    const sy1 = Math.min(999, sy0 + 1);
+    const fy = sy - sy0;
+
+    for (let dx = 0; dx < 221; dx++) {
+      const sx = (dx - dstCenterX) / scale + srcCenterX;
+      if (sx < 0 || sx >= 500) continue;
+      const sx0 = Math.floor(sx);
+      const sx1 = Math.min(499, sx0 + 1);
+      const fx = sx - sx0;
+
+      const idx00 = (sy0 * 500 + sx0) * 4;
+      const idx01 = (sy0 * 500 + sx1) * 4;
+      const idx10 = (sy1 * 500 + sx0) * 4;
+      const idx11 = (sy1 * 500 + sx1) * 4;
+
+      const dstIdx = (dy * 221 + dx) * 4;
+      for (let c = 0; c < 4; c++) {
+        const top = fullCanvas[idx00 + c] * (1 - fx) + fullCanvas[idx01 + c] * fx;
+        const bot = fullCanvas[idx10 + c] * (1 - fx) + fullCanvas[idx11 + c] * fx;
+        thumb221[dstIdx + c] = Math.round(top * (1 - fy) + bot * fy);
+      }
+    }
+  }
+
+  const encodedThumb = encodePng(221, 221, thumb221);
+  fs.writeFileSync(path.join(PREVIEW_DIR, "GlossyPantyhoseBody.png"), encodedThumb);
+  fs.writeFileSync(path.join(TORSO_PREVIEW_DIR, "GlossyPantyhoseBody.png"), encodedThumb);
+}
+
+generatePreviewThumbnail();
+
+console.log("[JoJo-Mod] All assets and previews generated successfully for ItemArms and ItemTorso!");

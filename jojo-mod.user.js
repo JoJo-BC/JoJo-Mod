@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         JoJo Flat-Chest & Male Avatar Compatibility Mod (BC R133+)
 // @namespace    https://jojo-bc.github.io/JoJo-Mod/
-// @version      1.4.4
+// @version      1.4.5
 // @description  Unlocks and maps flat-chest (FlatSmall / FlatMedium) and all body sizes clothes and restraints in Bondage Club (Glossy Bodystocking, Echo Latex Top 乳胶衣 & Latex Bottom, Pantyhose fullBody, Glossy Fullbody Pantyhose, etc.), 100% ModSDK & BCX compliant.
 // @author       JoJo-BC
 // @match        https://*.bondageprojects.elementfx.com/R*/*
@@ -24,17 +24,17 @@
 		window.CommonDrawAppearanceBuild = window.CommonDrawAppearanceBuild.__jojoOrigBuild;
 	}
 
-	if (window.__JoJoFlatModLoaded === "1.4.2") {
-		console.log("[JoJo-Mod] v1.4.2 already active, refreshing characters.");
+	if (window.__JoJoFlatModLoaded === "1.4.5") {
+		console.log("[JoJo-Mod] v1.4.5 already active, refreshing characters.");
 		if (typeof window.__JoJoFlatModRefreshAll === "function") {
 			window.__JoJoFlatModRefreshAll();
 		}
 		return;
 	}
-	window.__JoJoFlatModLoaded = "1.4.2";
+	window.__JoJoFlatModLoaded = "1.4.5";
 
 	const TAG = "[JoJo-Mod]";
-	const VERSION = "1.4.2";
+	const VERSION = "1.4.5";
 	const REPO_BASE_URL = "https://jojo-bc.github.io/JoJo-Mod/";
 
 	console.log(`${TAG} v${VERSION} initializing...`);
@@ -61,8 +61,9 @@
 		{ group: "ItemArms", name: "PantyhoseBody", fallbackToSmall: true, makeFreeInSession: true },
 		{ group: "ItemArms", name: "PantyhoseBodyOpen", fallbackToSmall: true, makeFreeInSession: true },
 
-		// Custom Restraints: Glossy Fullbody Pantyhose (Ultra-reflective wetlook sheath)
+		// Custom Restraints: Glossy Fullbody Pantyhose (Both ItemArms and ItemTorso slots)
 		{ group: "ItemArms", name: "GlossyPantyhoseBody", fallbackToSmall: true, makeFreeInSession: true },
+		{ group: "ItemTorso", name: "GlossyPantyhoseBody", fallbackToSmall: true, makeFreeInSession: true },
 	];
 
 	/**
@@ -117,6 +118,31 @@
 		"Assets/Female3DCG/ItemArms/PantyhoseBody_Small.png",
 		"Assets/Female3DCG/ItemArms/PantyhoseBody_XLarge.png",
 		"Assets/Female3DCG/ItemArms/Preview/GlossyPantyhoseBody.png",
+		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_FlatMedium.png",
+		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_FlatMedium_BaseColor.png",
+		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_FlatMedium_Highlight.png",
+		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_FlatMedium_Shadow.png",
+		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_FlatSmall.png",
+		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_FlatSmall_BaseColor.png",
+		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_FlatSmall_Highlight.png",
+		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_FlatSmall_Shadow.png",
+		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_Large.png",
+		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_Large_BaseColor.png",
+		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_Large_Highlight.png",
+		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_Large_Shadow.png",
+		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_Normal.png",
+		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_Normal_BaseColor.png",
+		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_Normal_Highlight.png",
+		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_Normal_Shadow.png",
+		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_Small.png",
+		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_Small_BaseColor.png",
+		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_Small_Highlight.png",
+		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_Small_Shadow.png",
+		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_XLarge.png",
+		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_XLarge_BaseColor.png",
+		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_XLarge_Highlight.png",
+		"Assets/Female3DCG/ItemTorso/GlossyPantyhoseBody_XLarge_Shadow.png",
+		"Assets/Female3DCG/ItemTorso/Preview/GlossyPantyhoseBody.png",
 		"Assets/Female3DCG/Suit/BackBoxTie/GlossyBodystocking_FlatMedium_A2.png",
 		"Assets/Female3DCG/Suit/BackBoxTie/GlossyBodystocking_FlatMedium_A3.png",
 		"Assets/Female3DCG/Suit/BackBoxTie/GlossyBodystocking_FlatMedium_A4.png",
@@ -594,6 +620,14 @@
 			}
 		}
 
+		// Fallback for ItemTorso/GlossyPantyhoseBody -> ItemArms/GlossyPantyhoseBody
+		if (cleanSrc.includes("ItemTorso/") && cleanSrc.includes("GlossyPantyhoseBody")) {
+			const armsFallback = cleanSrc.replace("ItemTorso/", "ItemArms/");
+			if (CUSTOM_PNG_MANIFEST.has(armsFallback)) {
+				return REPO_BASE_URL + "assets/" + armsFallback;
+			}
+		}
+
 		if (!decoded.includes("_FlatSmall") && !decoded.includes("_FlatMedium")) return src;
 
 		const canonical = toCanonicalManifestPath(cleanSrc);
@@ -648,19 +682,19 @@
 	}
 
 	/**
-	 * Registers custom restraint GlossyPantyhoseBody in ItemArms group.
+	 * Registers custom restraint GlossyPantyhoseBody in ItemArms and ItemTorso groups.
 	 */
 	function registerGlossyPantyhoseBody() {
 		if (typeof AssetGet !== "function" || typeof AssetGroupGet !== "function") return;
-		const group = AssetGroupGet("Female3DCG", "ItemArms");
-		if (!group || !Array.isArray(group.Asset)) return;
 
-		if (!AssetGet("Female3DCG", "ItemArms", "GlossyPantyhoseBody")) {
-			const customAsset = {
+		// 1. ItemArms slot (standalone fullbody restraint with arms bound behind back)
+		const groupArms = AssetGroupGet("Female3DCG", "ItemArms");
+		if (groupArms && Array.isArray(groupArms.Asset) && !AssetGet("Female3DCG", "ItemArms", "GlossyPantyhoseBody")) {
+			const armsAsset = {
 				Name: "GlossyPantyhoseBody",
-				Description: "Glossy Fullbody Pantyhose",
-				Group: group,
-				ParentItem: group.Name,
+				Description: "Glossy Fullbody Pantyhose (Arms)",
+				Group: groupArms,
+				ParentItem: groupArms.Name,
 				AllowColorize: true,
 				Value: 0,
 				Difficulty: 6,
@@ -690,16 +724,68 @@
 
 			if (typeof window.AssetAdd === "function") {
 				try {
-					window.AssetAdd(group, customAsset);
+					window.AssetAdd(groupArms, armsAsset);
 				} catch (_) {
-					group.Asset.push(customAsset);
-					if (Array.isArray(window.Asset)) window.Asset.push(customAsset);
+					groupArms.Asset.push(armsAsset);
+					if (Array.isArray(window.Asset)) window.Asset.push(armsAsset);
 				}
 			} else {
-				group.Asset.push(customAsset);
-				if (Array.isArray(window.Asset)) window.Asset.push(customAsset);
+				groupArms.Asset.push(armsAsset);
+				if (Array.isArray(window.Asset)) window.Asset.push(armsAsset);
 			}
 			console.log(`${TAG} Registered custom restraint: ItemArms / GlossyPantyhoseBody`);
+		}
+
+		// 2. ItemTorso slot (foundation restraint layer: leaves arms and legs free for other restraints!)
+		const groupTorso = AssetGroupGet("Female3DCG", "ItemTorso");
+		if (groupTorso && Array.isArray(groupTorso.Asset) && !AssetGet("Female3DCG", "ItemTorso", "GlossyPantyhoseBody")) {
+			const torsoAsset = {
+				Name: "GlossyPantyhoseBody",
+				Description: "Glossy Fullbody Pantyhose (Torso)",
+				Group: groupTorso,
+				ParentItem: groupTorso.Name,
+				Left: 50,
+				Top: 200,
+				DrawingLeft: 50,
+				DrawingTop: 200,
+				AllowColorize: true,
+				Value: 0,
+				Difficulty: 6,
+				SelfBondage: 0,
+				Time: 25,
+				RemoveTime: 20,
+				AllowLock: true,
+				SetPose: ["LegsClosed"],
+				AllowPose: ["BackElbowTouch", "BackBoxTie", "BackCuffs", "Yoked", "OverTheHead"],
+				Effect: ["BlockWardrobe", "Slow"],
+				Hide: ["Cloth", "ClothLower", "Suit", "SuitLower", "Garters"],
+				Block: [
+					"ItemVulva",
+					"ItemButt",
+					"ItemVulvaPiercings",
+					"ItemNipplesPiercings",
+				],
+				Audio: "ClothSlip",
+				Layer: [
+					{ Name: "BaseColor", AllowColorize: true, Left: 50, Top: 200, DrawingLeft: 50, DrawingTop: 200 },
+					{ Name: "Shadow", AllowColorize: false, Left: 50, Top: 200, DrawingLeft: 50, DrawingTop: 200 },
+					{ Name: "Highlight", AllowColorize: false, Left: 50, Top: 200, DrawingLeft: 50, DrawingTop: 200 },
+				],
+				DefaultColor: ["#1e1e24"],
+			};
+
+			if (typeof window.AssetAdd === "function") {
+				try {
+					window.AssetAdd(groupTorso, torsoAsset);
+				} catch (_) {
+					groupTorso.Asset.push(torsoAsset);
+					if (Array.isArray(window.Asset)) window.Asset.push(torsoAsset);
+				}
+			} else {
+				groupTorso.Asset.push(torsoAsset);
+				if (Array.isArray(window.Asset)) window.Asset.push(torsoAsset);
+			}
+			console.log(`${TAG} Registered custom restraint: ItemTorso / GlossyPantyhoseBody`);
 		}
 	}
 
