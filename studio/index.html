@@ -562,7 +562,7 @@
 				<label for="itemModeSelect">Item Type</label>
 				<select id="itemModeSelect">
 					<option value="GlossyPantyhoseBody" selected>🔒 GlossyPantyhoseBody (Restraint Torso &amp; Arms)</option>
-					<option value="SpiderBodystocking">🕷️ SpiderBodystocking (Classic Spider-Man Suit)</option>
+					<option value="SpiderCatsuit">🕷️ SpiderCatsuit (Classic 2-Piece Suit: Upper &amp; Lower)</option>
 					<option value="GlossyBodystocking">👗 GlossyBodystocking (Suit Catsuit Vanilla)</option>
 					<option value="CustomOnly">📁 Custom Dropped PNG Only (Artwork Testing)</option>
 				</select>
@@ -1499,19 +1499,14 @@
 			}
 
 			// 3. RENDER VESTITO GLOSSYBODYSTOCKING
-			else if (mode === "SpiderBodystocking") {
-				let patImg = await loadImage("../assets/Assets/Female3DCG/ItemArms/SpiderBodystocking_FlatSmall_Pattern.png");
-				if (patImg) {
-					ctx.drawImage(patImg, 50, 200, 400, 800);
-				}
-				if (layerState["Shadow"] !== false) {
-					let shdImg = await loadImage("../assets/Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_FlatSmall_Shadow.png");
-					if (shdImg) ctx.drawImage(shdImg, 50, 200, 400, 800);
-				}
-				if (layerState["Highlight"] !== false) {
-					let hltImg = await loadImage("../assets/Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_FlatSmall_Highlight.png");
-					if (hltImg) ctx.drawImage(hltImg, 50, 200, 400, 800);
-				}
+			else if (mode === "SpiderCatsuit") {
+				// 1. Lower Suit (SuitLower) -> Pelvis, Hips, Legs & Boots (Top: 462)
+				let lowImg = await loadImage("../assets/Assets/Female3DCG/SuitLower/SpiderCatsuit_Small_Base.png");
+				if (lowImg) ctx.drawImage(lowImg, 0, 462);
+
+				// 2. Upper Suit (Suit) -> Torso, Neck, Shoulders & Forearms/Gloves (Top: 0)
+				let upImg = await loadImage("../assets/Assets/Female3DCG/Suit/SpiderCatsuit_FlatSmall_Base.png");
+				if (upImg) ctx.drawImage(upImg, 0, 0);
 			}
 
 			if (mode === "GlossyBodystocking") {
