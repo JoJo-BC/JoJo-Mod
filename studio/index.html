@@ -328,7 +328,7 @@
 			
 			<div class="form-grid-2">
 				<div>
-					<label for="chestSelect">Petto / Torso</label>
+					<label for="chestSelect">Petto / Busto</label>
 					<select id="chestSelect">
 						<option value="Normal" selected>Femminile Standard (Normal)</option>
 						<option value="Small">Femminile Piccolo (Small)</option>
@@ -339,18 +339,6 @@
 					</select>
 				</div>
 				<div>
-					<label for="legsSelect">Gambe / Cosce</label>
-					<select id="legsSelect">
-						<option value="Normal" selected>Gambe Standard (Normal)</option>
-						<option value="Small">Gambe Sottili (LegsSmall)</option>
-						<option value="Large">Gambe Formose (Large)</option>
-						<option value="XLarge">Gambe Extra (XLarge)</option>
-					</select>
-				</div>
-			</div>
-
-			<div class="form-grid-2">
-				<div>
 					<label for="sexSelect">Sesso / Pelvi</label>
 					<select id="sexSelect">
 						<option value="Female" selected>Femminile (Liscio)</option>
@@ -359,20 +347,43 @@
 						<option value="Tucked">Maschile (Tucked)</option>
 					</select>
 				</div>
+			</div>
+
+			<div class="form-grid-2">
 				<div>
-					<label for="poseSelect">Posa Braccia</label>
-					<select id="poseSelect">
-						<option value="BackElbowTouch" selected>Gomiti uniti dietro (Restraint)</option>
-						<option value="Standing">In piedi (Standard)</option>
-						<option value="BackBoxTie">BoxTie dietro</option>
-						<option value="BackCuffs">Manette dietro</option>
-						<option value="OverTheHead">Mani sopra la testa</option>
-						<option value="Yoked">Braccia a T / Giogo</option>
+					<label for="legsSelect">Dimensione Gambe</label>
+					<select id="legsSelect">
+						<option value="Normal" selected>Gambe Standard (Normal)</option>
+						<option value="Small">Gambe Sottili (LegsSmall)</option>
+						<option value="Large">Gambe Formose (Large)</option>
+						<option value="XLarge">Gambe Extra (XLarge)</option>
+					</select>
+				</div>
+				<div>
+					<label for="legPoseSelect">Posizione Gambe</label>
+					<select id="legPoseSelect">
+						<option value="LegsClosed" selected>In piedi: Gambe Chiuse (Restraint)</option>
+						<option value="LegsOpen">In piedi: Gambe Aperte / Rilassate</option>
+						<option value="Spread">In piedi: Gambe Divaricate</option>
+						<option value="Kneel">In ginocchio: Gambe Chiuse</option>
+						<option value="KneelingSpread">In ginocchio: Gambe Divaricate</option>
 					</select>
 				</div>
 			</div>
 
-			<div style="display:flex; align-items:center; justify-content:space-between; margin-top:4px;">
+			<div>
+				<label for="poseSelect">Posa Braccia</label>
+				<select id="poseSelect">
+					<option value="BackElbowTouch" selected>Gomiti uniti dietro (Restraint)</option>
+					<option value="Standing">In piedi (Lungo i fianchi)</option>
+					<option value="BackBoxTie">BoxTie dietro</option>
+					<option value="BackCuffs">Manette dietro</option>
+					<option value="OverTheHead">Mani sopra la testa</option>
+					<option value="Yoked">Braccia a T / Giogo</option>
+				</select>
+			</div>
+
+			<div style="display:flex; align-items:center; justify-content:space-between; margin-top:10px;">
 				<label style="margin:0; cursor:pointer;" for="showMannequin">Mostra Manichino Guida</label>
 				<input type="checkbox" id="showMannequin" checked style="width:17px; height:17px; cursor:pointer;">
 			</div>
@@ -487,6 +498,7 @@
 		const itemModeSelect = document.getElementById("itemModeSelect");
 		const chestSelect = document.getElementById("chestSelect");
 		const legsSelect = document.getElementById("legsSelect");
+		const legPoseSelect = document.getElementById("legPoseSelect");
 		const sexSelect = document.getElementById("sexSelect");
 		const poseSelect = document.getElementById("poseSelect");
 		const showMannequinCheckbox = document.getElementById("showMannequin");
@@ -574,6 +586,7 @@
 		});
 		chestSelect.addEventListener("change", render);
 		legsSelect.addEventListener("change", render);
+		legPoseSelect.addEventListener("change", render);
 		sexSelect.addEventListener("change", render);
 		poseSelect.addEventListener("change", render);
 		showMannequinCheckbox.addEventListener("change", render);
@@ -634,45 +647,74 @@
 			const mode = itemModeSelect.value;
 			const chest = chestSelect.value;
 			const legs = legsSelect.value;
+			const legPose = legPoseSelect.value;
 			const sex = sexSelect.value;
 			const pose = poseSelect.value;
 			const skinColor = skinColorSelect.value;
+			const isDefaultSkin = (skinColor === "#f0cdb9");
 
-			// 1. RENDER MANICHINO
+			// 1. RENDER MANICHINO COMPLETO DINAMICO MODULARE
 			if (showMannequinCheckbox.checked && layerState["Mannequin"] !== false) {
-				// Proviamo prima il manichino pre-renderizzato
-				const manSrc = `../templates/mannequins/mannequin_${chest}_${pose}.png?v=2.0`;
-				let manImg = await loadImage(manSrc);
+				// A. Caricamento Braccia
+				const armSize = (chest === "FlatSmall" || chest === "FlatMedium") ? chest : "Small";
+				const armSubdir = (pose === "Standing") ? "" : pose + "/";
+				const aLImg = await loadImage(`../templates/arms_left/${armSubdir}${armSize}_White.png`);
+				const aRImg = await loadImage(`../templates/arms_right/${armSubdir}${armSize}_White.png`);
 
-				if (manImg) {
-					// Disegniamo il manichino con eventuale tinta pelle
-					if (skinColor === "#f0cdb9") {
-						ctx.drawImage(manImg, 0, 0);
-					} else {
-						drawTintedImage(ctx, manImg, 0, 0, 500, 1000, skinColor);
+				// B. Caricamento Gambe (500x538, posizionate a Top=462)
+				let lSrc = `../templates/body_lower/${legPose === "LegsOpen" ? "" : legPose + "/"}${legs}_White.png`;
+				const lImg = await loadImage(lSrc);
+
+				// C. Caricamento Busto / Petto (500x1000)
+				const uImg = await loadImage(`../templates/body_upper/${chest}_White.png`);
+
+				// D. Braccia dietro il torso (BackElbowTouch, BackBoxTie, BackCuffs)
+				const armsBehind = (pose === "BackElbowTouch" || pose === "BackBoxTie" || pose === "BackCuffs");
+
+				// 1. Disegna braccia se sono dietro
+				if (armsBehind) {
+					if (aLImg) {
+						if (isDefaultSkin) ctx.drawImage(aLImg, 0, 0);
+						else drawTintedImage(ctx, aLImg, 0, 0, 500, 1000, skinColor);
 					}
-				} else {
-					// Fallback composizione dinamica parti del corpo
-					const uImg = await loadImage(`../reference_samples/Assets/Female3DCG/BodyUpper/${chest}_White.png`);
-					if (uImg) drawTintedImage(ctx, uImg, 0, 0, 500, 1000, skinColor);
-
-					const lImg = await loadImage(`../reference_samples/Assets/Female3DCG/BodyLower/LegsClosed/${legs}_White.png`);
-					if (lImg) drawTintedImage(ctx, lImg, 0, 462, 500, lImg.height, skinColor);
-
-					const armSize = (chest === "FlatSmall" || chest === "FlatMedium") ? chest : "Small";
-					const aLImg = await loadImage(`../reference_samples/Assets/Female3DCG/Override/EchoV2/ArmsLeft/${pose}/${armSize}_White.png`);
-					if (aLImg) drawTintedImage(ctx, aLImg, 0, 0, 500, 1000, skinColor);
-					const aRImg = await loadImage(`../reference_samples/Assets/Female3DCG/Override/EchoV2/ArmsRight/${pose}/${armSize}_White.png`);
-					if (aRImg) drawTintedImage(ctx, aRImg, 0, 0, 500, 1000, skinColor);
+					if (aRImg) {
+						if (isDefaultSkin) ctx.drawImage(aRImg, 0, 0);
+						else drawTintedImage(ctx, aRImg, 0, 0, 500, 1000, skinColor);
+					}
 				}
 
-				// Overlay Pelvi / Sesso / Bulge maschile se richiesto
+				// 2. Disegna Gambe (Top = 462 px)
+				if (lImg) {
+					if (isDefaultSkin) ctx.drawImage(lImg, 0, 462, 500, lImg.height);
+					else drawTintedImage(ctx, lImg, 0, 462, 500, lImg.height, skinColor);
+				}
+
+				// 3. Disegna Torso / Busto
+				if (uImg) {
+					if (isDefaultSkin) ctx.drawImage(uImg, 0, 0);
+					else drawTintedImage(ctx, uImg, 0, 0, 500, 1000, skinColor);
+				}
+
+				// 4. Disegna braccia se sono davanti (Standing, OverTheHead, Yoked)
+				if (!armsBehind) {
+					if (aLImg) {
+						if (isDefaultSkin) ctx.drawImage(aLImg, 0, 0);
+						else drawTintedImage(ctx, aLImg, 0, 0, 500, 1000, skinColor);
+					}
+					if (aRImg) {
+						if (isDefaultSkin) ctx.drawImage(aRImg, 0, 0);
+						else drawTintedImage(ctx, aRImg, 0, 0, 500, 1000, skinColor);
+					}
+				}
+
+				// 5. Overlay Pelvi / Sesso / Bulge maschile se richiesto
 				if (sex !== "Female") {
 					const bulgeFile = (sex === "Bulge") ? "Bulge.png" : (sex === "SkinTight" ? "SkinTight.png" : "Tucked.png");
 					const bImg = await loadImage(`../templates/bulge/${bulgeFile}`);
 					if (bImg) {
 						// Bulge centrato a X=140, Y=462
-						drawTintedImage(ctx, bImg, 140, 462, bImg.width, bImg.height, skinColor);
+						if (isDefaultSkin) ctx.drawImage(bImg, 140, 462, bImg.width, bImg.height);
+						else drawTintedImage(ctx, bImg, 140, 462, bImg.width, bImg.height, skinColor);
 					}
 				}
 			}
@@ -794,23 +836,28 @@
 				ctx.drawImage(customDroppedImage, dx, dy, customDroppedImage.width, customDroppedImage.height);
 			}
 
-			statusText.textContent = `Visualizzazione: ${mode} | Petto: ${chest} | Gambe: ${legs} | Sesso: ${sex} | Posa: ${pose}`;
+			statusText.textContent = `Visualizzazione: ${mode} | Petto: ${chest} | Gambe: ${legs} (${legPose}) | Braccia: ${pose} | Sesso: ${sex}`;
 		}
 
-		// Gestione Drag & Drop
+		// Gestione Drag & Drop sia su Drop Zone che direttamente su Canvas
+		const canvasContainer = document.querySelector(".canvas-container");
+		[dropZone, canvas, canvasContainer].forEach(targetEl => {
+			if (!targetEl) return;
+			targetEl.addEventListener("dragover", (e) => {
+				e.preventDefault();
+				dropZone.classList.add("dragover");
+			});
+			targetEl.addEventListener("dragleave", () => dropZone.classList.remove("dragover"));
+			targetEl.addEventListener("drop", (e) => {
+				e.preventDefault();
+				dropZone.classList.remove("dragover");
+				if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+					handleCustomFile(e.dataTransfer.files[0]);
+				}
+			});
+		});
+
 		dropZone.addEventListener("click", () => fileInput.click());
-		dropZone.addEventListener("dragover", (e) => {
-			e.preventDefault();
-			dropZone.classList.add("dragover");
-		});
-		dropZone.addEventListener("dragleave", () => dropZone.classList.remove("dragover"));
-		dropZone.addEventListener("drop", (e) => {
-			e.preventDefault();
-			dropZone.classList.remove("dragover");
-			if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-				handleCustomFile(e.dataTransfer.files[0]);
-			}
-		});
 		fileInput.addEventListener("change", (e) => {
 			if (e.target.files && e.target.files[0]) {
 				handleCustomFile(e.target.files[0]);
@@ -848,7 +895,7 @@
 
 		function exportComposite() {
 			const link = document.createElement("a");
-			link.download = `jojo_composite_${chestSelect.value}_${poseSelect.value}.png`;
+			link.download = `jojo_composite_${chestSelect.value}_${legsSelect.value}_${legPoseSelect.value}_${poseSelect.value}.png`;
 			link.href = canvas.toDataURL("image/png");
 			link.click();
 		}
