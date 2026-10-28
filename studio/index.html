@@ -1306,6 +1306,12 @@
 		});
 
 		itemModeSelect.addEventListener("change", () => {
+			if (itemModeSelect.value === "SpiderCatsuit") {
+				chestSelect.value = "FlatSmall";
+				legsSelect.value = "Small";
+				poseSelect.value = "Standing";
+				legPoseSelect.value = "LegsOpen";
+			}
 			initLayerUI();
 			render();
 		});
