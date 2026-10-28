@@ -1248,13 +1248,25 @@
 			{ id: "EdgeLine", label: "EdgeLine (Contour Lines)", defaultOn: true },
 		];
 
+		const SPIDER_LAYERS = [
+			{ id: "Mannequin", label: "Base Mannequin Body", defaultOn: true },
+			{ id: "BaseColor", label: "Suit Base (Red & Blue Pattern)", defaultOn: true },
+			{ id: "Shadow", label: "Volumetric 3D Shadow (Pecs, Delts, Legs)", defaultOn: true },
+			{ id: "Sheen", label: "Metallic Luster Sheen (Cylindrical Wrap)", defaultOn: true },
+			{ id: "Highlight", label: "Specular Glints (Muscle Apex)", defaultOn: true },
+			{ id: "EdgeLine", label: "Comic Edge Line (Dark Contour)", defaultOn: true },
+		];
+
 		const layerState = {};
 		PANTYHOSE_LAYERS.forEach(l => layerState[l.id] = l.defaultOn);
 		SUIT_LAYERS.forEach(l => { if (layerState[l.id] === undefined) layerState[l.id] = l.defaultOn; });
+		SPIDER_LAYERS.forEach(l => { if (layerState[l.id] === undefined) layerState[l.id] = l.defaultOn; });
 
 		function initLayerUI() {
 			layerList.innerHTML = "";
-			const currentLayers = (itemModeSelect.value === "GlossyBodystocking") ? SUIT_LAYERS : PANTYHOSE_LAYERS;
+			const currentLayers = (itemModeSelect.value === "SpiderCatsuit")
+				? SPIDER_LAYERS
+				: ((itemModeSelect.value === "GlossyBodystocking") ? SUIT_LAYERS : PANTYHOSE_LAYERS);
 			currentLayers.forEach(l => {
 				const item = document.createElement("div");
 				item.className = "layer-item";
@@ -1517,7 +1529,16 @@
 					if (upShd) ctx.drawImage(upShd, 0, 0);
 				}
 
-				// 4. Slender & Subtle Specular Highlights (Delicate muscle glints)
+				// 4. Dedicated Metallic Luster Sheen (Round Cylindrical & Spherical Wrap)
+				if (layerState["Sheen"] !== false) {
+					const lowSheen = await loadImage("../assets/Assets/Female3DCG/SuitLower/SpiderCatsuit_Small_Sheen.png");
+					if (lowSheen) ctx.drawImage(lowSheen, 0, 462);
+
+					const upSheen = await loadImage("../assets/Assets/Female3DCG/Suit/SpiderCatsuit_FlatSmall_Sheen.png");
+					if (upSheen) ctx.drawImage(upSheen, 0, 0);
+				}
+
+				// 5. Slender & Subtle Specular Highlights (Delicate muscle glints)
 				if (layerState["Highlight"] !== false) {
 					const lowHlt = await loadImage("../assets/Assets/Female3DCG/SuitLower/SpiderCatsuit_Small_Highlight.png");
 					if (lowHlt) ctx.drawImage(lowHlt, 0, 462);
