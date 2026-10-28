@@ -1526,10 +1526,12 @@
 					if (upHlt) ctx.drawImage(upHlt, 0, 0);
 				}
 
-				// 5. Crisp Contour Outlines
+				// 5. Clean Dark Comic Contour (No white halo!)
 				if (layerState["EdgeLine"] !== false) {
-					const el = await loadImage("../assets/Assets/Female3DCG/Suit/GlossyBodystocking_FlatSmall_EdgeLine.png");
-					if (el) ctx.drawImage(el, 0, 0);
+					const upEl = await loadImage("../assets/Assets/Female3DCG/Suit/SpiderCatsuit_FlatSmall_EdgeLine.png");
+					if (upEl) ctx.drawImage(upEl, 0, 0);
+					const lowEl = await loadImage("../assets/Assets/Female3DCG/SuitLower/SpiderCatsuit_Small_EdgeLine.png");
+					if (lowEl) ctx.drawImage(lowEl, 0, 462);
 				}
 			}
 
