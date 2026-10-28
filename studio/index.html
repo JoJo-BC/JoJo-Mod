@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>JoJo-Studio — BC Item &amp; Restraints Studio v2.0</title>
+	<title>JoJo-Studio — BC Item &amp; Restraints Studio v3.0 Pro</title>
 	<style>
 		:root {
 			--bg: #0b0d14;
@@ -17,6 +17,9 @@
 			--muted: #8e98b5;
 			--canvas-bg: #1c202e;
 			--success: #10b981;
+			--danger: #ef4444;
+			--warning: #f59e0b;
+			--info: #3b82f6;
 		}
 		* { box-sizing: border-box; }
 		body {
@@ -32,7 +35,7 @@
 
 		/* Left Sidebar - Controls */
 		.sidebar {
-			width: 360px;
+			width: 400px;
 			background: var(--panel);
 			border-right: 1px solid var(--border);
 			display: flex;
@@ -41,16 +44,16 @@
 			overflow-y: auto;
 		}
 		.sidebar-header {
-			padding: 16px 20px;
+			padding: 14px 18px;
 			border-bottom: 1px solid var(--border);
 			display: flex;
 			align-items: center;
 			justify-content: space-between;
-			background: rgba(0,0,0,0.15);
+			background: rgba(0,0,0,0.2);
 		}
 		.sidebar-header h1 {
 			margin: 0;
-			font-size: 1.15rem;
+			font-size: 1.12rem;
 			font-weight: 700;
 			color: #fff;
 			display: flex;
@@ -65,12 +68,53 @@
 			color: #f78ef3;
 			border: 1px solid rgba(217, 67, 212, 0.4);
 		}
+
+		/* Sidebar Navigation Tabs */
+		.sidebar-tabs {
+			display: flex;
+			background: #0d0f18;
+			border-bottom: 1px solid var(--border);
+		}
+		.tab-btn {
+			flex: 1;
+			padding: 10px 8px;
+			background: transparent;
+			border: none;
+			color: var(--muted);
+			font-size: 0.8rem;
+			font-weight: 600;
+			cursor: pointer;
+			border-bottom: 2px solid transparent;
+			transition: all 0.15s ease;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 6px;
+		}
+		.tab-btn:hover {
+			color: #fff;
+			background: rgba(255,255,255,0.03);
+		}
+		.tab-btn.active {
+			color: #fff;
+			border-bottom-color: var(--accent);
+			background: rgba(217, 67, 212, 0.1);
+		}
+
+		.tab-content {
+			display: none;
+			flex-direction: column;
+		}
+		.tab-content.active {
+			display: flex;
+		}
+
 		.section {
-			padding: 14px 20px;
+			padding: 13px 18px;
 			border-bottom: 1px solid var(--border);
 		}
 		.section-title {
-			font-size: 0.78rem;
+			font-size: 0.76rem;
 			text-transform: uppercase;
 			letter-spacing: 0.06em;
 			color: var(--muted);
@@ -82,24 +126,31 @@
 		}
 		label {
 			display: block;
-			font-size: 0.83rem;
+			font-size: 0.82rem;
 			color: var(--text);
-			margin-bottom: 5px;
+			margin-bottom: 4px;
 			font-weight: 500;
 		}
-		select, input[type="text"] {
+		.label-tip {
+			font-size: 0.72rem;
+			color: var(--muted);
+			font-weight: normal;
+			margin-left: 4px;
+		}
+		select, input[type="text"], input[type="number"], textarea {
 			width: 100%;
-			padding: 8px 10px;
+			padding: 7px 10px;
 			background: #090a10;
 			border: 1px solid var(--border);
 			border-radius: 6px;
 			color: #fff;
-			font-size: 0.86rem;
+			font-size: 0.84rem;
 			outline: none;
-			margin-bottom: 10px;
+			margin-bottom: 8px;
 			transition: border-color 0.15s ease;
+			font-family: inherit;
 		}
-		select:focus, input[type="text"]:focus {
+		select:focus, input[type="text"]:focus, input[type="number"]:focus, textarea:focus {
 			border-color: var(--accent);
 		}
 
@@ -107,6 +158,11 @@
 			display: grid;
 			grid-template-columns: 1fr 1fr;
 			gap: 10px;
+		}
+		.form-grid-3 {
+			display: grid;
+			grid-template-columns: 1fr 1fr 1fr;
+			gap: 8px;
 		}
 
 		/* Color picker row */
@@ -118,8 +174,8 @@
 		}
 		input[type="color"] {
 			border: none;
-			width: 36px;
-			height: 36px;
+			width: 34px;
+			height: 34px;
 			border-radius: 6px;
 			background: transparent;
 			cursor: pointer;
@@ -128,7 +184,7 @@
 		.color-presets {
 			display: flex;
 			gap: 6px;
-			margin-bottom: 10px;
+			margin-bottom: 8px;
 			flex-wrap: wrap;
 		}
 		.preset-btn {
@@ -175,9 +231,9 @@
 		.drop-zone {
 			border: 2px dashed var(--border);
 			border-radius: 8px;
-			padding: 14px;
+			padding: 12px;
 			text-align: center;
-			font-size: 0.8rem;
+			font-size: 0.78rem;
 			color: var(--muted);
 			cursor: pointer;
 			background: #0d0f17;
@@ -194,11 +250,11 @@
 			background: rgba(38, 44, 66, 0.4);
 			border: 1px solid var(--border);
 			border-radius: 6px;
-			padding: 10px;
-			font-size: 0.77rem;
+			padding: 9px 12px;
+			font-size: 0.75rem;
 			color: #b4bed4;
 			line-height: 1.45;
-			margin-top: 10px;
+			margin-top: 8px;
 		}
 		.info-box code {
 			color: #f78ef3;
@@ -215,9 +271,9 @@
 			justify-content: center;
 			gap: 6px;
 			width: 100%;
-			padding: 9px 12px;
+			padding: 8px 12px;
 			border-radius: 6px;
-			font-size: 0.84rem;
+			font-size: 0.82rem;
 			font-weight: 600;
 			cursor: pointer;
 			border: 1px solid var(--border);
@@ -227,7 +283,7 @@
 			margin-bottom: 6px;
 			text-decoration: none;
 		}
-		.btn:hover {
+		.btn:hover:not(:disabled) {
 			background: #252c42;
 			border-color: var(--accent);
 		}
@@ -235,8 +291,71 @@
 			background: var(--accent);
 			border-color: var(--accent);
 		}
-		.btn-primary:hover {
+		.btn-primary:hover:not(:disabled) {
 			background: var(--accent-hover);
+		}
+		.btn-success {
+			background: #10b981;
+			border-color: #059669;
+		}
+		.btn-success:hover:not(:disabled) {
+			background: #059669;
+		}
+		.btn-disabled, .btn:disabled {
+			background: #1b1e2a !important;
+			border-color: #2b3145 !important;
+			color: #555d77 !important;
+			cursor: not-allowed !important;
+			opacity: 0.65;
+		}
+
+		/* Creator Layer Row */
+		.creator-layer-row {
+			background: #0d0f17;
+			border: 1px solid var(--border);
+			border-radius: 6px;
+			padding: 8px 10px;
+			margin-bottom: 6px;
+			display: grid;
+			grid-template-columns: 2fr 1fr 1fr auto;
+			gap: 6px;
+			align-items: center;
+		}
+		.btn-icon-del {
+			background: transparent;
+			border: none;
+			color: var(--danger);
+			font-size: 0.95rem;
+			cursor: pointer;
+			padding: 4px;
+		}
+		.btn-icon-del:hover {
+			color: #ff6b6b;
+		}
+
+		/* Validation Checklist */
+		.val-checklist {
+			background: #0a0c13;
+			border: 1px solid var(--border);
+			border-radius: 6px;
+			padding: 10px 12px;
+			margin-bottom: 10px;
+			display: flex;
+			flex-direction: column;
+			gap: 5px;
+			font-size: 0.77rem;
+		}
+		.val-item {
+			display: flex;
+			align-items: center;
+			gap: 6px;
+			color: var(--muted);
+		}
+		.val-item.valid {
+			color: var(--success);
+		}
+		.val-item.invalid {
+			color: var(--danger);
 		}
 
 		/* Main Canvas Viewport */
@@ -269,7 +388,7 @@
 			padding: 4px 8px;
 			border-radius: 5px;
 			cursor: pointer;
-			font-size: 0.78rem;
+			font-size: 0.76rem;
 		}
 		.zoom-btn:hover, .zoom-btn.active {
 			background: var(--accent);
@@ -292,13 +411,107 @@
 			box-shadow: 0 12px 36px rgba(0,0,0,0.6);
 			transform-origin: center center;
 			transition: transform 0.1s ease-out;
+			cursor: default;
 		}
 		.status-text {
-			font-size: 0.78rem;
+			font-size: 0.76rem;
 			color: var(--muted);
 			display: flex;
 			align-items: center;
 			gap: 8px;
+		}
+
+		/* Modal Dialog */
+		.modal-backdrop {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100vw;
+			height: 100vh;
+			background: rgba(0, 0, 0, 0.75);
+			backdrop-filter: blur(4px);
+			display: none;
+			align-items: center;
+			justify-content: center;
+			z-index: 9999;
+		}
+		.modal-backdrop.open {
+			display: flex;
+		}
+		.modal-box {
+			width: 820px;
+			max-width: 95vw;
+			max-height: 88vh;
+			background: var(--panel);
+			border: 1px solid var(--border);
+			border-radius: 10px;
+			display: flex;
+			flex-direction: column;
+			box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+			overflow: hidden;
+		}
+		.modal-header {
+			padding: 14px 20px;
+			border-bottom: 1px solid var(--border);
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			background: rgba(0,0,0,0.25);
+		}
+		.modal-header h2 {
+			margin: 0;
+			font-size: 1.05rem;
+			color: #fff;
+			display: flex;
+			align-items: center;
+			gap: 8px;
+		}
+		.modal-nav {
+			display: flex;
+			background: #090b12;
+			border-bottom: 1px solid var(--border);
+		}
+		.modal-nav button {
+			flex: 1;
+			padding: 10px;
+			background: transparent;
+			border: none;
+			color: var(--muted);
+			font-size: 0.8rem;
+			font-weight: 600;
+			cursor: pointer;
+			border-bottom: 2px solid transparent;
+		}
+		.modal-nav button.active {
+			color: #fff;
+			border-bottom-color: var(--accent);
+			background: rgba(217, 67, 212, 0.08);
+		}
+		.modal-body {
+			flex: 1;
+			padding: 16px;
+			overflow-y: auto;
+		}
+		.code-display {
+			background: #06070a;
+			border: 1px solid var(--border);
+			border-radius: 6px;
+			padding: 14px;
+			font-family: Consolas, "Fira Code", monospace;
+			font-size: 0.8rem;
+			color: #e2e8f0;
+			line-height: 1.5;
+			white-space: pre;
+			overflow-x: auto;
+			max-height: 420px;
+		}
+		.modal-footer {
+			padding: 12px 20px;
+			border-top: 1px solid var(--border);
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			background: rgba(0,0,0,0.2);
 		}
 	</style>
 </head>
@@ -307,177 +520,442 @@
 	<!-- Sidebar -->
 	<aside class="sidebar">
 		<div class="sidebar-header">
-			<h1>JoJo-Studio <span class="badge">v2.0 Full</span></h1>
+			<h1>JoJo-Studio <span class="badge">v3.0 Pro</span></h1>
 			<a href="../index.html" style="color:var(--muted); text-decoration:none; font-size:0.8rem;">← Mod Home</a>
 		</div>
 
-		<!-- Item to Test -->
-		<div class="section">
-			<div class="section-title">Item &amp; Mode</div>
-			<label for="itemModeSelect">Item Type</label>
-			<select id="itemModeSelect">
-				<option value="GlossyPantyhoseBody" selected>🔒 GlossyPantyhoseBody (Restraint Torso &amp; Arms)</option>
-				<option value="GlossyBodystocking">👗 GlossyBodystocking (Suit Catsuit Vanilla)</option>
-				<option value="CustomOnly">📁 Custom Dropped PNG Only (Artwork Testing)</option>
-			</select>
+		<!-- Sidebar Switcher Tabs -->
+		<div class="sidebar-tabs">
+			<button class="tab-btn active" id="tabBtnPreview" onclick="switchSidebarTab('preview')">
+				👀 Preview &amp; Test
+			</button>
+			<button class="tab-btn" id="tabBtnCreator" onclick="switchSidebarTab('creator')">
+				📦 BC Item Creator &amp; Export
+			</button>
 		</div>
 
-		<!-- Body & Mannequin Configuration -->
-		<div class="section">
-			<div class="section-title">Body Shape &amp; Mannequin</div>
-			
-			<div class="form-grid-2">
-				<div>
-					<label for="chestSelect">BodyUpper (Chest)</label>
-					<select id="chestSelect">
-						<option value="Normal" selected>Normal (Default Female)</option>
-						<option value="Small">Small (Small Female)</option>
-						<option value="Large">Large (Large Female)</option>
-						<option value="XLarge">XLarge (X-Large Female)</option>
-						<option value="FlatMedium">FlatMedium (Athletic Male)</option>
-						<option value="FlatSmall">FlatSmall (Lean Male)</option>
-					</select>
-				</div>
-				<div>
-					<label for="legsSelect">BodyLower (Legs Size)</label>
-					<select id="legsSelect">
-						<option value="Normal" selected>Normal (Default Legs)</option>
-						<option value="Small">Small (LegsSmall / Lean)</option>
-						<option value="Large">Large (Thick / Curvy)</option>
-						<option value="XLarge">XLarge (Extra Thick)</option>
-					</select>
-				</div>
-			</div>
-
-			<div class="form-grid-2">
-				<div>
-					<label for="legPoseSelect">Legs Pose</label>
-					<select id="legPoseSelect">
-						<option value="LegsClosed" selected>LegsClosed (Restraint Bound)</option>
-						<option value="LegsOpen">LegsOpen (Standing Relaxed)</option>
-						<option value="Spread">Spread (Legs Spread)</option>
-						<option value="Kneel">Kneel (Kneeling Together)</option>
-						<option value="KneelingSpread">KneelingSpread (Spread)</option>
-					</select>
-				</div>
-				<div>
-					<label for="poseSelect">Arms Pose</label>
-					<select id="poseSelect">
-						<option value="BackElbowTouch" selected>BackElbowTouch (Tied Behind)</option>
-						<option value="Standing">Standing (Arms Down)</option>
-						<option value="BackBoxTie">BackBoxTie (BoxTie Behind)</option>
-						<option value="BackCuffs">BackCuffs (Cuffs Behind)</option>
-						<option value="OverTheHead">OverTheHead (Hands Up)</option>
-						<option value="Yoked">Yoked (T-Pose / Yoke Bar)</option>
-					</select>
-				</div>
-			</div>
-
-			<div style="display:flex; align-items:center; justify-content:space-between; margin-top:10px;">
-				<label style="margin:0; cursor:pointer;" for="showMannequin">Show Mannequin Guide</label>
-				<input type="checkbox" id="showMannequin" checked style="width:17px; height:17px; cursor:pointer;">
-			</div>
-
-			<div style="display:flex; align-items:center; justify-content:space-between; margin-top:8px;">
-				<label style="margin:0; cursor:pointer;" for="showHead">Show Head &amp; Chin Reference</label>
-				<input type="checkbox" id="showHead" checked style="width:17px; height:17px; cursor:pointer;">
-			</div>
-
-			<div style="margin-top:10px;">
-				<label for="mannequinStyleSelect">Mannequin Visual Style</label>
-				<select id="mannequinStyleSelect">
-					<option value="vanilla" selected>Vanilla Skin Tone (Default BC)</option>
-					<option value="blueprint">Technical Blueprint (Neutral Grey)</option>
-				</select>
-			</div>
-		</div>
-
-		<!-- Restraint Color & Tint -->
-		<div class="section">
-			<div class="section-title">Restraint / Outfit Color</div>
-			<label>BaseColor Tint (BC Canvas Simulation)</label>
-			<div class="color-row">
-				<input type="color" id="tintColor" value="#1a1a24">
-				<input type="text" id="tintHex" value="#1a1a24" style="margin:0; width:110px;">
-			</div>
-			<div class="color-presets">
-				<div class="preset-btn" style="background:#151515;" title="Vinyl Black / Dark Stocking" onclick="setTint('#151515')"></div>
-				<div class="preset-btn" style="background:#2b2226;" title="Dark Smoke" onclick="setTint('#2b2226')"></div>
-				<div class="preset-btn" style="background:#4b3a37;" title="Coffee Brown" onclick="setTint('#4b3a37')"></div>
-				<div class="preset-btn" style="background:#ffffff;" title="Snow White" onclick="setTint('#ffffff')"></div>
-				<div class="preset-btn" style="background:#d943d4;" title="JoJo Magenta" onclick="setTint('#d943d4')"></div>
-				<div class="preset-btn" style="background:#2463eb;" title="Electric Blue" onclick="setTint('#2463eb')"></div>
-				<div class="preset-btn" style="background:#dc2626;" title="Lacquer Red" onclick="setTint('#dc2626')"></div>
-				<div class="preset-btn" style="background:#16a34a;" title="Emerald Green" onclick="setTint('#16a34a')"></div>
-			</div>
-		</div>
-
-		<!-- Layer Inspector -->
-		<div class="section">
-			<div class="section-title">Layer Inspector</div>
-			<div class="layer-list" id="layerList">
-				<!-- Populated dynamically -->
-			</div>
-		</div>
-
-		<!-- Drop Zone for Live PNG Testing -->
-		<div class="section">
-			<div class="section-title">Test Custom Edited PNG</div>
-			<div class="drop-zone" id="dropZone">
-				📁 Drag &amp; drop your edited PNG here or click to browse!<br>
-				<span style="font-size:0.75rem; color:#888;">(BaseColor, Highlight, Shadow or full composite)</span>
-			</div>
-			<input type="file" id="fileInput" accept="image/png" style="display:none;">
-
-			<div id="dropFileInfo" style="display:none; margin-top:8px; font-size:0.78rem;">
-				<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-					<span id="droppedFileName" style="color:#f78ef3; font-weight:600;"></span>
-					<button onclick="clearCustomImage()" style="background:transparent; border:none; color:#dc2626; cursor:pointer; font-size:0.75rem;">✕ Remove</button>
-				</div>
-				<label for="customLayerTarget">Use this file as:</label>
-				<select id="customLayerTarget" style="margin-bottom:4px;">
-					<option value="overlay">Direct Overlay (Top Layer)</option>
-					<option value="baseColor">Replace BaseColor (Silhouette + Tint)</option>
-					<option value="highlight">Replace Highlight (Reflections)</option>
-					<option value="shadow">Replace Shadow (Shading &amp; Folds)</option>
+		<!-- ==================== TAB 1: PREVIEW & TEST ==================== -->
+		<div class="tab-content active" id="tabContentPreview">
+			<!-- Item to Test -->
+			<div class="section">
+				<div class="section-title">Item &amp; Mode</div>
+				<label for="itemModeSelect">Item Type</label>
+				<select id="itemModeSelect">
+					<option value="GlossyPantyhoseBody" selected>🔒 GlossyPantyhoseBody (Restraint Torso &amp; Arms)</option>
+					<option value="GlossyBodystocking">👗 GlossyBodystocking (Suit Catsuit Vanilla)</option>
+					<option value="CustomOnly">📁 Custom Dropped PNG Only (Artwork Testing)</option>
 				</select>
 			</div>
 
-			<div class="info-box">
-				💡 <strong>Personal Modifications</strong>:<br>
-				Edit any sprite with Photoshop or GIMP and save it with the <strong>same filename</strong> into:<br>
-				<code>JoJo-Mod/assets/Assets/Female3DCG/ItemArms/</code><br>
-				Then drag &amp; drop it here to preview it instantly on any body shape and pose!
+			<!-- Body & Mannequin Configuration -->
+			<div class="section">
+				<div class="section-title">Body Shape &amp; Mannequin</div>
+				
+				<div class="form-grid-2">
+					<div>
+						<label for="chestSelect">BodyUpper (Chest)</label>
+						<select id="chestSelect">
+							<option value="Normal" selected>Normal (Default Female)</option>
+							<option value="Small">Small (Small Female)</option>
+							<option value="Large">Large (Large Female)</option>
+							<option value="XLarge">XLarge (X-Large Female)</option>
+							<option value="FlatMedium">FlatMedium (Athletic Male)</option>
+							<option value="FlatSmall">FlatSmall (Lean Male)</option>
+						</select>
+					</div>
+					<div>
+						<label for="legsSelect">BodyLower (Legs Size)</label>
+						<select id="legsSelect">
+							<option value="Normal" selected>Normal (Default Legs)</option>
+							<option value="Small">Small (LegsSmall / Lean)</option>
+							<option value="Large">Large (Thick / Curvy)</option>
+							<option value="XLarge">XLarge (Extra Thick)</option>
+						</select>
+					</div>
+				</div>
+
+				<div class="form-grid-2">
+					<div>
+						<label for="legPoseSelect">Legs Pose</label>
+						<select id="legPoseSelect">
+							<option value="LegsClosed" selected>LegsClosed (Restraint Bound)</option>
+							<option value="LegsOpen">LegsOpen (Standing Relaxed)</option>
+							<option value="Spread">Spread (Legs Spread)</option>
+							<option value="Kneel">Kneel (Kneeling Together)</option>
+							<option value="KneelingSpread">KneelingSpread (Spread)</option>
+						</select>
+					</div>
+					<div>
+						<label for="poseSelect">Arms Pose</label>
+						<select id="poseSelect">
+							<option value="BackElbowTouch" selected>BackElbowTouch (Tied Behind)</option>
+							<option value="Standing">Standing (Arms Down)</option>
+							<option value="BackBoxTie">BackBoxTie (BoxTie Behind)</option>
+							<option value="BackCuffs">BackCuffs (Cuffs Behind)</option>
+							<option value="OverTheHead">OverTheHead (Hands Up)</option>
+							<option value="Yoked">Yoked (T-Pose / Yoke Bar)</option>
+						</select>
+					</div>
+				</div>
+
+				<div style="display:flex; align-items:center; justify-content:space-between; margin-top:10px;">
+					<label style="margin:0; cursor:pointer;" for="showMannequin">Show Mannequin Guide</label>
+					<input type="checkbox" id="showMannequin" checked style="width:17px; height:17px; cursor:pointer;">
+				</div>
+
+				<div style="display:flex; align-items:center; justify-content:space-between; margin-top:8px;">
+					<label style="margin:0; cursor:pointer;" for="showHead">Show Head &amp; Chin Reference</label>
+					<input type="checkbox" id="showHead" checked style="width:17px; height:17px; cursor:pointer;">
+				</div>
+
+				<div style="margin-top:10px;">
+					<label for="mannequinStyleSelect">Mannequin Visual Style</label>
+					<select id="mannequinStyleSelect">
+						<option value="vanilla" selected>Vanilla Skin Tone (Default BC)</option>
+						<option value="blueprint">Technical Blueprint (Neutral Grey)</option>
+					</select>
+				</div>
+			</div>
+
+			<!-- Restraint Color & Tint -->
+			<div class="section">
+				<div class="section-title">Restraint / Outfit Color</div>
+				<label>BaseColor Tint (BC Canvas Simulation)</label>
+				<div class="color-row">
+					<input type="color" id="tintColor" value="#1a1a24">
+					<input type="text" id="tintHex" value="#1a1a24" style="margin:0; width:110px;">
+				</div>
+				<div class="color-presets">
+					<div class="preset-btn" style="background:#151515;" title="Vinyl Black / Dark Stocking" onclick="setTint('#151515')"></div>
+					<div class="preset-btn" style="background:#2b2226;" title="Dark Smoke" onclick="setTint('#2b2226')"></div>
+					<div class="preset-btn" style="background:#4b3a37;" title="Coffee Brown" onclick="setTint('#4b3a37')"></div>
+					<div class="preset-btn" style="background:#ffffff;" title="Snow White" onclick="setTint('#ffffff')"></div>
+					<div class="preset-btn" style="background:#d943d4;" title="JoJo Magenta" onclick="setTint('#d943d4')"></div>
+					<div class="preset-btn" style="background:#2463eb;" title="Electric Blue" onclick="setTint('#2463eb')"></div>
+					<div class="preset-btn" style="background:#dc2626;" title="Lacquer Red" onclick="setTint('#dc2626')"></div>
+					<div class="preset-btn" style="background:#16a34a;" title="Emerald Green" onclick="setTint('#16a34a')"></div>
+				</div>
+			</div>
+
+			<!-- Layer Inspector -->
+			<div class="section">
+				<div class="section-title">Layer Inspector</div>
+				<div class="layer-list" id="layerList">
+					<!-- Populated dynamically -->
+				</div>
+			</div>
+
+			<!-- Drop Zone for Live PNG Testing -->
+			<div class="section">
+				<div class="section-title">Test Custom Edited PNG</div>
+				<div class="drop-zone" id="dropZone">
+					📁 Drag &amp; drop your edited PNG here or click to browse!<br>
+					<span style="font-size:0.75rem; color:#888;">(BaseColor, Highlight, Shadow or full composite)</span>
+				</div>
+				<input type="file" id="fileInput" accept="image/png" style="display:none;">
+
+				<div id="dropFileInfo" style="display:none; margin-top:8px; font-size:0.78rem;">
+					<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+						<span id="droppedFileName" style="color:#f78ef3; font-weight:600;"></span>
+						<button onclick="clearCustomImage()" style="background:transparent; border:none; color:#dc2626; cursor:pointer; font-size:0.75rem;">✕ Remove</button>
+					</div>
+					<label for="customLayerTarget">Use this file as:</label>
+					<select id="customLayerTarget" style="margin-bottom:4px;">
+						<option value="overlay">Direct Overlay (Top Layer)</option>
+						<option value="baseColor">Replace BaseColor (Silhouette + Tint)</option>
+						<option value="highlight">Replace Highlight (Reflections)</option>
+						<option value="shadow">Replace Shadow (Shading &amp; Folds)</option>
+					</select>
+				</div>
+
+				<div class="info-box">
+					💡 <strong>Personal Modifications</strong>:<br>
+					Edit any sprite with Photoshop or GIMP and save it with the <strong>same filename</strong> into:<br>
+					<code>JoJo-Mod/assets/Assets/Female3DCG/ItemArms/</code><br>
+					Then drag &amp; drop it here to preview it instantly on any body shape and pose!
+				</div>
+			</div>
+
+			<!-- Actions & Export -->
+			<div class="section" style="border:none;">
+				<button class="btn" style="background:#1d4ed8; border-color:#2563eb; margin-bottom:8px;" onclick="downloadMannequinTemplate()">
+					📥 Download Mannequin Template (500x1000 PNG)
+				</button>
+				<button class="btn btn-primary" onclick="exportComposite()">
+					💾 Export Composite PNG (500x1000)
+				</button>
+				<button class="btn" onclick="exportRestraintOnly()">
+					🖼️ Export Restraint Only (400x800)
+				</button>
+				<button class="btn" onclick="copyConsoleCmd()">
+					📋 Copy BC Console Command
+				</button>
 			</div>
 		</div>
 
-		<!-- Actions & Export -->
-		<div class="section" style="border:none;">
-			<button class="btn" style="background:#1d4ed8; border-color:#2563eb; margin-bottom:8px;" onclick="downloadMannequinTemplate()">
-				📥 Download Mannequin Template (500x1000 PNG)
-			</button>
-			<button class="btn btn-primary" onclick="exportComposite()">
-				💾 Export Composite PNG (500x1000)
-			</button>
-			<button class="btn" onclick="exportRestraintOnly()">
-				🖼️ Export Restraint Only (400x800)
-			</button>
-			<button class="btn" onclick="copyConsoleCmd()">
-				📋 Copy BC Console Command
-			</button>
+		<!-- ==================== TAB 2: BC ITEM CREATOR & EXPORT ==================== -->
+		<div class="tab-content" id="tabContentCreator">
+			<!-- Section 1: Item Identity -->
+			<div class="section">
+				<div class="section-title">1. Item Identity &amp; Slot</div>
+				<label for="creatorGroupSelect">Asset Group (Slot) <span class="label-tip">*Required</span></label>
+				<select id="creatorGroupSelect">
+					<optgroup label="🔴 Head &amp; Neck (10 Slots)">
+						<option value="ItemHead">ItemHead — Masks, Full Hoods, Helmets</option>
+						<option value="ItemHood">ItemHood — Blindfolds, Light Hoods</option>
+						<option value="ItemEars">ItemEars — Earplugs, Earmuffs</option>
+						<option value="ItemNose">ItemNose — Nosehooks, Plugs</option>
+						<option value="ItemMouth">ItemMouth — Primary Gags (Ball, Tape, Ring)</option>
+						<option value="ItemMouth2">ItemMouth2 — Secondary Gags, Cleave</option>
+						<option value="ItemMouth3">ItemMouth3 — Pumps, Outer Straps</option>
+						<option value="ItemNeck">ItemNeck — Standard Collars</option>
+						<option value="ItemNeckRestraints">ItemNeckRestraints — Posture Collars, Yokes</option>
+						<option value="ItemNeckAccessories">ItemNeckAccessories — Leashes, Bells, Chains</option>
+					</optgroup>
+					<optgroup label="🟣 Arms &amp; Hands (3 Slots)">
+						<option value="ItemArms" selected>ItemArms — Arm Binders, BoxTie, Cuffs, Body Restraints</option>
+						<option value="ItemHands">ItemHands — Mitts, Rigid Bondage Gloves</option>
+						<option value="ItemHandheld">ItemHandheld — Crops, Whips, Controllers, Keys</option>
+					</optgroup>
+					<optgroup label="🔵 Torso &amp; Breast (5 Slots)">
+						<option value="ItemTorso">ItemTorso — Corsets, Chest Harnesses, Suspension Belts</option>
+						<option value="ItemTorso2">ItemTorso2 — Secondary Torso Layer (Cross Harness)</option>
+						<option value="ItemBreast">ItemBreast — Breast Bondage, Chest Binders</option>
+						<option value="ItemNipples">ItemNipples — Clamps, Suction Cups, Weights</option>
+						<option value="ItemNipplesPiercings">ItemNipplesPiercings — Nipple Chains &amp; Rings</option>
+					</optgroup>
+					<optgroup label="💖 Pelvis &amp; Intimate (4 Slots)">
+						<option value="ItemPelvis">ItemPelvis — Chastity Belts, Pelvic Harnesses</option>
+						<option value="ItemVulva">ItemVulva — Vaginal Dildo Plugs, Eggs, Clips</option>
+						<option value="ItemVulvaPiercings">ItemVulvaPiercings — Labia Chains &amp; Rings</option>
+						<option value="ItemButt">ItemButt — Butt Plugs, Tails, Inflatables</option>
+					</optgroup>
+					<optgroup label="🟢 Legs &amp; Feet (3 Slots)">
+						<option value="ItemLegs">ItemLegs — Thigh Cords, Knee Binders, Spreaders</option>
+						<option value="ItemFeet">ItemFeet — Ankle Cuffs, Shackles, Toe Ties</option>
+						<option value="ItemBoots">ItemBoots — Thigh-high Bondage Boots, Locking Heels</option>
+					</optgroup>
+					<optgroup label="⚙️ Special &amp; Addons (4 Slots)">
+						<option value="ItemDevices">ItemDevices — Crosses, Posts, Bondage Machinery</option>
+						<option value="ItemAddon">ItemAddon — Supplementary Rings &amp; Chains</option>
+						<option value="ItemMisc">ItemMisc — Loose Ropes, Free Padlocks</option>
+						<option value="ItemScript">ItemScript — Logic, Timers, Shocks</option>
+					</optgroup>
+					<optgroup label="👗 Suits &amp; Clothing (Main Slots)">
+						<option value="Suit">Suit — Full Catsuits, Latex Suits</option>
+						<option value="SuitLower">SuitLower — Catsuit Leggings, Briefs</option>
+						<option value="Corset">Corset — Fashion Corsets</option>
+						<option value="Gloves">Gloves — Regular &amp; Long Gloves</option>
+						<option value="Bra">Bra — Bras &amp; Tops</option>
+						<option value="Panties">Panties — Underwear &amp; Panties</option>
+						<option value="Cloth">Cloth — Dresses, Shirts, Robes</option>
+						<option value="ClothLower">ClothLower — Skirts, Pants</option>
+						<option value="Socks">Socks — Stockings, Socks</option>
+						<option value="Shoes">Shoes — Regular Shoes &amp; Heels</option>
+					</optgroup>
+				</select>
+
+				<div class="form-grid-2">
+					<div>
+						<label for="creatorNameInput">Asset Name <span class="label-tip">*PascalCase</span></label>
+						<input type="text" id="creatorNameInput" value="GlossyPantyhoseBody" placeholder="e.g. LeatherMittens">
+					</div>
+					<div>
+						<label for="creatorPriorityInput">Drawing Priority <span class="label-tip">*Z-Index</span></label>
+						<input type="number" id="creatorPriorityInput" value="25" min="1" max="99">
+					</div>
+				</div>
+
+				<label for="creatorDisplayNameInput">English Display Name <span class="label-tip">*In-game Label</span></label>
+				<input type="text" id="creatorDisplayNameInput" value="Glossy Pantyhose Body" placeholder="e.g. Heavy Leather Mittens">
+
+				<label for="creatorDescInput">English Description <span class="label-tip">*Tooltip</span></label>
+				<input type="text" id="creatorDescInput" value="A tight glossy pantyhose body restraint locking the arms." placeholder="e.g. Restricts hand movement completely.">
+
+				<div class="form-grid-2">
+					<div>
+						<label for="creatorDynamicGroupInput">DynamicGroupName <span class="label-tip">Optional</span></label>
+						<input type="text" id="creatorDynamicGroupInput" value="" placeholder="e.g. ItemArms (re-uses PNG folder)">
+					</div>
+					<div>
+						<label for="creatorFetishSelect">Fetish Tag</label>
+						<select id="creatorFetishSelect">
+							<option value="Latex" selected>Latex</option>
+							<option value="Leather">Leather</option>
+							<option value="Rope">Rope</option>
+							<option value="Metal">Metal</option>
+							<option value="Nylon">Nylon</option>
+							<option value="Bondage">Bondage</option>
+							<option value="None">None (Standard Clothing)</option>
+						</select>
+					</div>
+				</div>
+			</div>
+
+			<!-- Section 2: Restraint & Gameplay Properties -->
+			<div class="section">
+				<div class="section-title">2. Restraint &amp; Gameplay Rules</div>
+				<div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+					<input type="checkbox" id="creatorIsRestraintCheckbox" checked style="width:16px; height:16px; cursor:pointer;">
+					<label for="creatorIsRestraintCheckbox" style="margin:0; cursor:pointer; font-weight:600;">IsRestraint (Bondage / Restricting Item)</label>
+				</div>
+
+				<div id="restraintFields">
+					<div class="form-grid-3">
+						<div>
+							<label for="creatorDifficultyInput">Difficulty (0-25)</label>
+							<input type="number" id="creatorDifficultyInput" value="6" min="0" max="30">
+						</div>
+						<div>
+							<label for="creatorTimeInput">Apply Time (s)</label>
+							<input type="number" id="creatorTimeInput" value="5" min="0" max="60">
+						</div>
+						<div>
+							<label for="creatorRemoveTimeInput">Remove Time (s)</label>
+							<input type="number" id="creatorRemoveTimeInput" value="10" min="0" max="60">
+						</div>
+					</div>
+
+					<div class="form-grid-2" style="margin-bottom:8px;">
+						<label style="display:flex; align-items:center; gap:6px; margin:0; cursor:pointer;">
+							<input type="checkbox" id="creatorAllowLockCheckbox" checked style="width:15px; height:15px;">
+							<span>AllowLock (Padlocks)</span>
+						</label>
+						<label style="display:flex; align-items:center; gap:6px; margin:0; cursor:pointer;">
+							<input type="checkbox" id="creatorAllowTightenCheckbox" checked style="width:15px; height:15px;">
+							<span>AllowTighten (Menu)</span>
+						</label>
+					</div>
+
+					<div class="form-grid-2">
+						<div>
+							<label for="creatorEffectSelect">Primary Effect</label>
+							<select id="creatorEffectSelect">
+								<option value="Block" selected>Block (Hands unusable)</option>
+								<option value="Prone">Prone (Forced to floor)</option>
+								<option value="Freeze">Freeze (Total paralysis)</option>
+								<option value="Tethered">Tethered (Bound to spot)</option>
+								<option value="Enclose">Enclose (Fully bagged)</option>
+								<option value="Slow">Slow (Slow walking)</option>
+								<option value="BlindHeavy">BlindHeavy (Blindfold)</option>
+								<option value="GagHeavy">GagHeavy (Severe gag)</option>
+								<option value="None">None (Cosmetic / Light)</option>
+							</select>
+						</div>
+						<div>
+							<label for="creatorSetPoseSelect">Forced Pose (SetPose)</label>
+							<select id="creatorSetPoseSelect">
+								<option value="BackElbowTouch" selected>BackElbowTouch (Elbows tied)</option>
+								<option value="BackBoxTie">BackBoxTie (BoxTie)</option>
+								<option value="BackCuffs">BackCuffs (Cuffs behind)</option>
+								<option value="OverTheHead">OverTheHead (Hands up)</option>
+								<option value="LegsClosed">LegsClosed (Legs bound)</option>
+								<option value="Kneel">Kneel (Kneeling bound)</option>
+								<option value="None">None (Free posture)</option>
+							</select>
+						</div>
+					</div>
+
+					<div class="form-grid-2">
+						<div>
+							<label for="creatorBlockInput">Block Groups <span class="label-tip">Comma-separated</span></label>
+							<input type="text" id="creatorBlockInput" value="ItemHands" placeholder="e.g. ItemHands, ItemFeet">
+						</div>
+						<div>
+							<label for="creatorHideInput">Hide Groups <span class="label-tip">Comma-separated</span></label>
+							<input type="text" id="creatorHideInput" value="" placeholder="e.g. Cloth, Panties">
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Section 3: Extended Archetype -->
+			<div class="section">
+				<div class="section-title">3. Extended Logic &amp; Archetypes</div>
+				<div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+					<input type="checkbox" id="creatorExtendedCheckbox" style="width:16px; height:16px; cursor:pointer;">
+					<label for="creatorExtendedCheckbox" style="margin:0; cursor:pointer; font-weight:600;">Extended: true (Interactive Dialog Menu)</label>
+				</div>
+				<div id="extendedFields" style="display:none;">
+					<div class="form-grid-2">
+						<div>
+							<label for="creatorArchetypeSelect">Extended Archetype</label>
+							<select id="creatorArchetypeSelect">
+								<option value="TYPED" selected>TYPED (Selectable styles)</option>
+								<option value="MODULAR">MODULAR (Togglable modules)</option>
+								<option value="TIGHTEN_LOOSEN">TIGHTEN_LOOSEN (Fine tension)</option>
+								<option value="VIBRATING">VIBRATING (Toy remote)</option>
+								<option value="NOARCH">NOARCH (Generic hook)</option>
+							</select>
+						</div>
+						<div>
+							<label for="creatorTypedOptionsInput">Typed Options <span class="label-tip">Comma-separated</span></label>
+							<input type="text" id="creatorTypedOptionsInput" value="Closed, OpenCrotch" placeholder="e.g. Closed, Open">
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Section 4: Layers Configurator -->
+			<div class="section">
+				<div class="section-title">
+					<span>4. Layer Architecture (PNGs)</span>
+					<span id="layerCountBadge" style="font-size:0.75rem; color:#f78ef3;">3 Layers</span>
+				</div>
+
+				<div style="display:flex; gap:6px; margin-bottom:8px;">
+					<button class="btn" style="font-size:0.74rem; padding:5px 8px; margin:0;" onclick="setLayerPreset('standard3')">Preset: 3-Layer Restraint</button>
+					<button class="btn" style="font-size:0.74rem; padding:5px 8px; margin:0;" onclick="setLayerPreset('withLock')">Preset: +Lock Layer</button>
+					<button class="btn" style="font-size:0.74rem; padding:5px 8px; margin:0;" onclick="setLayerPreset('single')">Preset: 1-Layer</button>
+				</div>
+
+				<div id="creatorLayersList" style="margin-bottom:8px;">
+					<!-- Generated dynamically -->
+				</div>
+
+				<button class="btn" style="background:#1c2132; border-color:var(--border);" onclick="addCreatorLayer()">
+					➕ Add Custom Layer
+				</button>
+
+				<div style="margin-top:10px;">
+					<label>DefaultColor Hex Codes <span class="label-tip">(One per colorable layer)</span></label>
+					<div id="creatorDefaultColorsList" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:4px;">
+						<!-- Dynamic color inputs -->
+					</div>
+				</div>
+			</div>
+
+			<!-- Section 5: Real-Time Validator & Export Button -->
+			<div class="section" style="border:none;">
+				<div class="section-title">5. Export Validation Checklist</div>
+				<div class="val-checklist" id="valChecklist">
+					<!-- Checked live by JS -->
+				</div>
+
+				<button class="btn btn-disabled" id="btnExportPackage" disabled onclick="openExportModal()">
+					📦 Export Vanilla BC Package
+				</button>
+				<div id="valErrorBanner" style="font-size:0.75rem; color:var(--danger); text-align:center; margin-top:4px;">
+					⚠️ Complete all mandatory fields to unlock package export.
+				</div>
+			</div>
 		</div>
 	</aside>
 
 	<!-- Main Viewport -->
 	<main class="viewport">
 		<div class="viewport-toolbar">
-			<div class="status-text" id="statusText">Caricamento studio in corso...</div>
+			<div class="status-text" id="statusText">Ready</div>
 			<div class="zoom-controls">
+				<label style="margin:0 12px 0 0; font-size:0.78rem; cursor:pointer; display:flex; align-items:center; gap:5px; color:#f78ef3;">
+					<input type="checkbox" id="showZonesCheckbox" style="cursor:pointer;">
+					<span>🎯 Body Slots Overlay</span>
+				</label>
 				<button class="zoom-btn" onclick="setZoom(0.5)">50%</button>
 				<button class="zoom-btn" onclick="setZoom(0.75)">75%</button>
-				<button class="zoom-btn active" id="btnZoom100" onclick="setZoom(1.0)">100% (1:1)</button>
+				<button class="zoom-btn active" id="btnZoom100" onclick="setZoom(1.0)">100%</button>
 				<button class="zoom-btn" onclick="setZoom(1.5)">150%</button>
-				<button class="zoom-btn" onclick="setZoom(2.0)">200% (Zoom Pixel)</button>
+				<button class="zoom-btn" onclick="setZoom(2.0)">200%</button>
 			</div>
 		</div>
 
@@ -486,11 +964,44 @@
 		</div>
 	</main>
 
+	<!-- ==================== EXPORT MODAL DIALOG ==================== -->
+	<div class="modal-backdrop" id="exportModal">
+		<div class="modal-box">
+			<div class="modal-header">
+				<h2>📦 Vanilla BC Package: <span id="modalItemTitle" style="color:var(--accent);">GlossyPantyhoseBody</span></h2>
+				<button onclick="closeExportModal()" style="background:transparent; border:none; color:var(--muted); font-size:1.2rem; cursor:pointer;">✕</button>
+			</div>
+
+			<div class="modal-nav">
+				<button class="active" id="modalTabBtnJs" onclick="switchModalTab('js')">Female3DCG.js</button>
+				<button id="modalTabBtnExtended" onclick="switchModalTab('extended')">Female3DCGExtended.js</button>
+				<button id="modalTabBtnCsv" onclick="switchModalTab('csv')">AssetStrings.csv (English)</button>
+				<button id="modalTabBtnFiles" onclick="switchModalTab('files')">Folder &amp; File Tree</button>
+			</div>
+
+			<div class="modal-body">
+				<div class="code-display" id="modalCodeDisplay"></div>
+			</div>
+
+			<div class="modal-footer">
+				<div style="font-size:0.75rem; color:var(--muted);">
+					100% compliant with <a href="https://gitgud.io/BondageProjects/Bondage-College" target="_blank" style="color:var(--accent); text-decoration:none;">BondageProjects/Bondage-College</a>
+				</div>
+				<div style="display:flex; gap:8px;">
+					<button class="btn" style="width:auto; margin:0;" onclick="copyCurrentModalCode()">📋 Copy Snippet</button>
+					<button class="btn btn-success" style="width:auto; margin:0;" onclick="downloadPackageJson()">💾 Download JSON Bundle</button>
+					<button class="btn" style="width:auto; margin:0; background:#374151;" onclick="closeExportModal()">Close</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
 	<script>
 		const canvas = document.getElementById("mainCanvas");
 		const ctx = canvas.getContext("2d");
 		let currentZoom = 1.0;
 
+		// Preview Tab elements
 		const itemModeSelect = document.getElementById("itemModeSelect");
 		const chestSelect = document.getElementById("chestSelect");
 		const legsSelect = document.getElementById("legsSelect");
@@ -508,10 +1019,94 @@
 		const dropFileInfo = document.getElementById("dropFileInfo");
 		const droppedFileName = document.getElementById("droppedFileName");
 		const customLayerTarget = document.getElementById("customLayerTarget");
+		const showZonesCheckbox = document.getElementById("showZonesCheckbox");
 
 		let customDroppedImage = null;
 
-		// Configurazione Layer per ciascuna modalità
+		// ==================== BODY ZONES OVERLAY DEFINITION ====================
+		const BODY_ZONES = [
+			{
+				id: "head",
+				label: "HEAD & NECK",
+				x: 165, y: 70, w: 170, h: 145,
+				color: "rgba(239, 68, 68, 0.15)",
+				borderColor: "#ef4444",
+				primaryGroup: "ItemHead",
+				groups: ["ItemHead", "ItemHood", "ItemEars", "ItemNose", "ItemMouth", "ItemMouth2", "ItemMouth3", "ItemNeck", "ItemNeckRestraints", "ItemNeckAccessories"]
+			},
+			{
+				id: "arms_l",
+				label: "ARMS (LEFT)",
+				x: 60, y: 215, w: 115, h: 247,
+				color: "rgba(168, 85, 247, 0.15)",
+				borderColor: "#a855f7",
+				primaryGroup: "ItemArms",
+				groups: ["ItemArms", "ItemHands", "ItemHandheld", "Gloves", "Bracelet"]
+			},
+			{
+				id: "arms_r",
+				label: "ARMS (RIGHT)",
+				x: 325, y: 215, w: 115, h: 247,
+				color: "rgba(168, 85, 247, 0.15)",
+				borderColor: "#a855f7",
+				primaryGroup: "ItemArms",
+				groups: ["ItemArms", "ItemHands", "ItemHandheld", "Gloves", "Bracelet"]
+			},
+			{
+				id: "torso",
+				label: "TORSO & BREAST",
+				x: 175, y: 215, w: 150, h: 247,
+				color: "rgba(59, 130, 246, 0.15)",
+				borderColor: "#3b82f6",
+				primaryGroup: "ItemTorso",
+				groups: ["ItemTorso", "ItemTorso2", "ItemBreast", "ItemNipples", "ItemNipplesPiercings", "Suit", "Corset", "Cloth"]
+			},
+			{
+				id: "pelvis",
+				label: "PELVIS & CROTCH",
+				x: 165, y: 462, w: 170, h: 110,
+				color: "rgba(236, 72, 153, 0.15)",
+				borderColor: "#ec4899",
+				primaryGroup: "ItemPelvis",
+				groups: ["ItemPelvis", "ItemVulva", "ItemVulvaPiercings", "ItemButt", "Panties"]
+			},
+			{
+				id: "legs",
+				label: "LEGS & THIGHS",
+				x: 160, y: 572, w: 180, h: 288,
+				color: "rgba(16, 185, 129, 0.15)",
+				borderColor: "#10b981",
+				primaryGroup: "ItemLegs",
+				groups: ["ItemLegs", "Socks", "Garters"]
+			},
+			{
+				id: "feet",
+				label: "FEET & ANKLES",
+				x: 160, y: 860, w: 180, h: 110,
+				color: "rgba(245, 158, 11, 0.15)",
+				borderColor: "#f59e0b",
+				primaryGroup: "ItemFeet",
+				groups: ["ItemFeet", "ItemBoots", "Shoes", "AnkletLeft", "AnkletRight"]
+			}
+		];
+		let hoveredZone = null;
+
+		// ==================== SIDEBAR TAB SWITCHING ====================
+		function switchSidebarTab(tab) {
+			document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+			document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+
+			if (tab === "preview") {
+				document.getElementById("tabBtnPreview").classList.add("active");
+				document.getElementById("tabContentPreview").classList.add("active");
+			} else {
+				document.getElementById("tabBtnCreator").classList.add("active");
+				document.getElementById("tabContentCreator").classList.add("active");
+				validateCreatorForm();
+			}
+		}
+
+		// Configurazione Layer per ciascuna modalità Preview
 		const PANTYHOSE_LAYERS = [
 			{ id: "Mannequin", label: "Base Mannequin Body", defaultOn: true },
 			{ id: "BaseColor", label: "BaseColor (Tintable Silhouette)", defaultOn: true, isTinted: true },
@@ -559,7 +1154,7 @@
 			currentZoom = z;
 			canvas.style.transform = `scale(${z})`;
 			document.querySelectorAll(".zoom-btn").forEach(b => b.classList.remove("active"));
-			statusText.textContent = `Zoom: ${Math.round(z * 100)}% | Canvas: 500 × 1000 px | Restraint Offset: X=50, Y=200`;
+			statusText.textContent = `Zoom: ${Math.round(z * 100)}% | Canvas: 500 × 1000 px`;
 		}
 
 		function setTint(hex) {
@@ -588,6 +1183,7 @@
 		showHeadCheckbox.addEventListener("change", render);
 		mannequinStyleSelect.addEventListener("change", render);
 		customLayerTarget.addEventListener("change", render);
+		showZonesCheckbox.addEventListener("change", render);
 
 		// Cache immagini per non ricaricare da disco continuamente
 		const imgCache = new Map();
@@ -615,7 +1211,6 @@
 			};
 		}
 
-		// Tinting in tempo reale su canvas offscreen
 		function drawTintedImage(targetCtx, img, dx, dy, dw, dh, hexColor) {
 			const off = document.createElement("canvas");
 			off.width = dw;
@@ -653,7 +1248,7 @@
 				manOff.height = 1000;
 				const manCtx = manOff.getContext("2d");
 
-				// A. Caricamento Braccia
+				// A. Caricamento Braccia (500x462)
 				const armSize = (chest === "FlatSmall" || chest === "FlatMedium") ? chest : "Small";
 				const armSubdir = (pose === "Standing") ? "" : pose + "/";
 				const aLImg = await loadImage(`../templates/arms_left/${armSubdir}${armSize}_White.png`);
@@ -663,7 +1258,7 @@
 				let lSrc = `../templates/body_lower/${legPose === "LegsOpen" ? "" : legPose + "/"}${legs}_White.png`;
 				const lImg = await loadImage(lSrc);
 
-				// C. Caricamento Busto / Petto (500x1000)
+				// C. Caricamento Busto / Petto (500x462)
 				const uImg = await loadImage(`../templates/body_upper/${chest}_White.png`);
 
 				// D. Caricamento Testa & Mento (500x275)
@@ -720,11 +1315,9 @@
 
 			// 2. RENDER RESTRAINT GLOSSYPANTYHOSEBODY
 			if (mode === "GlossyPantyhoseBody") {
-				// Risoluzione nome file risorsa
 				let assetChest = chest;
 				let legSuffix = (legs === "Small") ? "_LegsSmall" : "";
 
-				// Mappatura nomi file effettivi
 				let baseName = `GlossyPantyhoseBody_${assetChest}${legSuffix}`;
 				let basePath = `../assets/Assets/Female3DCG/ItemArms/${baseName}_`;
 
@@ -834,7 +1427,34 @@
 				ctx.drawImage(customDroppedImage, dx, dy, customDroppedImage.width, customDroppedImage.height);
 			}
 
+			// 5. RENDER BODY ZONES OVERLAY SE ATTIVO
+			if (showZonesCheckbox.checked) {
+				drawZonesOverlay(ctx);
+			}
+
 			statusText.textContent = `View: ${mode} | Chest: ${chest} | Legs: ${legs} (${legPose}) | Arms: ${pose} | Head: ${showHeadCheckbox.checked ? "On" : "Off"}`;
+		}
+
+		// Disegna i riquadri delle zone corporee interattive sul canvas
+		function drawZonesOverlay(targetCtx) {
+			targetCtx.save();
+			BODY_ZONES.forEach(z => {
+				const isHover = (hoveredZone && hoveredZone.id === z.id);
+				targetCtx.fillStyle = isHover ? z.color.replace("0.15", "0.4") : z.color;
+				targetCtx.strokeStyle = z.borderColor;
+				targetCtx.lineWidth = isHover ? 2.5 : 1.5;
+				targetCtx.setLineDash(isHover ? [] : [6, 4]);
+
+				targetCtx.fillRect(z.x, z.y, z.w, z.h);
+				targetCtx.strokeRect(z.x, z.y, z.w, z.h);
+
+				// Badge etichetta zona
+				targetCtx.setLineDash([]);
+				targetCtx.font = "bold 11px system-ui, sans-serif";
+				targetCtx.fillStyle = z.borderColor;
+				targetCtx.fillText(z.label, z.x + 8, z.y + 18);
+			});
+			targetCtx.restore();
 		}
 
 		// Download del solo manichino guida trasparente 500x1000 per Photoshop / GIMP
@@ -930,7 +1550,6 @@
 					dropFileInfo.style.display = "block";
 					droppedFileName.textContent = `Caricato: ${file.name} (${img.width}x${img.height})`;
 
-					// Rilevamento automatico tipo di layer dal nome file
 					if (file.name.includes("BaseColor")) customLayerTarget.value = "baseColor";
 					else if (file.name.includes("Highlight")) customLayerTarget.value = "highlight";
 					else if (file.name.includes("Shadow")) customLayerTarget.value = "shadow";
@@ -962,7 +1581,6 @@
 			off.width = 400;
 			off.height = 800;
 			const offCtx = off.getContext("2d");
-			// Ritaglia esattamente l'area del restraint a (50, 200, 400, 800)
 			offCtx.drawImage(canvas, 50, 200, 400, 800, 0, 0, 400, 800);
 			const link = document.createElement("a");
 			link.download = `restraint_400x800_${chestSelect.value}.png`;
@@ -973,11 +1591,519 @@
 		function copyConsoleCmd() {
 			const cmd = 'import("https://jojo-bc.github.io/JoJo-Mod/jojo-mod.user.js?t=" + Date.now())';
 			navigator.clipboard.writeText(cmd).then(() => {
-				alert("Comando copiato negli appunti! Incollalo nella console del browser (F12) per testare in Bondage Club.");
+				alert("Command copied to clipboard! Paste into browser console (F12) to test in Bondage Club.");
 			});
 		}
 
+		// ==================== INTERACTIVE BODY ZONES MOUSE HANDLING ====================
+		canvas.addEventListener("mousemove", (e) => {
+			if (!showZonesCheckbox.checked) return;
+			const rect = canvas.getBoundingClientRect();
+			const scaleX = canvas.width / rect.width;
+			const scaleY = canvas.height / rect.height;
+			const mouseX = (e.clientX - rect.left) * scaleX;
+			const mouseY = (e.clientY - rect.top) * scaleY;
+
+			let found = null;
+			for (const z of BODY_ZONES) {
+				if (mouseX >= z.x && mouseX <= z.x + z.w && mouseY >= z.y && mouseY <= z.y + z.h) {
+					found = z;
+					break;
+				}
+			}
+
+			if (found !== hoveredZone) {
+				hoveredZone = found;
+				canvas.style.cursor = found ? "pointer" : "default";
+				if (found) {
+					statusText.textContent = `🎯 Zone: ${found.label} | Primary Slot: ${found.primaryGroup} (Click to edit item for this slot)`;
+				} else {
+					statusText.textContent = `Zoom: ${Math.round(currentZoom * 100)}% | Canvas: 500 × 1000 px`;
+				}
+				render();
+			}
+		});
+
+		canvas.addEventListener("mouseleave", () => {
+			if (hoveredZone) {
+				hoveredZone = null;
+				canvas.style.cursor = "default";
+				render();
+			}
+		});
+
+		canvas.addEventListener("click", () => {
+			if (showZonesCheckbox.checked && hoveredZone) {
+				switchSidebarTab("creator");
+				document.getElementById("creatorGroupSelect").value = hoveredZone.primaryGroup;
+				validateCreatorForm();
+			}
+		});
+
+		// ==================== TAB 2: BC ITEM CREATOR LOGIC & VALIDATOR ====================
+		const creatorNameInput = document.getElementById("creatorNameInput");
+		const creatorGroupSelect = document.getElementById("creatorGroupSelect");
+		const creatorDisplayNameInput = document.getElementById("creatorDisplayNameInput");
+		const creatorDescInput = document.getElementById("creatorDescInput");
+		const creatorPriorityInput = document.getElementById("creatorPriorityInput");
+		const creatorDynamicGroupInput = document.getElementById("creatorDynamicGroupInput");
+		const creatorFetishSelect = document.getElementById("creatorFetishSelect");
+
+		const creatorIsRestraintCheckbox = document.getElementById("creatorIsRestraintCheckbox");
+		const restraintFields = document.getElementById("restraintFields");
+		const creatorDifficultyInput = document.getElementById("creatorDifficultyInput");
+		const creatorTimeInput = document.getElementById("creatorTimeInput");
+		const creatorRemoveTimeInput = document.getElementById("creatorRemoveTimeInput");
+		const creatorAllowLockCheckbox = document.getElementById("creatorAllowLockCheckbox");
+		const creatorAllowTightenCheckbox = document.getElementById("creatorAllowTightenCheckbox");
+		const creatorEffectSelect = document.getElementById("creatorEffectSelect");
+		const creatorSetPoseSelect = document.getElementById("creatorSetPoseSelect");
+		const creatorBlockInput = document.getElementById("creatorBlockInput");
+		const creatorHideInput = document.getElementById("creatorHideInput");
+
+		const creatorExtendedCheckbox = document.getElementById("creatorExtendedCheckbox");
+		const extendedFields = document.getElementById("extendedFields");
+		const creatorArchetypeSelect = document.getElementById("creatorArchetypeSelect");
+		const creatorTypedOptionsInput = document.getElementById("creatorTypedOptionsInput");
+
+		const creatorLayersList = document.getElementById("creatorLayersList");
+		const creatorDefaultColorsList = document.getElementById("creatorDefaultColorsList");
+		const layerCountBadge = document.getElementById("layerCountBadge");
+		const valChecklist = document.getElementById("valChecklist");
+		const btnExportPackage = document.getElementById("btnExportPackage");
+		const valErrorBanner = document.getElementById("valErrorBanner");
+
+		// Dynamic layer definitions
+		let creatorLayers = [
+			{ name: "BaseColor", priority: 25, allowColorize: true, copyLayerColor: "", colorGroup: "" },
+			{ name: "Shadow", priority: 26, allowColorize: false, copyLayerColor: "", colorGroup: "" },
+			{ name: "Highlight", priority: 27, allowColorize: false, copyLayerColor: "", colorGroup: "" }
+		];
+
+		let creatorDefaultColors = ["#1a1a24"];
+
+		creatorIsRestraintCheckbox.addEventListener("change", () => {
+			restraintFields.style.display = creatorIsRestraintCheckbox.checked ? "block" : "none";
+			validateCreatorForm();
+		});
+
+		creatorExtendedCheckbox.addEventListener("change", () => {
+			extendedFields.style.display = creatorExtendedCheckbox.checked ? "block" : "none";
+			validateCreatorForm();
+		});
+
+		[creatorNameInput, creatorGroupSelect, creatorDisplayNameInput, creatorDescInput,
+		 creatorPriorityInput, creatorDynamicGroupInput, creatorDifficultyInput,
+		 creatorTimeInput, creatorRemoveTimeInput, creatorTypedOptionsInput].forEach(el => {
+			el.addEventListener("input", validateCreatorForm);
+			el.addEventListener("change", validateCreatorForm);
+		});
+
+		function setLayerPreset(preset) {
+			if (preset === "standard3") {
+				creatorLayers = [
+					{ name: "BaseColor", priority: parseInt(creatorPriorityInput.value) || 25, allowColorize: true, copyLayerColor: "", colorGroup: "" },
+					{ name: "Shadow", priority: (parseInt(creatorPriorityInput.value) || 25) + 1, allowColorize: false, copyLayerColor: "", colorGroup: "" },
+					{ name: "Highlight", priority: (parseInt(creatorPriorityInput.value) || 25) + 2, allowColorize: false, copyLayerColor: "", colorGroup: "" }
+				];
+				creatorDefaultColors = ["#1a1a24"];
+			} else if (preset === "withLock") {
+				creatorLayers = [
+					{ name: "BaseColor", priority: parseInt(creatorPriorityInput.value) || 25, allowColorize: true, copyLayerColor: "", colorGroup: "" },
+					{ name: "Shadow", priority: (parseInt(creatorPriorityInput.value) || 25) + 1, allowColorize: false, copyLayerColor: "", colorGroup: "" },
+					{ name: "Highlight", priority: (parseInt(creatorPriorityInput.value) || 25) + 2, allowColorize: false, copyLayerColor: "", colorGroup: "" },
+					{ name: "Lock", priority: (parseInt(creatorPriorityInput.value) || 25) + 3, allowColorize: false, copyLayerColor: "", colorGroup: "", lockLayer: true }
+				];
+				creatorDefaultColors = ["#1a1a24"];
+			} else {
+				creatorLayers = [
+					{ name: "BaseColor", priority: parseInt(creatorPriorityInput.value) || 25, allowColorize: true, copyLayerColor: "", colorGroup: "" }
+				];
+				creatorDefaultColors = ["#1a1a24"];
+			}
+			renderCreatorLayersUI();
+			validateCreatorForm();
+		}
+
+		function renderCreatorLayersUI() {
+			creatorLayersList.innerHTML = "";
+			layerCountBadge.textContent = `${creatorLayers.length} Layer(s)`;
+
+			creatorLayers.forEach((l, idx) => {
+				const row = document.createElement("div");
+				row.className = "creator-layer-row";
+				row.innerHTML = `
+					<div>
+						<input type="text" value="${l.name}" placeholder="Layer Name" style="margin:0; font-size:0.8rem;" oninput="updateCreatorLayerName(${idx}, this.value)">
+					</div>
+					<div>
+						<input type="number" value="${l.priority}" placeholder="Prio" style="margin:0; font-size:0.8rem;" oninput="updateCreatorLayerPriority(${idx}, this.value)">
+					</div>
+					<div style="font-size:0.75rem; display:flex; align-items:center; gap:4px;">
+						<input type="checkbox" ${l.allowColorize ? "checked" : ""} onchange="updateCreatorLayerColorize(${idx}, this.checked)">
+						<span>Tintable</span>
+					</div>
+					<div>
+						<button class="btn-icon-del" onclick="deleteCreatorLayer(${idx})" title="Delete layer">✕</button>
+					</div>
+				`;
+				creatorLayersList.appendChild(row);
+			});
+
+			renderDefaultColorsUI();
+		}
+
+		function updateCreatorLayerName(idx, val) {
+			creatorLayers[idx].name = val.trim();
+			validateCreatorForm();
+		}
+		function updateCreatorLayerPriority(idx, val) {
+			creatorLayers[idx].priority = parseInt(val) || 25;
+			validateCreatorForm();
+		}
+		function updateCreatorLayerColorize(idx, checked) {
+			creatorLayers[idx].allowColorize = checked;
+			renderDefaultColorsUI();
+			validateCreatorForm();
+		}
+		function deleteCreatorLayer(idx) {
+			if (creatorLayers.length <= 1) {
+				alert("An item must have at least one layer!");
+				return;
+			}
+			creatorLayers.splice(idx, 1);
+			renderCreatorLayersUI();
+			validateCreatorForm();
+		}
+		function addCreatorLayer() {
+			creatorLayers.push({
+				name: `Layer${creatorLayers.length + 1}`,
+				priority: (parseInt(creatorPriorityInput.value) || 25) + creatorLayers.length,
+				allowColorize: false,
+				copyLayerColor: "",
+				colorGroup: ""
+			});
+			renderCreatorLayersUI();
+			validateCreatorForm();
+		}
+
+		function renderDefaultColorsUI() {
+			creatorDefaultColorsList.innerHTML = "";
+			const colorableCount = creatorLayers.filter(l => l.allowColorize).length;
+
+			while (creatorDefaultColors.length < colorableCount) {
+				creatorDefaultColors.push("#1a1a24");
+			}
+			if (creatorDefaultColors.length > colorableCount) {
+				creatorDefaultColors.length = colorableCount;
+			}
+
+			if (colorableCount === 0) {
+				creatorDefaultColorsList.innerHTML = '<span style="font-size:0.75rem; color:var(--muted); font-style:italic;">No tintable layers (PNG fixed colors only).</span>';
+				return;
+			}
+
+			creatorDefaultColors.forEach((col, idx) => {
+				const colWrap = document.createElement("div");
+				colWrap.style.display = "flex";
+				colWrap.style.alignItems = "center";
+				colWrap.style.gap = "4px";
+				colWrap.innerHTML = `
+					<input type="color" value="${col}" oninput="updateDefaultColorVal(${idx}, this.value)" style="width:28px; height:28px;">
+					<input type="text" value="${col}" style="width:80px; margin:0; font-size:0.78rem;" oninput="updateDefaultColorVal(${idx}, this.value)">
+				`;
+				creatorDefaultColorsList.appendChild(colWrap);
+			});
+		}
+
+		function updateDefaultColorVal(idx, val) {
+			creatorDefaultColors[idx] = val;
+			validateCreatorForm();
+		}
+
+		// ==================== REAL-TIME VALIDATOR ====================
+		function validateCreatorForm() {
+			const name = creatorNameInput.value.trim();
+			const group = creatorGroupSelect.value.trim();
+			const displayName = creatorDisplayNameInput.value.trim();
+			const isRestraint = creatorIsRestraintCheckbox.checked;
+
+			const hasValidName = /^[A-Za-z0-9_]+$/.test(name);
+			const hasGroup = group.length > 0;
+			const hasDisplayName = displayName.length > 0;
+			const hasLayers = creatorLayers.length > 0 && creatorLayers.every(l => l.name.length > 0);
+
+			const colorableCount = creatorLayers.filter(l => l.allowColorize).length;
+			const hasMatchingColors = (creatorDefaultColors.length === colorableCount);
+
+			let restraintValid = true;
+			if (isRestraint) {
+				const diff = parseInt(creatorDifficultyInput.value);
+				const time = parseInt(creatorTimeInput.value);
+				const remTime = parseInt(creatorRemoveTimeInput.value);
+				restraintValid = !isNaN(diff) && diff >= 0 && !isNaN(time) && time >= 0 && !isNaN(remTime) && remTime >= 0;
+			}
+
+			const allValid = hasValidName && hasGroup && hasDisplayName && hasLayers && hasMatchingColors && restraintValid;
+
+			// Update checklist UI
+			valChecklist.innerHTML = `
+				<div class="val-item ${hasValidName ? 'valid' : 'invalid'}">
+					${hasValidName ? '✅' : '❌'} Asset Name: ${hasValidName ? `"${name}" (PascalCase)` : 'Must be non-empty PascalCase'}
+				</div>
+				<div class="val-item ${hasGroup ? 'valid' : 'invalid'}">
+					${hasGroup ? '✅' : '❌'} Asset Group: ${hasGroup ? group : 'Must select a slot'}
+				</div>
+				<div class="val-item ${hasDisplayName ? 'valid' : 'invalid'}">
+					${hasDisplayName ? '✅' : '❌'} English Display Name: ${hasDisplayName ? `"${displayName}"` : 'Required'}
+				</div>
+				<div class="val-item ${hasLayers ? 'valid' : 'invalid'}">
+					${hasLayers ? '✅' : '❌'} Layer Structure: ${hasLayers ? `${creatorLayers.length} valid layer(s)` : 'Add at least 1 valid layer'}
+				</div>
+				<div class="val-item ${hasMatchingColors ? 'valid' : 'invalid'}">
+					${hasMatchingColors ? '✅' : '❌'} Default Colors: ${colorableCount} color(s) configured
+				</div>
+				<div class="val-item ${restraintValid ? 'valid' : 'invalid'}">
+					${restraintValid ? '✅' : '❌'} Restraint Parameters: ${isRestraint ? 'Diff, Time & RemoveTime valid' : 'N/A (Standard Item)'}
+				</div>
+			`;
+
+			btnExportPackage.disabled = !allValid;
+			if (allValid) {
+				btnExportPackage.className = "btn btn-success";
+				valErrorBanner.style.display = "none";
+			} else {
+				btnExportPackage.className = "btn btn-disabled";
+				valErrorBanner.style.display = "block";
+			}
+		}
+
+		// ==================== EXPORT CODE GENERATORS ====================
+		let activeModalTab = "js";
+
+		function openExportModal() {
+			validateCreatorForm();
+			if (btnExportPackage.disabled) return;
+
+			document.getElementById("modalItemTitle").textContent = creatorNameInput.value.trim();
+			document.getElementById("exportModal").classList.add("open");
+			switchModalTab("js");
+		}
+
+		function closeExportModal() {
+			document.getElementById("exportModal").classList.remove("open");
+		}
+
+		function switchModalTab(tab) {
+			activeModalTab = tab;
+			document.querySelectorAll(".modal-nav button").forEach(b => b.classList.remove("active"));
+
+			if (tab === "js") {
+				document.getElementById("modalTabBtnJs").classList.add("active");
+				document.getElementById("modalCodeDisplay").textContent = generateFemale3DCGSnippet();
+			} else if (tab === "extended") {
+				document.getElementById("modalTabBtnExtended").classList.add("active");
+				document.getElementById("modalCodeDisplay").textContent = generateExtendedSnippet();
+			} else if (tab === "csv") {
+				document.getElementById("modalTabBtnCsv").classList.add("active");
+				document.getElementById("modalCodeDisplay").textContent = generateAssetStringsCSV();
+			} else if (tab === "files") {
+				document.getElementById("modalTabBtnFiles").classList.add("active");
+				document.getElementById("modalCodeDisplay").textContent = generateFileTreeManifest();
+			}
+		}
+
+		function generateFemale3DCGSnippet() {
+			const name = creatorNameInput.value.trim();
+			const group = creatorGroupSelect.value.trim();
+			const priority = parseInt(creatorPriorityInput.value) || 25;
+			const isRestraint = creatorIsRestraintCheckbox.checked;
+			const dynamicGroup = creatorDynamicGroupInput.value.trim();
+			const extended = creatorExtendedCheckbox.checked;
+			const fetish = creatorFetishSelect.value;
+
+			const lines = [];
+			lines.push(`// Add inside Group: "${group}" Asset array in BondageClub/Scripts/Female3DCG.js:`);
+			lines.push(`{`);
+			lines.push(`\tName: "${name}",`);
+			lines.push(`\tPriority: ${priority},`);
+
+			if (isRestraint) {
+				lines.push(`\tIsRestraint: true,`);
+				lines.push(`\tDifficulty: ${parseInt(creatorDifficultyInput.value) || 0},`);
+				lines.push(`\tTime: ${parseInt(creatorTimeInput.value) || 5},`);
+				lines.push(`\tRemoveTime: ${parseInt(creatorRemoveTimeInput.value) || 10},`);
+				if (fetish !== "None") lines.push(`\tFetish: ["${fetish}"],`);
+
+				const effect = creatorEffectSelect.value;
+				if (effect !== "None") lines.push(`\tEffect: ["${effect}"],`);
+
+				const setPose = creatorSetPoseSelect.value;
+				if (setPose !== "None") lines.push(`\tSetPose: ["${setPose}"],`);
+
+				const block = creatorBlockInput.value.split(",").map(s => s.trim()).filter(Boolean);
+				if (block.length > 0) lines.push(`\tBlock: ${JSON.stringify(block)},`);
+
+				const hide = creatorHideInput.value.split(",").map(s => s.trim()).filter(Boolean);
+				if (hide.length > 0) lines.push(`\tHide: ${JSON.stringify(hide)},`);
+
+				if (creatorAllowLockCheckbox.checked) lines.push(`\tAllowLock: true,`);
+				if (creatorAllowTightenCheckbox.checked) lines.push(`\tAllowTighten: true,`);
+			}
+
+			if (dynamicGroup) {
+				lines.push(`\tDynamicGroupName: "${dynamicGroup}",`);
+			}
+
+			if (extended) {
+				lines.push(`\tExtended: true,`);
+			}
+
+			if (creatorDefaultColors.length > 0) {
+				lines.push(`\tDefaultColor: ${JSON.stringify(creatorDefaultColors)},`);
+			}
+
+			lines.push(`\tLayer: [`);
+			creatorLayers.forEach(l => {
+				lines.push(`\t\t{`);
+				lines.push(`\t\t\tName: "${l.name}",`);
+				lines.push(`\t\t\tPriority: ${l.priority},`);
+				if (!l.allowColorize) lines.push(`\t\t\tAllowColorize: false,`);
+				if (l.copyLayerColor) lines.push(`\t\t\tCopyLayerColor: "${l.copyLayerColor}",`);
+				if (l.colorGroup) lines.push(`\t\t\tColorGroup: "${l.colorGroup}",`);
+				if (l.lockLayer) lines.push(`\t\t\tLockLayer: true,`);
+				lines.push(`\t\t},`);
+			});
+			lines.push(`\t],`);
+			lines.push(`},`);
+
+			return lines.join("\n");
+		}
+
+		function generateExtendedSnippet() {
+			if (!creatorExtendedCheckbox.checked) {
+				return `// This item does not have Extended logic enabled.\n// If you want interactive options (TYPED, MODULAR, TIGHTEN_LOOSEN), check "Extended: true".`;
+			}
+
+			const name = creatorNameInput.value.trim();
+			const group = creatorGroupSelect.value.trim();
+			const arch = creatorArchetypeSelect.value;
+			const typedOptions = creatorTypedOptionsInput.value.split(",").map(s => s.trim()).filter(Boolean);
+
+			const lines = [];
+			lines.push(`// Add inside AssetFemale3DCGExtended.${group} in BondageClub/Scripts/Female3DCGExtended.js:`);
+			lines.push(`${name}: {`);
+			lines.push(`\tArchetype: ExtendedArchetype.${arch},`);
+
+			if (arch === "TYPED") {
+				lines.push(`\tOptions: [`);
+				typedOptions.forEach(opt => {
+					lines.push(`\t\t{ Name: "${opt}" },`);
+				});
+				lines.push(`\t],`);
+			} else if (arch === "MODULAR") {
+				lines.push(`\tModules: [`);
+				typedOptions.forEach((mod, idx) => {
+					lines.push(`\t\t{ Name: "${mod}", Key: "m${idx+1}", Options: [{ Name: "Off" }, { Name: "On" }] },`);
+				});
+				lines.push(`\t],`);
+			}
+
+			lines.push(`},`);
+			return lines.join("\n");
+		}
+
+		function generateAssetStringsCSV() {
+			const name = creatorNameInput.value.trim();
+			const group = creatorGroupSelect.value.trim();
+			const disp = creatorDisplayNameInput.value.trim();
+			const desc = creatorDescInput.value.trim();
+
+			const lines = [];
+			lines.push(`# Official English entries for BondageClub/Assets/Female3DCG/AssetStrings.csv:`);
+			lines.push(`${group},${name},${disp}`);
+			lines.push(`${group},${name}Select,${desc}`);
+
+			if (creatorExtendedCheckbox.checked && creatorArchetypeSelect.value === "TYPED") {
+				const opts = creatorTypedOptionsInput.value.split(",").map(s => s.trim()).filter(Boolean);
+				opts.forEach(opt => {
+					lines.push(`${group},${name}${opt},${opt}`);
+				});
+			}
+
+			return lines.join("\n");
+		}
+
+		function generateFileTreeManifest() {
+			const name = creatorNameInput.value.trim();
+			const group = creatorDynamicGroupInput.value.trim() || creatorGroupSelect.value.trim();
+
+			const lines = [];
+			lines.push(`Target Directory in Bondage Club:`);
+			lines.push(`BondageClub/Assets/Female3DCG/${group}/`);
+			lines.push(``);
+			lines.push(`Required PNG Image Files:`);
+
+			creatorLayers.forEach(l => {
+				lines.push(`├── ${name}_${l.name}.png (Dimensions: 500x1000 or 400x800, Alpha Transparent)`);
+			});
+
+			lines.push(``);
+			lines.push(`Preview Icon:`);
+			lines.push(`└── Preview/${name}.png (Dimensions: 88x88 or 100x100 px)`);
+
+			return lines.join("\n");
+		}
+
+		function copyCurrentModalCode() {
+			const text = document.getElementById("modalCodeDisplay").textContent;
+			navigator.clipboard.writeText(text).then(() => {
+				alert("Snippet copied to clipboard!");
+			});
+		}
+
+		function downloadPackageJson() {
+			const pkg = {
+				name: creatorNameInput.value.trim(),
+				group: creatorGroupSelect.value.trim(),
+				displayName: creatorDisplayNameInput.value.trim(),
+				description: creatorDescInput.value.trim(),
+				priority: parseInt(creatorPriorityInput.value) || 25,
+				dynamicGroupName: creatorDynamicGroupInput.value.trim() || null,
+				isRestraint: creatorIsRestraintCheckbox.checked,
+				restraintProps: creatorIsRestraintCheckbox.checked ? {
+					difficulty: parseInt(creatorDifficultyInput.value) || 0,
+					time: parseInt(creatorTimeInput.value) || 5,
+					removeTime: parseInt(creatorRemoveTimeInput.value) || 10,
+					fetish: creatorFetishSelect.value,
+					effect: creatorEffectSelect.value,
+					setPose: creatorSetPoseSelect.value,
+					block: creatorBlockInput.value.split(",").map(s => s.trim()).filter(Boolean),
+					hide: creatorHideInput.value.split(",").map(s => s.trim()).filter(Boolean),
+					allowLock: creatorAllowLockCheckbox.checked,
+					allowTighten: creatorAllowTightenCheckbox.checked
+				} : null,
+				extended: creatorExtendedCheckbox.checked ? {
+					archetype: creatorArchetypeSelect.value,
+					options: creatorTypedOptionsInput.value.split(",").map(s => s.trim()).filter(Boolean)
+				} : null,
+				layers: creatorLayers,
+				defaultColors: creatorDefaultColors,
+				generatedAt: new Date().toISOString(),
+				version: "1.0 (Vanilla BC Compliant)"
+			};
+
+			const blob = new Blob([JSON.stringify(pkg, null, 2)], { type: "application/json" });
+			const link = document.createElement("a");
+			link.download = `bc_item_${pkg.name}.json`;
+			link.href = URL.createObjectURL(blob);
+			link.click();
+		}
+
+		// Initialize Studio
 		initLayerUI();
+		renderCreatorLayersUI();
+		validateCreatorForm();
 		render();
 	</script>
 </body>
