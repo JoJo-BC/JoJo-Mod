@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         JoJo Flat-Chest & Male Avatar Compatibility Mod (BC R133+)
 // @namespace    https://jojo-bc.github.io/JoJo-Mod/
-// @version      1.5.2
+// @version      1.5.3
 // @description  Unlocks and maps flat-chest (FlatSmall / FlatMedium) and all body sizes clothes and restraints in Bondage Club (Glossy Bodystocking, Echo Latex Top 乳胶衣 & Latex Bottom, Pantyhose fullBody, Glossy Fullbody Pantyhose, etc.), 100% ModSDK & BCX compliant.
 // @author       JoJo-BC
 // @match        https://*.bondageprojects.elementfx.com/R*/*
@@ -724,7 +724,233 @@
 	}
 
 	/**
-	 * Registers custom restraint GlossyPantyhoseBody in ItemArms and ItemTorso groups.
+	 * Creates standard layer objects with all required vanilla BC properties initialized.
+	 * Explicitly sets PoseMapping: {} on every layer to prevent TypeError: Cannot read properties of undefined
+	 * in CharacterAppearanceVisible hooks (used by Echo clothing extension, WCE, and vanilla BC).
+	 */
+	function createStandardLayers(asset) {
+		return [
+			{
+				Name: "BaseColor",
+				AllowColorize: true,
+				CopyLayerColor: null,
+				ColorGroup: null,
+				HideColoring: false,
+				AllowTypes: null,
+				CreateLayerTypes: [],
+				Visibility: null,
+				ParentGroup: {},
+				Priority: 15,
+				InheritColor: null,
+				Alpha: [],
+				FullAlpha: true,
+				Asset: asset,
+				DrawingLeft: 50,
+				DrawingTop: 200,
+				Left: 50,
+				Top: 200,
+				HideAs: null,
+				FixedPosition: false,
+				HasImage: true,
+				Opacity: 1,
+				MinOpacity: 1,
+				MaxOpacity: 1,
+				BlendingMode: "source-over",
+				TextureMask: null,
+				LockLayer: false,
+				MirrorExpression: false,
+				ColorIndex: 0,
+				StyleOverride: [],
+				CreateLayerTypesOverride: [],
+				PoseMapping: {},
+				HideForAttribute: null,
+				ShowForAttribute: null,
+				ColorSuffix: {},
+			},
+			{
+				Name: "Shadow",
+				AllowColorize: false,
+				CopyLayerColor: null,
+				ColorGroup: null,
+				HideColoring: false,
+				AllowTypes: null,
+				CreateLayerTypes: [],
+				Visibility: null,
+				ParentGroup: {},
+				Priority: 15,
+				InheritColor: null,
+				Alpha: [],
+				FullAlpha: true,
+				Asset: asset,
+				DrawingLeft: 50,
+				DrawingTop: 200,
+				Left: 50,
+				Top: 200,
+				HideAs: null,
+				FixedPosition: false,
+				HasImage: true,
+				Opacity: 1,
+				MinOpacity: 1,
+				MaxOpacity: 1,
+				BlendingMode: "source-over",
+				TextureMask: null,
+				LockLayer: false,
+				MirrorExpression: false,
+				ColorIndex: 0,
+				StyleOverride: [],
+				CreateLayerTypesOverride: [],
+				PoseMapping: {},
+				HideForAttribute: null,
+				ShowForAttribute: null,
+				ColorSuffix: {},
+			},
+			{
+				Name: "Highlight",
+				AllowColorize: false,
+				CopyLayerColor: null,
+				ColorGroup: null,
+				HideColoring: false,
+				AllowTypes: null,
+				CreateLayerTypes: [],
+				Visibility: null,
+				ParentGroup: {},
+				Priority: 15,
+				InheritColor: null,
+				Alpha: [],
+				FullAlpha: true,
+				Asset: asset,
+				DrawingLeft: 50,
+				DrawingTop: 200,
+				Left: 50,
+				Top: 200,
+				HideAs: null,
+				FixedPosition: false,
+				HasImage: true,
+				Opacity: 1,
+				MinOpacity: 1,
+				MaxOpacity: 1,
+				BlendingMode: "source-over",
+				TextureMask: null,
+				LockLayer: false,
+				MirrorExpression: false,
+				ColorIndex: 0,
+				StyleOverride: [],
+				CreateLayerTypesOverride: [],
+				PoseMapping: {},
+				HideForAttribute: null,
+				ShowForAttribute: null,
+				ColorSuffix: {},
+			},
+		];
+	}
+
+	/**
+	 * Sanitizes a custom asset object ensuring 100% compliance with BC vanilla and all third-party mods
+	 * (Echo clothing extension, WCE, BCX, LSCG). Ensures AllowActivityOn, PoseMapping, Block, Layer.Asset, etc.
+	 */
+	function sanitizeCustomAsset(asset, group, dynamicGroupName = "ItemArms") {
+		if (!asset) return;
+		asset.Group = group;
+		asset.Family = group.Family || "Female3DCG";
+		asset.DynamicGroupName = dynamicGroupName;
+		if (typeof asset.DynamicName !== "function") asset.DynamicName = function () { return this.Name; };
+		if (typeof asset.DynamicDescription !== "function") asset.DynamicDescription = function () { return this.Description; };
+		if (typeof asset.DynamicPreviewImage !== "function") asset.DynamicPreviewImage = function () { return ""; };
+		if (typeof asset.DynamicAllowInventoryAdd !== "function") asset.DynamicAllowInventoryAdd = function () { return true; };
+		if (typeof asset.DynamicActivity !== "function") asset.DynamicActivity = function () { return this.Activity; };
+		if (!Array.isArray(asset.AllowActivityOn)) asset.AllowActivityOn = [];
+		if (!asset.ActivityExpression) asset.ActivityExpression = {};
+		if (!Array.isArray(asset.Attribute)) asset.Attribute = [];
+		if (!Array.isArray(asset.PreviewIcons)) asset.PreviewIcons = [];
+		if (!Array.isArray(asset.Tint)) asset.Tint = [];
+		if (typeof asset.AllowTint !== "boolean") asset.AllowTint = false;
+		if (!Array.isArray(asset.DefaultColor)) asset.DefaultColor = ["#1e1e24"];
+		if (typeof asset.ColorableLayerCount !== "number") asset.ColorableLayerCount = 1;
+		if (typeof asset.Value !== "number") asset.Value = 0;
+		if (typeof asset.Difficulty !== "number") asset.Difficulty = 6;
+		if (typeof asset.SelfBondage !== "number") asset.SelfBondage = 0;
+		if (typeof asset.SelfUnlock !== "boolean") asset.SelfUnlock = true;
+		if (typeof asset.ExclusiveUnlock !== "boolean") asset.ExclusiveUnlock = false;
+		if (typeof asset.Random !== "boolean") asset.Random = false;
+		if (typeof asset.RemoveAtLogin !== "boolean") asset.RemoveAtLogin = false;
+		if (typeof asset.Time !== "number") asset.Time = 25;
+		if (typeof asset.WearTime !== "number") asset.WearTime = 25;
+		if (typeof asset.RemoveTime !== "number") asset.RemoveTime = 20;
+		if (typeof asset.RemoveTimer !== "number") asset.RemoveTimer = 0;
+		if (typeof asset.MaxTimer !== "number") asset.MaxTimer = 0;
+		if (typeof asset.HeightModifier !== "number") asset.HeightModifier = 0;
+		if (typeof asset.ZoomModifier !== "number") asset.ZoomModifier = 1;
+		if (!Array.isArray(asset.Prerequisite)) asset.Prerequisite = [];
+		if (typeof asset.Extended !== "boolean") asset.Extended = false;
+		if (typeof asset.AlwaysExtend !== "boolean") asset.AlwaysExtend = false;
+		if (typeof asset.AlwaysInteract !== "boolean") asset.AlwaysInteract = false;
+		if (typeof asset.AllowLock !== "boolean") asset.AllowLock = true;
+		if (typeof asset.DrawLocks !== "boolean") asset.DrawLocks = true;
+		if (typeof asset.AllowTighten !== "boolean") asset.AllowTighten = true;
+		if (typeof asset.AllowColorize !== "boolean") asset.AllowColorize = true;
+		if (typeof asset.AllowExpression !== "boolean") asset.AllowExpression = false;
+		if (typeof asset.MirrorExpression !== "boolean") asset.MirrorExpression = false;
+		if (typeof asset.FixedPosition !== "boolean") asset.FixedPosition = false;
+		if (typeof asset.LayerVisibility !== "boolean") asset.LayerVisibility = false;
+		if (typeof asset.IsRestraint !== "boolean") asset.IsRestraint = true;
+		if (typeof asset.IsLock !== "boolean") asset.IsLock = false;
+		if (typeof asset.PickDifficulty !== "number") asset.PickDifficulty = 0;
+		if (typeof asset.OwnerOnly !== "boolean") asset.OwnerOnly = false;
+		if (typeof asset.LoverOnly !== "boolean") asset.LoverOnly = false;
+		if (typeof asset.FamilyOnly !== "boolean") asset.FamilyOnly = false;
+		if (typeof asset.Visible !== "boolean") asset.Visible = true;
+		if (!Array.isArray(asset.SetPose)) asset.SetPose = ["BackElbowTouch", "LegsClosed"];
+		if (!Array.isArray(asset.AllowPose)) asset.AllowPose = ["BackElbowTouch", "BackBoxTie", "BackCuffs", "Yoked", "OverTheHead", "LegsClosed"];
+		if (!asset.PoseMapping || typeof asset.PoseMapping !== "object") asset.PoseMapping = {};
+		if (!Array.isArray(asset.Effect)) asset.Effect = ["Block", "BlockWardrobe", "Slow"];
+		if (!Array.isArray(asset.Hide)) asset.Hide = ["Cloth", "ClothLower", "Suit", "SuitLower", "Garters"];
+		if (!Array.isArray(asset.HideItem)) asset.HideItem = [];
+		if (!Array.isArray(asset.HideItemExclude)) asset.HideItemExclude = [];
+		if (!Array.isArray(asset.HideItemAttribute)) asset.HideItemAttribute = [];
+		if (!Array.isArray(asset.Require)) asset.Require = [];
+		if (!Array.isArray(asset.Block)) asset.Block = ["ItemHands", "ItemHandheld", "ItemVulva", "ItemButt", "ItemVulvaPiercings", "ItemNipplesPiercings"];
+		if (!Array.isArray(asset.AllowBlock)) asset.AllowBlock = [];
+		if (!Array.isArray(asset.AllowEffect)) asset.AllowEffect = [];
+		if (!Array.isArray(asset.AllowHide)) asset.AllowHide = [];
+		if (!Array.isArray(asset.AllowHideItem)) asset.AllowHideItem = [];
+		if (!Array.isArray(asset.RemoveItemOnRemove)) asset.RemoveItemOnRemove = [];
+		if (!asset.ParentGroup || typeof asset.ParentGroup !== "object") asset.ParentGroup = {};
+		if (!Array.isArray(asset.Alpha)) asset.Alpha = [];
+		asset.DrawingLeft = 50;
+		asset.DrawingTop = 200;
+		asset.Left = 50;
+		asset.Top = 200;
+		asset.Priority = 15;
+
+		if (!Array.isArray(asset.Layer) || asset.Layer.length === 0) {
+			asset.Layer = createStandardLayers(asset);
+		} else {
+			for (const l of asset.Layer) {
+				l.Asset = asset;
+				if (!l.PoseMapping || typeof l.PoseMapping !== "object") l.PoseMapping = {};
+				if (!l.ParentGroup || typeof l.ParentGroup !== "object") l.ParentGroup = {};
+				if (!Array.isArray(l.Alpha)) l.Alpha = [];
+				if (!Array.isArray(l.CreateLayerTypes)) l.CreateLayerTypes = [];
+				if (!Array.isArray(l.StyleOverride)) l.StyleOverride = [];
+				if (!Array.isArray(l.CreateLayerTypesOverride)) l.CreateLayerTypesOverride = [];
+				if (!l.ColorSuffix || typeof l.ColorSuffix !== "object") l.ColorSuffix = {};
+				if (typeof l.DrawingLeft !== "number") l.DrawingLeft = 50;
+				if (typeof l.DrawingTop !== "number") l.DrawingTop = 200;
+				if (typeof l.Left !== "number") l.Left = 50;
+				if (typeof l.Top !== "number") l.Top = 200;
+				if (typeof l.Priority !== "number") l.Priority = 15;
+				if (typeof l.Opacity !== "number") l.Opacity = 1;
+				if (typeof l.MinOpacity !== "number") l.MinOpacity = 1;
+				if (typeof l.MaxOpacity !== "number") l.MaxOpacity = 1;
+				if (!l.BlendingMode) l.BlendingMode = "source-over";
+				if (typeof l.FullAlpha !== "boolean") l.FullAlpha = true;
+				if (typeof l.HasImage !== "boolean") l.HasImage = true;
+			}
+		}
+	}
+
+	/**
+	 * Registers custom restraint GlossyPantyhoseBody in ItemArms, ItemTorso, and ItemTorso2 groups.
 	 */
 	function registerGlossyPantyhoseBody() {
 		if (typeof AssetGet !== "function" || typeof AssetGroupGet !== "function") return;
@@ -733,19 +959,7 @@
 		const groupArms = AssetGroupGet("Female3DCG", "ItemArms");
 		let armsAsset = AssetGet("Female3DCG", "ItemArms", "GlossyPantyhoseBody");
 		if (armsAsset) {
-			armsAsset.Extended = true;
-			armsAsset.AllowTighten = true;
-			armsAsset.SetPose = ["BackElbowTouch", "LegsClosed"];
-			armsAsset.AllowPose = ["BackElbowTouch", "BackBoxTie", "BackCuffs", "Yoked", "OverTheHead", "LegsClosed"];
-			armsAsset.Effect = ["Block", "BlockWardrobe", "Slow"];
-			armsAsset.Block = [
-				"ItemHands",
-				"ItemHandheld",
-				"ItemVulva",
-				"ItemButt",
-				"ItemVulvaPiercings",
-				"ItemNipplesPiercings",
-			];
+			sanitizeCustomAsset(armsAsset, groupArms, "ItemArms");
 		} else if (groupArms && Array.isArray(groupArms.Asset)) {
 			armsAsset = {
 				Name: "GlossyPantyhoseBody",
@@ -762,45 +976,12 @@
 				AllowLock: true,
 				AllowTighten: true,
 				Extended: false,
-				SetPose: ["BackElbowTouch", "LegsClosed"],
-				AllowPose: [
-					"BackElbowTouch",
-					"BackBoxTie",
-					"BackCuffs",
-					"Yoked",
-					"OverTheHead",
-					"LegsClosed",
-				],
-				Effect: ["Block", "BlockWardrobe", "Slow"],
-				Hide: ["Cloth", "ClothLower", "Suit", "SuitLower", "Garters"],
-				Block: [
-					"ItemHands",
-					"ItemHandheld",
-					"ItemVulva",
-					"ItemButt",
-					"ItemVulvaPiercings",
-					"ItemNipplesPiercings",
-				],
 				Audio: "ClothSlip",
-				Layer: [
-					{ Name: "BaseColor", AllowColorize: true },
-					{ Name: "Shadow", AllowColorize: false },
-					{ Name: "Highlight", AllowColorize: false },
-				],
 				DefaultColor: ["#1e1e24"],
 			};
-
-			if (typeof window.AssetAdd === "function") {
-				try {
-					window.AssetAdd(groupArms, armsAsset);
-				} catch (_) {
-					groupArms.Asset.push(armsAsset);
-					if (Array.isArray(window.Asset)) window.Asset.push(armsAsset);
-				}
-			} else {
-				groupArms.Asset.push(armsAsset);
-				if (Array.isArray(window.Asset)) window.Asset.push(armsAsset);
-			}
+			sanitizeCustomAsset(armsAsset, groupArms, "ItemArms");
+			groupArms.Asset.push(armsAsset);
+			if (Array.isArray(window.Asset)) window.Asset.push(armsAsset);
 			console.log(`${TAG} Registered custom restraint: ItemArms / GlossyPantyhoseBody`);
 		}
 
@@ -808,52 +989,13 @@
 		const groupTorso = AssetGroupGet("Female3DCG", "ItemTorso");
 		let torsoAsset = AssetGet("Female3DCG", "ItemTorso", "GlossyPantyhoseBody");
 		if (torsoAsset) {
-			torsoAsset.Extended = false;
-			torsoAsset.AllowTighten = true;
-			torsoAsset.IsRestraint = true;
-			torsoAsset.Priority = 15;
-			torsoAsset.DynamicGroupName = "ItemTorso";
 			delete torsoAsset.ParentItem;
-			torsoAsset.RemoveItemOnRemove = [];
-			torsoAsset.SetPose = ["BackElbowTouch", "LegsClosed"];
-			torsoAsset.AllowPose = [
-				"BackElbowTouch",
-				"BackBoxTie",
-				"BackCuffs",
-				"Yoked",
-				"OverTheHead",
-				"LegsClosed",
-			];
-			torsoAsset.Effect = ["Block", "BlockWardrobe", "Slow"];
-			torsoAsset.Block = [
-				"ItemHands",
-				"ItemHandheld",
-				"ItemVulva",
-				"ItemButt",
-				"ItemVulvaPiercings",
-				"ItemNipplesPiercings",
-			];
-			torsoAsset.Left = 50;
-			torsoAsset.Top = 200;
-			torsoAsset.DrawingLeft = 50;
-			torsoAsset.DrawingTop = 200;
-			torsoAsset.DynamicGroupName = "ItemArms";
-			if (Array.isArray(torsoAsset.Layer)) {
-				for (const l of torsoAsset.Layer) {
-					l.Priority = 15;
-				}
-			}
+			sanitizeCustomAsset(torsoAsset, groupTorso, "ItemArms");
 		} else if (groupTorso && Array.isArray(groupTorso.Asset)) {
 			torsoAsset = {
 				Name: "GlossyPantyhoseBody",
 				Description: "Glossy Fullbody Pantyhose (Torso)",
 				Group: groupTorso,
-				DynamicGroupName: "ItemArms",
-				Priority: 15,
-				Left: 50,
-				Top: 200,
-				DrawingLeft: 50,
-				DrawingTop: 200,
 				AllowColorize: true,
 				Value: 0,
 				Difficulty: 6,
@@ -864,46 +1006,12 @@
 				AllowLock: true,
 				AllowTighten: true,
 				Extended: false,
-				SetPose: ["BackElbowTouch", "LegsClosed"],
-				AllowPose: [
-					"BackElbowTouch",
-					"BackBoxTie",
-					"BackCuffs",
-					"Yoked",
-					"OverTheHead",
-					"LegsClosed",
-				],
-				Effect: ["Block", "BlockWardrobe", "Slow"],
-				Hide: ["Cloth", "ClothLower", "Suit", "SuitLower", "Garters"],
-				Block: [
-					"ItemHands",
-					"ItemHandheld",
-					"ItemVulva",
-					"ItemButt",
-					"ItemVulvaPiercings",
-					"ItemNipplesPiercings",
-				],
-				RemoveItemOnRemove: [],
 				Audio: "ClothSlip",
-				Layer: [
-					{ Name: "BaseColor", Priority: 15, AllowColorize: true, Left: 50, Top: 200, DrawingLeft: 50, DrawingTop: 200 },
-					{ Name: "Shadow", Priority: 15, AllowColorize: false, Left: 50, Top: 200, DrawingLeft: 50, DrawingTop: 200 },
-					{ Name: "Highlight", Priority: 15, AllowColorize: false, Left: 50, Top: 200, DrawingLeft: 50, DrawingTop: 200 },
-				],
 				DefaultColor: ["#1e1e24"],
 			};
-
-			if (typeof window.AssetAdd === "function") {
-				try {
-					window.AssetAdd(groupTorso, torsoAsset);
-				} catch (_) {
-					groupTorso.Asset.push(torsoAsset);
-					if (Array.isArray(window.Asset)) window.Asset.push(torsoAsset);
-				}
-			} else {
-				groupTorso.Asset.push(torsoAsset);
-				if (Array.isArray(window.Asset)) window.Asset.push(torsoAsset);
-			}
+			sanitizeCustomAsset(torsoAsset, groupTorso, "ItemArms");
+			groupTorso.Asset.push(torsoAsset);
+			if (Array.isArray(window.Asset)) window.Asset.push(torsoAsset);
 			console.log(`${TAG} Registered custom restraint: ItemTorso / GlossyPantyhoseBody`);
 		}
 
@@ -911,56 +1019,23 @@
 		const groupTorso2 = AssetGroupGet("Female3DCG", "ItemTorso2");
 		let torso2Asset = AssetGet("Female3DCG", "ItemTorso2", "GlossyPantyhoseBody");
 		if (torso2Asset) {
-			torso2Asset.Extended = false;
-			torso2Asset.AllowTighten = true;
-			torso2Asset.IsRestraint = true;
-			torso2Asset.Priority = 15;
-			torso2Asset.DynamicGroupName = "ItemArms";
 			delete torso2Asset.ParentItem;
-			torso2Asset.RemoveItemOnRemove = [];
-			torso2Asset.SetPose = ["BackElbowTouch", "LegsClosed"];
-			torso2Asset.AllowPose = [
-				"BackElbowTouch",
-				"BackBoxTie",
-				"BackCuffs",
-				"Yoked",
-				"OverTheHead",
-				"LegsClosed",
-			];
-			torso2Asset.Effect = ["Block", "BlockWardrobe", "Slow"];
-			torso2Asset.Block = [
-				"ItemHands",
-				"ItemHandheld",
-				"ItemVulva",
-				"ItemButt",
-				"ItemVulvaPiercings",
-				"ItemNipplesPiercings",
-			];
-			torso2Asset.Left = 50;
-			torso2Asset.Top = 200;
-			torso2Asset.DrawingLeft = 50;
-			torso2Asset.DrawingTop = 200;
-			if (Array.isArray(torso2Asset.Layer)) {
-				for (const l of torso2Asset.Layer) {
-					l.Priority = 15;
-				}
-			}
+			torso2Asset.CopyConfig = {
+				AssetName: "GlossyPantyhoseBody",
+				GroupName: "ItemArms",
+				BuyGroup: true,
+			};
+			sanitizeCustomAsset(torso2Asset, groupTorso2, "ItemArms");
 		} else if (groupTorso2 && Array.isArray(groupTorso2.Asset)) {
 			torso2Asset = {
 				Name: "GlossyPantyhoseBody",
 				Description: "Glossy Fullbody Pantyhose (Torso 2)",
 				Group: groupTorso2,
-				DynamicGroupName: "ItemArms",
-				Priority: 15,
 				CopyConfig: {
 					AssetName: "GlossyPantyhoseBody",
 					GroupName: "ItemArms",
 					BuyGroup: true,
 				},
-				Left: 50,
-				Top: 200,
-				DrawingLeft: 50,
-				DrawingTop: 200,
 				AllowColorize: true,
 				Value: 0,
 				Difficulty: 6,
@@ -971,46 +1046,12 @@
 				AllowLock: true,
 				AllowTighten: true,
 				Extended: false,
-				SetPose: ["BackElbowTouch", "LegsClosed"],
-				AllowPose: [
-					"BackElbowTouch",
-					"BackBoxTie",
-					"BackCuffs",
-					"Yoked",
-					"OverTheHead",
-					"LegsClosed",
-				],
-				Effect: ["Block", "BlockWardrobe", "Slow"],
-				Hide: ["Cloth", "ClothLower", "Suit", "SuitLower", "Garters"],
-				Block: [
-					"ItemHands",
-					"ItemHandheld",
-					"ItemVulva",
-					"ItemButt",
-					"ItemVulvaPiercings",
-					"ItemNipplesPiercings",
-				],
-				RemoveItemOnRemove: [],
 				Audio: "ClothSlip",
-				Layer: [
-					{ Name: "BaseColor", Priority: 15, AllowColorize: true, Left: 50, Top: 200, DrawingLeft: 50, DrawingTop: 200 },
-					{ Name: "Shadow", Priority: 15, AllowColorize: false, Left: 50, Top: 200, DrawingLeft: 50, DrawingTop: 200 },
-					{ Name: "Highlight", Priority: 15, AllowColorize: false, Left: 50, Top: 200, DrawingLeft: 50, DrawingTop: 200 },
-				],
 				DefaultColor: ["#1e1e24"],
 			};
-
-			if (typeof window.AssetAdd === "function") {
-				try {
-					window.AssetAdd(groupTorso2, torso2Asset);
-				} catch (_) {
-					groupTorso2.Asset.push(torso2Asset);
-					if (Array.isArray(window.Asset)) window.Asset.push(torso2Asset);
-				}
-			} else {
-				groupTorso2.Asset.push(torso2Asset);
-				if (Array.isArray(window.Asset)) window.Asset.push(torso2Asset);
-			}
+			sanitizeCustomAsset(torso2Asset, groupTorso2, "ItemArms");
+			groupTorso2.Asset.push(torso2Asset);
+			if (Array.isArray(window.Asset)) window.Asset.push(torso2Asset);
 			console.log(`${TAG} Registered custom restraint: ItemTorso2 / GlossyPantyhoseBody`);
 		}
 
