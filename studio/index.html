@@ -678,38 +678,23 @@
 					if (aRImg) manCtx.drawImage(aRImg, 0, 0);
 				}
 
-				// 2. Disegna Gambe (Top = 462 px)
+				// 2. Disegna Gambe (Top = 462 px, altezza nativa vanilla 538 px)
 				if (lImg) {
-					manCtx.drawImage(lImg, 0, 462, 500, lImg.height);
+					manCtx.drawImage(lImg, 0, 462);
 				}
 
-				// 3. Disegna Torso / Busto
+				// 3. Disegna Torso / Busto (Top = 0 px, altezza nativa vanilla 462 px)
 				if (uImg) {
-					manCtx.drawImage(uImg, 0, 0, 500, 1000);
+					manCtx.drawImage(uImg, 0, 0);
 				}
 
 				// 4. Disegna braccia se sono davanti (Standing, OverTheHead, Yoked)
 				if (!armsBehind) {
 					if (aLImg) manCtx.drawImage(aLImg, 0, 0);
 					if (aRImg) manCtx.drawImage(aRImg, 0, 0);
-
-					// Raccordo naturale per posa Yoked (le braccia native di Yoked partono a x=327 perché c'è il legno del giogo)
-					if (pose === "Yoked") {
-						manCtx.save();
-						manCtx.fillStyle = "#edd5c6";
-						// Spalla destra (schermo sinistra): congiunge x:168 con x:174
-						manCtx.beginPath();
-						manCtx.ellipse(172, 230, 8, 14, -0.2, 0, Math.PI * 2);
-						manCtx.fill();
-						// Spalla sinistra (schermo destra): congiunge x:326 con x:332
-						manCtx.beginPath();
-						manCtx.ellipse(328, 230, 8, 14, 0.2, 0, Math.PI * 2);
-						manCtx.fill();
-						manCtx.restore();
-					}
 				}
 
-				// 5. Disegna Testa & Mento (priority front per delineare bene il collo)
+				// 5. Disegna Testa & Mento vanilla (Top = 0 px)
 				if (hImg) {
 					manCtx.drawImage(hImg, 0, 0);
 				}
@@ -881,23 +866,12 @@
 				if (aRImg) offCtx.drawImage(aRImg, 0, 0);
 			}
 
-			if (lImg) offCtx.drawImage(lImg, 0, 462, 500, lImg.height);
-			if (uImg) offCtx.drawImage(uImg, 0, 0, 500, 1000);
+			if (lImg) offCtx.drawImage(lImg, 0, 462);
+			if (uImg) offCtx.drawImage(uImg, 0, 0);
 
 			if (!armsBehind) {
 				if (aLImg) offCtx.drawImage(aLImg, 0, 0);
 				if (aRImg) offCtx.drawImage(aRImg, 0, 0);
-				if (pose === "Yoked") {
-					offCtx.save();
-					offCtx.fillStyle = "#edd5c6";
-					offCtx.beginPath();
-					offCtx.ellipse(172, 230, 8, 14, -0.2, 0, Math.PI * 2);
-					offCtx.fill();
-					offCtx.beginPath();
-					offCtx.ellipse(328, 230, 8, 14, 0.2, 0, Math.PI * 2);
-					offCtx.fill();
-					offCtx.restore();
-				}
 			}
 
 			if (hImg) offCtx.drawImage(hImg, 0, 0);
