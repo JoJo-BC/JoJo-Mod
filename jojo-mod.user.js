@@ -131,6 +131,7 @@
 		"Assets/Female3DCG/ItemArms/PantyhoseBody_Small.png",
 		"Assets/Female3DCG/ItemArms/PantyhoseBody_XLarge.png",
 		"Assets/Female3DCG/ItemArms/Preview/GlossyPantyhoseBody.png",
+		"Assets/Female3DCG/ItemArms/SpiderBodystocking_FlatSmall_Pattern.png",
 		"Assets/Female3DCG/Suit/BackBoxTie/GlossyBodystocking_FlatMedium_A2.png",
 		"Assets/Female3DCG/Suit/BackBoxTie/GlossyBodystocking_FlatMedium_A3.png",
 		"Assets/Female3DCG/Suit/BackBoxTie/GlossyBodystocking_FlatMedium_A4.png",

@@ -562,6 +562,7 @@
 				<label for="itemModeSelect">Item Type</label>
 				<select id="itemModeSelect">
 					<option value="GlossyPantyhoseBody" selected>🔒 GlossyPantyhoseBody (Restraint Torso &amp; Arms)</option>
+					<option value="SpiderBodystocking">🕷️ SpiderBodystocking (Classic Spider-Man Suit)</option>
 					<option value="GlossyBodystocking">👗 GlossyBodystocking (Suit Catsuit Vanilla)</option>
 					<option value="CustomOnly">📁 Custom Dropped PNG Only (Artwork Testing)</option>
 				</select>
@@ -1498,7 +1499,22 @@
 			}
 
 			// 3. RENDER VESTITO GLOSSYBODYSTOCKING
-			else if (mode === "GlossyBodystocking") {
+			else if (mode === "SpiderBodystocking") {
+				let patImg = await loadImage("../assets/Assets/Female3DCG/ItemArms/SpiderBodystocking_FlatSmall_Pattern.png");
+				if (patImg) {
+					ctx.drawImage(patImg, 50, 200, 400, 800);
+				}
+				if (layerState["Shadow"] !== false) {
+					let shdImg = await loadImage("../assets/Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_FlatSmall_Shadow.png");
+					if (shdImg) ctx.drawImage(shdImg, 50, 200, 400, 800);
+				}
+				if (layerState["Highlight"] !== false) {
+					let hltImg = await loadImage("../assets/Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_FlatSmall_Highlight.png");
+					if (hltImg) ctx.drawImage(hltImg, 50, 200, 400, 800);
+				}
+			}
+
+			if (mode === "GlossyBodystocking") {
 				const poseSubdir = pose === "Standing" ? "" : pose + "/";
 				const suitSize = (chest === "FlatSmall" || chest === "FlatMedium") ? chest : "Small";
 				const basePath = `../assets/Assets/Female3DCG/Suit/${poseSubdir}GlossyBodystocking_${suitSize}_`;
