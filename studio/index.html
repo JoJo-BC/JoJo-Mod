@@ -311,163 +311,159 @@
 			<a href="../index.html" style="color:var(--muted); text-decoration:none; font-size:0.8rem;">← Mod Home</a>
 		</div>
 
-		<!-- Oggetto da testare -->
+		<!-- Item to Test -->
 		<div class="section">
-			<div class="section-title">Oggetto &amp; Modalità</div>
-			<label for="itemModeSelect">Tipo Oggetto</label>
+			<div class="section-title">Item &amp; Mode</div>
+			<label for="itemModeSelect">Item Type</label>
 			<select id="itemModeSelect">
-				<option value="GlossyPantyhoseBody" selected>🔒 GlossyPantyhoseBody (Restraint Torso/Braccia)</option>
+				<option value="GlossyPantyhoseBody" selected>🔒 GlossyPantyhoseBody (Restraint Torso &amp; Arms)</option>
 				<option value="GlossyBodystocking">👗 GlossyBodystocking (Suit Catsuit Vanilla)</option>
-				<option value="CustomOnly">📁 Solo Immagine Trascinata (Custom Artwork)</option>
+				<option value="CustomOnly">📁 Custom Dropped PNG Only (Artwork Testing)</option>
 			</select>
 		</div>
 
-		<!-- Configurazione Corpo Avatar -->
+		<!-- Body & Mannequin Configuration -->
 		<div class="section">
-			<div class="section-title">Forma del Corpo &amp; Manichino</div>
+			<div class="section-title">Body Shape &amp; Mannequin</div>
 			
 			<div class="form-grid-2">
 				<div>
-					<label for="chestSelect">Petto / Busto</label>
+					<label for="chestSelect">BodyUpper (Chest)</label>
 					<select id="chestSelect">
-						<option value="Normal" selected>Femminile Standard (Normal)</option>
-						<option value="Small">Femminile Piccolo (Small)</option>
-						<option value="Large">Femminile Prosperoso (Large)</option>
-						<option value="XLarge">Femminile Molto Grande (XLarge)</option>
-						<option value="FlatMedium">Maschile Atletico (FlatMedium)</option>
-						<option value="FlatSmall">Maschile Magro (FlatSmall)</option>
+						<option value="Normal" selected>Normal (Default Female)</option>
+						<option value="Small">Small (Small Female)</option>
+						<option value="Large">Large (Large Female)</option>
+						<option value="XLarge">XLarge (X-Large Female)</option>
+						<option value="FlatMedium">FlatMedium (Athletic Male)</option>
+						<option value="FlatSmall">FlatSmall (Lean Male)</option>
 					</select>
 				</div>
 				<div>
-					<label for="sexSelect">Sesso / Pelvi</label>
-					<select id="sexSelect">
-						<option value="Female" selected>Femminile (Liscio)</option>
-						<option value="Bulge">Maschile (Bulge standard)</option>
-						<option value="SkinTight">Maschile (SkinTight marcato)</option>
-						<option value="Tucked">Maschile (Tucked)</option>
+					<label for="legsSelect">BodyLower (Legs Size)</label>
+					<select id="legsSelect">
+						<option value="Normal" selected>Normal (Default Legs)</option>
+						<option value="Small">Small (LegsSmall / Lean)</option>
+						<option value="Large">Large (Thick / Curvy)</option>
+						<option value="XLarge">XLarge (Extra Thick)</option>
 					</select>
 				</div>
 			</div>
 
 			<div class="form-grid-2">
 				<div>
-					<label for="legsSelect">Dimensione Gambe</label>
-					<select id="legsSelect">
-						<option value="Normal" selected>Gambe Standard (Normal)</option>
-						<option value="Small">Gambe Sottili (LegsSmall)</option>
-						<option value="Large">Gambe Formose (Large)</option>
-						<option value="XLarge">Gambe Extra (XLarge)</option>
+					<label for="legPoseSelect">Legs Pose</label>
+					<select id="legPoseSelect">
+						<option value="LegsClosed" selected>LegsClosed (Restraint Bound)</option>
+						<option value="LegsOpen">LegsOpen (Standing Relaxed)</option>
+						<option value="Spread">Spread (Legs Spread)</option>
+						<option value="Kneel">Kneel (Kneeling Together)</option>
+						<option value="KneelingSpread">KneelingSpread (Spread)</option>
 					</select>
 				</div>
 				<div>
-					<label for="legPoseSelect">Posizione Gambe</label>
-					<select id="legPoseSelect">
-						<option value="LegsClosed" selected>In piedi: Gambe Chiuse (Restraint)</option>
-						<option value="LegsOpen">In piedi: Gambe Aperte / Rilassate</option>
-						<option value="Spread">In piedi: Gambe Divaricate</option>
-						<option value="Kneel">In ginocchio: Gambe Chiuse</option>
-						<option value="KneelingSpread">In ginocchio: Gambe Divaricate</option>
+					<label for="poseSelect">Arms Pose</label>
+					<select id="poseSelect">
+						<option value="BackElbowTouch" selected>BackElbowTouch (Tied Behind)</option>
+						<option value="Standing">Standing (Arms Down)</option>
+						<option value="BackBoxTie">BackBoxTie (BoxTie Behind)</option>
+						<option value="BackCuffs">BackCuffs (Cuffs Behind)</option>
+						<option value="OverTheHead">OverTheHead (Hands Up)</option>
+						<option value="Yoked">Yoked (T-Pose / Yoke Bar)</option>
 					</select>
 				</div>
 			</div>
 
-			<div>
-				<label for="poseSelect">Posa Braccia</label>
-				<select id="poseSelect">
-					<option value="BackElbowTouch" selected>Gomiti uniti dietro (Restraint)</option>
-					<option value="Standing">In piedi (Lungo i fianchi)</option>
-					<option value="BackBoxTie">BoxTie dietro</option>
-					<option value="BackCuffs">Manette dietro</option>
-					<option value="OverTheHead">Mani sopra la testa</option>
-					<option value="Yoked">Braccia a T / Giogo</option>
-				</select>
-			</div>
-
 			<div style="display:flex; align-items:center; justify-content:space-between; margin-top:10px;">
-				<label style="margin:0; cursor:pointer;" for="showMannequin">Mostra Manichino Guida</label>
+				<label style="margin:0; cursor:pointer;" for="showMannequin">Show Mannequin Guide</label>
 				<input type="checkbox" id="showMannequin" checked style="width:17px; height:17px; cursor:pointer;">
 			</div>
 
+			<div style="display:flex; align-items:center; justify-content:space-between; margin-top:8px;">
+				<label style="margin:0; cursor:pointer;" for="showHead">Show Head &amp; Chin Reference</label>
+				<input type="checkbox" id="showHead" checked style="width:17px; height:17px; cursor:pointer;">
+			</div>
+
 			<div style="margin-top:10px;">
-				<label for="skinColorSelect">Tonalità Manichino</label>
-				<select id="skinColorSelect">
-					<option value="#f0cdb9">Pelle Chiara (BC Vanilla Default)</option>
-					<option value="#d8a783">Pelle Media / Ambrata</option>
-					<option value="#8c5338">Pelle Scura</option>
-					<option value="#a0a5b5">Grigio Manichino Tecnico</option>
+				<label for="mannequinStyleSelect">Mannequin Visual Style</label>
+				<select id="mannequinStyleSelect">
+					<option value="vanilla" selected>Vanilla Skin Tone (Default BC)</option>
+					<option value="blueprint">Technical Blueprint (Neutral Grey)</option>
 				</select>
 			</div>
 		</div>
 
-		<!-- Tinta & Colore Restraint -->
+		<!-- Restraint Color & Tint -->
 		<div class="section">
-			<div class="section-title">Colore Vestito / Restraint</div>
-			<label>Tinta BaseColor (Simulazione BC)</label>
+			<div class="section-title">Restraint / Outfit Color</div>
+			<label>BaseColor Tint (BC Canvas Simulation)</label>
 			<div class="color-row">
 				<input type="color" id="tintColor" value="#1a1a24">
 				<input type="text" id="tintHex" value="#1a1a24" style="margin:0; width:110px;">
 			</div>
 			<div class="color-presets">
-				<div class="preset-btn" style="background:#151515;" title="Nero Vinile / Calza Scura" onclick="setTint('#151515')"></div>
-				<div class="preset-btn" style="background:#2b2226;" title="Marrone Fumo Scuro" onclick="setTint('#2b2226')"></div>
-				<div class="preset-btn" style="background:#4b3a37;" title="Pantyhose Coffee" onclick="setTint('#4b3a37')"></div>
-				<div class="preset-btn" style="background:#ffffff;" title="Bianco Neve" onclick="setTint('#ffffff')"></div>
-				<div class="preset-btn" style="background:#d943d4;" title="Rosa Magenta JoJo" onclick="setTint('#d943d4')"></div>
-				<div class="preset-btn" style="background:#2463eb;" title="Blu Elettrico" onclick="setTint('#2463eb')"></div>
-				<div class="preset-btn" style="background:#dc2626;" title="Rosso Lacca" onclick="setTint('#dc2626')"></div>
-				<div class="preset-btn" style="background:#16a34a;" title="Verde Smeraldo" onclick="setTint('#16a34a')"></div>
+				<div class="preset-btn" style="background:#151515;" title="Vinyl Black / Dark Stocking" onclick="setTint('#151515')"></div>
+				<div class="preset-btn" style="background:#2b2226;" title="Dark Smoke" onclick="setTint('#2b2226')"></div>
+				<div class="preset-btn" style="background:#4b3a37;" title="Coffee Brown" onclick="setTint('#4b3a37')"></div>
+				<div class="preset-btn" style="background:#ffffff;" title="Snow White" onclick="setTint('#ffffff')"></div>
+				<div class="preset-btn" style="background:#d943d4;" title="JoJo Magenta" onclick="setTint('#d943d4')"></div>
+				<div class="preset-btn" style="background:#2463eb;" title="Electric Blue" onclick="setTint('#2463eb')"></div>
+				<div class="preset-btn" style="background:#dc2626;" title="Lacquer Red" onclick="setTint('#dc2626')"></div>
+				<div class="preset-btn" style="background:#16a34a;" title="Emerald Green" onclick="setTint('#16a34a')"></div>
 			</div>
 		</div>
 
-		<!-- Livelli Visibili -->
+		<!-- Layer Inspector -->
 		<div class="section">
-			<div class="section-title">Ispettore Livelli (Layers)</div>
+			<div class="section-title">Layer Inspector</div>
 			<div class="layer-list" id="layerList">
-				<!-- Riempito dinamicamente -->
+				<!-- Populated dynamically -->
 			</div>
 		</div>
 
-		<!-- Drop Zone per Testare file PNG personalizzati -->
+		<!-- Drop Zone for Live PNG Testing -->
 		<div class="section">
-			<div class="section-title">Prova PNG Modificato Live</div>
+			<div class="section-title">Test Custom Edited PNG</div>
 			<div class="drop-zone" id="dropZone">
-				📁 Trascina qui il tuo PNG modificato!<br>
-				<span style="font-size:0.75rem; color:#888;">(BaseColor, Highlight, Shadow o Restraint intero)</span>
+				📁 Drag &amp; drop your edited PNG here or click to browse!<br>
+				<span style="font-size:0.75rem; color:#888;">(BaseColor, Highlight, Shadow or full composite)</span>
 			</div>
 			<input type="file" id="fileInput" accept="image/png" style="display:none;">
 
 			<div id="dropFileInfo" style="display:none; margin-top:8px; font-size:0.78rem;">
 				<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
 					<span id="droppedFileName" style="color:#f78ef3; font-weight:600;"></span>
-					<button onclick="clearCustomImage()" style="background:transparent; border:none; color:#dc2626; cursor:pointer; font-size:0.75rem;">✕ Rimuovi</button>
+					<button onclick="clearCustomImage()" style="background:transparent; border:none; color:#dc2626; cursor:pointer; font-size:0.75rem;">✕ Remove</button>
 				</div>
-				<label for="customLayerTarget">Usa questo file come:</label>
+				<label for="customLayerTarget">Use this file as:</label>
 				<select id="customLayerTarget" style="margin-bottom:4px;">
-					<option value="overlay">Sovrapposizione Diretta (Top Layer)</option>
-					<option value="baseColor">Sostituisci BaseColor (Silhouette + Tinta)</option>
-					<option value="highlight">Sostituisci Highlight (Riflessi)</option>
-					<option value="shadow">Sostituisci Shadow (Ombre)</option>
+					<option value="overlay">Direct Overlay (Top Layer)</option>
+					<option value="baseColor">Replace BaseColor (Silhouette + Tint)</option>
+					<option value="highlight">Replace Highlight (Reflections)</option>
+					<option value="shadow">Replace Shadow (Shading &amp; Folds)</option>
 				</select>
 			</div>
 
 			<div class="info-box">
-				💡 <strong>Modifiche Personali</strong>:<br>
-				Modifica il file con Photoshop o GIMP e salvalo con lo <strong>stesso nome</strong> nella cartella:<br>
+				💡 <strong>Personal Modifications</strong>:<br>
+				Edit any sprite with Photoshop or GIMP and save it with the <strong>same filename</strong> into:<br>
 				<code>JoJo-Mod/assets/Assets/Female3DCG/ItemArms/</code><br>
-				I due slot del Torso usano direttamente questa cartella (nessuna duplicazione necessaria!). Poi trascinalo qui sopra per provarlo subito sul manichino!
+				Then drag &amp; drop it here to preview it instantly on any body shape and pose!
 			</div>
 		</div>
 
-		<!-- Azioni & Esportazione -->
+		<!-- Actions & Export -->
 		<div class="section" style="border:none;">
+			<button class="btn" style="background:#1d4ed8; border-color:#2563eb; margin-bottom:8px;" onclick="downloadMannequinTemplate()">
+				📥 Download Mannequin Template (500x1000 PNG)
+			</button>
 			<button class="btn btn-primary" onclick="exportComposite()">
-				💾 Esporta Composito PNG (500x1000)
+				💾 Export Composite PNG (500x1000)
 			</button>
 			<button class="btn" onclick="exportRestraintOnly()">
-				🖼️ Esporta Solo Restraint (400x800)
+				🖼️ Export Restraint Only (400x800)
 			</button>
 			<button class="btn" onclick="copyConsoleCmd()">
-				📋 Copia Comando Console BC
+				📋 Copy BC Console Command
 			</button>
 		</div>
 	</aside>
@@ -499,10 +495,10 @@
 		const chestSelect = document.getElementById("chestSelect");
 		const legsSelect = document.getElementById("legsSelect");
 		const legPoseSelect = document.getElementById("legPoseSelect");
-		const sexSelect = document.getElementById("sexSelect");
 		const poseSelect = document.getElementById("poseSelect");
 		const showMannequinCheckbox = document.getElementById("showMannequin");
-		const skinColorSelect = document.getElementById("skinColorSelect");
+		const showHeadCheckbox = document.getElementById("showHead");
+		const mannequinStyleSelect = document.getElementById("mannequinStyleSelect");
 		const tintColor = document.getElementById("tintColor");
 		const tintHex = document.getElementById("tintHex");
 		const statusText = document.getElementById("statusText");
@@ -517,22 +513,22 @@
 
 		// Configurazione Layer per ciascuna modalità
 		const PANTYHOSE_LAYERS = [
-			{ id: "Mannequin", label: "Corpo Manichino Base", defaultOn: true },
-			{ id: "BaseColor", label: "BaseColor (Sagoma ricolorabile)", defaultOn: true, isTinted: true },
-			{ id: "Shadow", label: "Shadow (Ombreggiature & pieghe)", defaultOn: true },
-			{ id: "Highlight", label: "Highlight (Riflessi lucidi / glossy)", defaultOn: true },
+			{ id: "Mannequin", label: "Base Mannequin Body", defaultOn: true },
+			{ id: "BaseColor", label: "BaseColor (Tintable Silhouette)", defaultOn: true, isTinted: true },
+			{ id: "Shadow", label: "Shadow (Shading & Folds)", defaultOn: true },
+			{ id: "Highlight", label: "Highlight (Glossy Reflections)", defaultOn: true },
 		];
 
 		const SUIT_LAYERS = [
-			{ id: "Mannequin", label: "Corpo Manichino Base", defaultOn: true },
+			{ id: "Mannequin", label: "Base Mannequin Body", defaultOn: true },
 			{ id: "BodyHue", label: "BodyHue (Skin Underlay)", defaultOn: true },
 			{ id: "BaseColor", label: "BaseColor (Silhouette)", defaultOn: true, isTinted: true },
-			{ id: "EdgeShade", label: "EdgeShade (Ombre bordi)", defaultOn: true },
-			{ id: "A2", label: "A2 (Ombra Torace/Pec)", defaultOn: true },
-			{ id: "A3", label: "A3 (Ombra Braccia)", defaultOn: true },
-			{ id: "C1", label: "C1..C12 (Riflessi Vinile)", defaultOn: true },
-			{ id: "D1", label: "D1..D7 (Pieghe e lucentezza)", defaultOn: true },
-			{ id: "EdgeLine", label: "EdgeLine (Linee contorno)", defaultOn: true },
+			{ id: "EdgeShade", label: "EdgeShade (Edge Shadows)", defaultOn: true },
+			{ id: "A2", label: "A2 (Chest Shading)", defaultOn: true },
+			{ id: "A3", label: "A3 (Arms Shading)", defaultOn: true },
+			{ id: "C1", label: "C1..C12 (Vinyl Highlights)", defaultOn: true },
+			{ id: "D1", label: "D1..D7 (Gleam & Folds)", defaultOn: true },
+			{ id: "EdgeLine", label: "EdgeLine (Contour Lines)", defaultOn: true },
 		];
 
 		const layerState = {};
@@ -587,10 +583,10 @@
 		chestSelect.addEventListener("change", render);
 		legsSelect.addEventListener("change", render);
 		legPoseSelect.addEventListener("change", render);
-		sexSelect.addEventListener("change", render);
 		poseSelect.addEventListener("change", render);
 		showMannequinCheckbox.addEventListener("change", render);
-		skinColorSelect.addEventListener("change", render);
+		showHeadCheckbox.addEventListener("change", render);
+		mannequinStyleSelect.addEventListener("change", render);
 		customLayerTarget.addEventListener("change", render);
 
 		// Cache immagini per non ricaricare da disco continuamente
@@ -648,13 +644,15 @@
 			const chest = chestSelect.value;
 			const legs = legsSelect.value;
 			const legPose = legPoseSelect.value;
-			const sex = sexSelect.value;
 			const pose = poseSelect.value;
-			const skinColor = skinColorSelect.value;
-			const isDefaultSkin = (skinColor === "#f0cdb9");
 
 			// 1. RENDER MANICHINO COMPLETO DINAMICO MODULARE
 			if (showMannequinCheckbox.checked && layerState["Mannequin"] !== false) {
+				const manOff = document.createElement("canvas");
+				manOff.width = 500;
+				manOff.height = 1000;
+				const manCtx = manOff.getContext("2d");
+
 				// A. Caricamento Braccia
 				const armSize = (chest === "FlatSmall" || chest === "FlatMedium") ? chest : "Small";
 				const armSubdir = (pose === "Standing") ? "" : pose + "/";
@@ -668,55 +666,71 @@
 				// C. Caricamento Busto / Petto (500x1000)
 				const uImg = await loadImage(`../templates/body_upper/${chest}_White.png`);
 
-				// D. Braccia dietro il torso (BackElbowTouch, BackBoxTie, BackCuffs)
+				// D. Caricamento Testa & Mento (500x275)
+				const hImg = showHeadCheckbox.checked ? await loadImage(`../templates/head/Default_White.png`) : null;
+
+				// E. Ordinamento di profondità braccia
 				const armsBehind = (pose === "BackElbowTouch" || pose === "BackBoxTie" || pose === "BackCuffs");
 
-				// 1. Disegna braccia se sono dietro
+				// 1. Disegna braccia se sono dietro il torso
 				if (armsBehind) {
-					if (aLImg) {
-						if (isDefaultSkin) ctx.drawImage(aLImg, 0, 0);
-						else drawTintedImage(ctx, aLImg, 0, 0, 500, 1000, skinColor);
-					}
-					if (aRImg) {
-						if (isDefaultSkin) ctx.drawImage(aRImg, 0, 0);
-						else drawTintedImage(ctx, aRImg, 0, 0, 500, 1000, skinColor);
-					}
+					if (aLImg) manCtx.drawImage(aLImg, 0, 0);
+					if (aRImg) manCtx.drawImage(aRImg, 0, 0);
 				}
 
 				// 2. Disegna Gambe (Top = 462 px)
 				if (lImg) {
-					if (isDefaultSkin) ctx.drawImage(lImg, 0, 462, 500, lImg.height);
-					else drawTintedImage(ctx, lImg, 0, 462, 500, lImg.height, skinColor);
+					manCtx.drawImage(lImg, 0, 462, 500, lImg.height);
 				}
 
 				// 3. Disegna Torso / Busto
 				if (uImg) {
-					if (isDefaultSkin) ctx.drawImage(uImg, 0, 0);
-					else drawTintedImage(ctx, uImg, 0, 0, 500, 1000, skinColor);
+					manCtx.drawImage(uImg, 0, 0, 500, 1000);
 				}
 
 				// 4. Disegna braccia se sono davanti (Standing, OverTheHead, Yoked)
 				if (!armsBehind) {
-					if (aLImg) {
-						if (isDefaultSkin) ctx.drawImage(aLImg, 0, 0);
-						else drawTintedImage(ctx, aLImg, 0, 0, 500, 1000, skinColor);
-					}
-					if (aRImg) {
-						if (isDefaultSkin) ctx.drawImage(aRImg, 0, 0);
-						else drawTintedImage(ctx, aRImg, 0, 0, 500, 1000, skinColor);
+					if (aLImg) manCtx.drawImage(aLImg, 0, 0);
+					if (aRImg) manCtx.drawImage(aRImg, 0, 0);
+
+					// Raccordo naturale per posa Yoked (le braccia native di Yoked partono a x=327 perché c'è il legno del giogo)
+					if (pose === "Yoked") {
+						manCtx.save();
+						manCtx.fillStyle = "#edd5c6";
+						// Spalla destra (schermo sinistra): congiunge x:168 con x:174
+						manCtx.beginPath();
+						manCtx.ellipse(172, 230, 8, 14, -0.2, 0, Math.PI * 2);
+						manCtx.fill();
+						// Spalla sinistra (schermo destra): congiunge x:326 con x:332
+						manCtx.beginPath();
+						manCtx.ellipse(328, 230, 8, 14, 0.2, 0, Math.PI * 2);
+						manCtx.fill();
+						manCtx.restore();
 					}
 				}
 
-				// 5. Overlay Pelvi / Sesso / Bulge maschile se richiesto
-				if (sex !== "Female") {
-					const bulgeFile = (sex === "Bulge") ? "Bulge.png" : (sex === "SkinTight" ? "SkinTight.png" : "Tucked.png");
-					const bImg = await loadImage(`../templates/bulge/${bulgeFile}`);
-					if (bImg) {
-						// Bulge centrato a X=140, Y=462
-						if (isDefaultSkin) ctx.drawImage(bImg, 140, 462, bImg.width, bImg.height);
-						else drawTintedImage(ctx, bImg, 140, 462, bImg.width, bImg.height, skinColor);
-					}
+				// 5. Disegna Testa & Mento (priority front per delineare bene il collo)
+				if (hImg) {
+					manCtx.drawImage(hImg, 0, 0);
 				}
+
+				// Stile visivo Manichino: Vanilla o Blueprint Neutro
+				if (mannequinStyleSelect.value === "blueprint") {
+					const imgData = manCtx.getImageData(0, 0, 500, 1000);
+					const d = imgData.data;
+					for (let i = 0; i < d.length; i += 4) {
+						if (d[i + 3] > 0) {
+							const lum = Math.round(d[i] * 0.299 + d[i + 1] * 0.587 + d[i + 2] * 0.114);
+							d[i] = lum;
+							d[i + 1] = lum;
+							d[i + 2] = lum;
+						}
+					}
+					manCtx.putImageData(imgData, 0, 0);
+				}
+
+				// Copia sul canvas principale
+				ctx.drawImage(manOff, 0, 0);
 			}
 
 			// 2. RENDER RESTRAINT GLOSSYPANTYHOSEBODY
@@ -737,7 +751,6 @@
 					} else {
 						baseImg = await loadImage(basePath + "BaseColor.png");
 						if (!baseImg && legSuffix) {
-							// Fallback se legs non ha file separato
 							baseImg = await loadImage(`../assets/Assets/Female3DCG/ItemArms/GlossyPantyhoseBody_${assetChest}_BaseColor.png`);
 						}
 					}
@@ -836,7 +849,77 @@
 				ctx.drawImage(customDroppedImage, dx, dy, customDroppedImage.width, customDroppedImage.height);
 			}
 
-			statusText.textContent = `Visualizzazione: ${mode} | Petto: ${chest} | Gambe: ${legs} (${legPose}) | Braccia: ${pose} | Sesso: ${sex}`;
+			statusText.textContent = `View: ${mode} | Chest: ${chest} | Legs: ${legs} (${legPose}) | Arms: ${pose} | Head: ${showHeadCheckbox.checked ? "On" : "Off"}`;
+		}
+
+		// Download del solo manichino guida trasparente 500x1000 per Photoshop / GIMP
+		async function downloadMannequinTemplate() {
+			const off = document.createElement("canvas");
+			off.width = 500;
+			off.height = 1000;
+			const offCtx = off.getContext("2d");
+
+			const chest = chestSelect.value;
+			const legs = legsSelect.value;
+			const legPose = legPoseSelect.value;
+			const pose = poseSelect.value;
+
+			const armSize = (chest === "FlatSmall" || chest === "FlatMedium") ? chest : "Small";
+			const armSubdir = (pose === "Standing") ? "" : pose + "/";
+			const aLImg = await loadImage(`../templates/arms_left/${armSubdir}${armSize}_White.png`);
+			const aRImg = await loadImage(`../templates/arms_right/${armSubdir}${armSize}_White.png`);
+
+			let lSrc = `../templates/body_lower/${legPose === "LegsOpen" ? "" : legPose + "/"}${legs}_White.png`;
+			const lImg = await loadImage(lSrc);
+			const uImg = await loadImage(`../templates/body_upper/${chest}_White.png`);
+			const hImg = showHeadCheckbox.checked ? await loadImage(`../templates/head/Default_White.png`) : null;
+
+			const armsBehind = (pose === "BackElbowTouch" || pose === "BackBoxTie" || pose === "BackCuffs");
+
+			if (armsBehind) {
+				if (aLImg) offCtx.drawImage(aLImg, 0, 0);
+				if (aRImg) offCtx.drawImage(aRImg, 0, 0);
+			}
+
+			if (lImg) offCtx.drawImage(lImg, 0, 462, 500, lImg.height);
+			if (uImg) offCtx.drawImage(uImg, 0, 0, 500, 1000);
+
+			if (!armsBehind) {
+				if (aLImg) offCtx.drawImage(aLImg, 0, 0);
+				if (aRImg) offCtx.drawImage(aRImg, 0, 0);
+				if (pose === "Yoked") {
+					offCtx.save();
+					offCtx.fillStyle = "#edd5c6";
+					offCtx.beginPath();
+					offCtx.ellipse(172, 230, 8, 14, -0.2, 0, Math.PI * 2);
+					offCtx.fill();
+					offCtx.beginPath();
+					offCtx.ellipse(328, 230, 8, 14, 0.2, 0, Math.PI * 2);
+					offCtx.fill();
+					offCtx.restore();
+				}
+			}
+
+			if (hImg) offCtx.drawImage(hImg, 0, 0);
+
+			if (mannequinStyleSelect.value === "blueprint") {
+				const imgData = offCtx.getImageData(0, 0, 500, 1000);
+				const d = imgData.data;
+				for (let i = 0; i < d.length; i += 4) {
+					if (d[i + 3] > 0) {
+						const lum = Math.round(d[i] * 0.299 + d[i + 1] * 0.587 + d[i + 2] * 0.114);
+						d[i] = lum;
+						d[i + 1] = lum;
+						d[i + 2] = lum;
+					}
+				}
+				offCtx.putImageData(imgData, 0, 0);
+			}
+
+			const link = document.createElement("a");
+			link.download = `mannequin_${chest}_${legs}_${legPose}_${pose}.png`;
+			link.href = off.toDataURL("image/png");
+			link.click();
 		}
 
 		// Gestione Drag & Drop sia su Drop Zone che direttamente su Canvas
