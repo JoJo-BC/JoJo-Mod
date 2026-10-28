@@ -264,6 +264,26 @@
 			word-break: break-all;
 		}
 
+		
+		/* Nudge Buttons & Positioning */
+		.nudge-btn {
+			flex: 1;
+			background: #252238;
+			border: 1px solid #4a3b60;
+			color: #e0c3fc;
+			font-size: 0.7rem;
+			font-weight: 600;
+			padding: 2px 4px;
+			border-radius: 4px;
+			cursor: pointer;
+			transition: all 0.1s ease;
+		}
+		.nudge-btn:hover {
+			background: #3b2f56;
+			border-color: #a855f7;
+			color: #fff;
+		}
+
 		/* Buttons */
 		.btn {
 			display: inline-flex;
@@ -666,6 +686,79 @@
 						<option value="highlight">Replace Highlight (Reflections)</option>
 						<option value="shadow">Replace Shadow (Shading &amp; Folds)</option>
 					</select>
+				
+					<!-- Target Body Zone & Anatomical Offset Controls -->
+					<div id="customPositionPanel" style="background:#1e172a; border:1px solid #3b2a52; border-radius:8px; padding:10px; margin-top:10px;">
+						<div style="font-weight:700; color:#e0c3fc; margin-bottom:6px; font-size:0.82rem; display:flex; justify-content:space-between; align-items:center;">
+							<span>🎯 Anatomical Target &amp; Offset</span>
+							<span id="customDimBadge" style="font-size:0.7rem; color:#aaa; font-weight:normal;"></span>
+						</div>
+
+						<label for="customPosPreset" style="font-size:0.75rem; color:#ccc;">Target Body Zone / Preset:</label>
+						<select id="customPosPreset" style="margin-bottom:8px; font-size:0.78rem;">
+							<option value="custom">✏️ Custom / Free Dragging on Canvas</option>
+							<option value="full">🌐 Full Canvas (0, 0) [500x1000]</option>
+							<option value="head">👤 Head &amp; Hair (0, 0) [500x275]</option>
+							<option value="face">🎭 Face / Mask / Gag (150, 80)</option>
+							<option value="neck">🧣 Neck &amp; Collar (150, 160)</option>
+							<option value="chest">👙 Chest / Bra / Harness (100, 200)</option>
+							<option value="torso">👗 Torso / Corset / Vest (0, 215)</option>
+							<option value="waist">🎗️ Waist / Belt / Midriff (0, 360)</option>
+							<option value="pelvis">🩲 Pelvis / Panties / Crotch (120, 462)</option>
+							<option value="legs">🦵 Legs &amp; Knees (100, 520)</option>
+							<option value="boots">👢 Feet / Boots / Shoes (100, 750)</option>
+							<option value="arms">💪 Arms &amp; Elbows (80, 280)</option>
+							<option value="hands">🧤 Hands &amp; Wrists (100, 480)</option>
+						</select>
+
+						<!-- Offset X & Y inputs with step nudge buttons -->
+						<div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:8px;">
+							<div>
+								<label style="font-size:0.75rem; color:#ccc; display:flex; justify-content:space-between;">
+									<span>Left (X Offset):</span>
+									<span id="xValDisplay" style="color:#f78ef3; font-weight:700;">0 px</span>
+								</label>
+								<input type="number" id="customOffsetX" value="0" style="margin-bottom:4px; font-size:0.8rem;">
+								<div style="display:flex; gap:2px;">
+									<button type="button" class="nudge-btn" onclick="nudgeX(-10)">-10</button>
+									<button type="button" class="nudge-btn" onclick="nudgeX(-1)">-1</button>
+									<button type="button" class="nudge-btn" onclick="nudgeX(1)">+1</button>
+									<button type="button" class="nudge-btn" onclick="nudgeX(10)">+10</button>
+								</div>
+							</div>
+							<div>
+								<label style="font-size:0.75rem; color:#ccc; display:flex; justify-content:space-between;">
+									<span>Top (Y Offset):</span>
+									<span id="yValDisplay" style="color:#f78ef3; font-weight:700;">0 px</span>
+								</label>
+								<input type="number" id="customOffsetY" value="0" style="margin-bottom:4px; font-size:0.8rem;">
+								<div style="display:flex; gap:2px;">
+									<button type="button" class="nudge-btn" onclick="nudgeY(-10)">-10</button>
+									<button type="button" class="nudge-btn" onclick="nudgeY(-1)">-1</button>
+									<button type="button" class="nudge-btn" onclick="nudgeY(1)">+1</button>
+									<button type="button" class="nudge-btn" onclick="nudgeY(10)">+10</button>
+								</div>
+							</div>
+						</div>
+
+						<!-- Quick Helper Action Buttons -->
+						<div style="display:flex; gap:6px; margin-bottom:8px;">
+							<button type="button" class="btn" style="flex:1; padding:4px 6px; font-size:0.72rem; background:#2a2540;" onclick="autoCenterX()">↔ Center X</button>
+							<button type="button" class="btn" style="flex:1; padding:4px 6px; font-size:0.72rem; background:#2a2540;" onclick="resetOffset()">↺ Reset (0,0)</button>
+							<button type="button" class="btn" style="flex:1; padding:4px 6px; font-size:0.72rem; background:#4a2370; color:#fff;" onclick="sendCoordsToCreator()">📋 Copy to Item</button>
+						</div>
+
+						<!-- Opacity Slider -->
+						<div style="display:flex; align-items:center; gap:8px;">
+							<label for="customOpacity" style="font-size:0.75rem; color:#ccc; margin:0; white-space:nowrap;">Layer Opacity:</label>
+							<input type="range" id="customOpacity" min="10" max="100" value="100" style="flex:1; cursor:pointer;">
+							<span id="customOpacityVal" style="font-size:0.75rem; color:#aaa; width:36px; text-align:right;">100%</span>
+						</div>
+
+						<div style="font-size:0.7rem; color:#9ca3af; margin-top:6px; line-height:1.2;">
+							💡 <em>Tip: You can also click and drag the item directly with your mouse on the canvas!</em>
+						</div>
+					</div>
 				</div>
 
 				<div class="info-box">
@@ -771,6 +864,17 @@
 
 				<label for="creatorDescInput">English Description <span class="label-tip">*Tooltip</span></label>
 				<input type="text" id="creatorDescInput" value="A tight glossy pantyhose body restraint locking the arms." placeholder="e.g. Restricts hand movement completely.">
+
+				<div class="form-grid-2">
+					<div>
+						<label for="creatorLeftInput">Drawing Left (Offset X) <span class="label-tip">Vanilla Left</span></label>
+						<input type="number" id="creatorLeftInput" value="0">
+					</div>
+					<div>
+						<label for="creatorTopInput">Drawing Top (Offset Y) <span class="label-tip">Vanilla Top</span></label>
+						<input type="number" id="creatorTopInput" value="0">
+					</div>
+				</div>
 
 				<div class="form-grid-2">
 					<div>
@@ -1020,6 +1124,23 @@
 		const droppedFileName = document.getElementById("droppedFileName");
 		const customLayerTarget = document.getElementById("customLayerTarget");
 		const showZonesCheckbox = document.getElementById("showZonesCheckbox");
+		const customPositionPanel = document.getElementById("customPositionPanel");
+		const customDimBadge = document.getElementById("customDimBadge");
+		const customPosPreset = document.getElementById("customPosPreset");
+		const customOffsetX = document.getElementById("customOffsetX");
+		const customOffsetY = document.getElementById("customOffsetY");
+		const xValDisplay = document.getElementById("xValDisplay");
+		const yValDisplay = document.getElementById("yValDisplay");
+		const customOpacity = document.getElementById("customOpacity");
+		const customOpacityVal = document.getElementById("customOpacityVal");
+		const creatorLeftInput = document.getElementById("creatorLeftInput");
+		const creatorTopInput = document.getElementById("creatorTopInput");
+
+		let isDraggingCustom = false;
+		let dragStartX = 0;
+		let dragStartY = 0;
+		let dragInitialOffsetX = 0;
+		let dragInitialOffsetY = 0;
 
 		let customDroppedImage = null;
 
@@ -1333,8 +1454,8 @@
 						}
 					}
 					if (baseImg) {
-						const dx = (baseImg.width === 400) ? 50 : 0;
-						const dy = (baseImg.height === 800) ? 200 : 0;
+						const dx = (customDroppedImage && baseImg === customDroppedImage) ? (parseInt(customOffsetX.value) || 0) : ((baseImg.width === 400) ? 50 : 0);
+						const dy = (customDroppedImage && baseImg === customDroppedImage) ? (parseInt(customOffsetY.value) || 0) : ((baseImg.height === 800) ? 200 : 0);
 						drawTintedImage(ctx, baseImg, dx, dy, baseImg.width, baseImg.height, tintColor.value);
 					}
 				}
@@ -1351,8 +1472,8 @@
 						}
 					}
 					if (shdImg) {
-						const dx = (shdImg.width === 400) ? 50 : 0;
-						const dy = (shdImg.height === 800) ? 200 : 0;
+						const dx = (customDroppedImage && shdImg === customDroppedImage) ? (parseInt(customOffsetX.value) || 0) : ((shdImg.width === 400) ? 50 : 0);
+						const dy = (customDroppedImage && shdImg === customDroppedImage) ? (parseInt(customOffsetY.value) || 0) : ((shdImg.height === 800) ? 200 : 0);
 						ctx.drawImage(shdImg, dx, dy, shdImg.width, shdImg.height);
 					}
 				}
@@ -1369,8 +1490,8 @@
 						}
 					}
 					if (hltImg) {
-						const dx = (hltImg.width === 400) ? 50 : 0;
-						const dy = (hltImg.height === 800) ? 200 : 0;
+						const dx = (customDroppedImage && hltImg === customDroppedImage) ? (parseInt(customOffsetX.value) || 0) : ((hltImg.width === 400) ? 50 : 0);
+						const dy = (customDroppedImage && hltImg === customDroppedImage) ? (parseInt(customOffsetY.value) || 0) : ((hltImg.height === 800) ? 200 : 0);
 						ctx.drawImage(hltImg, dx, dy, hltImg.width, hltImg.height);
 					}
 				}
@@ -1420,11 +1541,24 @@
 				}
 			}
 
-			// 4. RENDER CUSTOM DROPPED PNG (Overlay diretto)
+			// 4. RENDER CUSTOM DROPPED PNG (Overlay diretto o CustomOnly)
 			if (customDroppedImage && (customLayerTarget.value === "overlay" || mode === "CustomOnly")) {
-				const dx = (customDroppedImage.width === 400) ? 50 : 0;
-				const dy = (customDroppedImage.height === 800) ? 200 : 0;
-				ctx.drawImage(customDroppedImage, dx, dy, customDroppedImage.width, customDroppedImage.height);
+				const drawX = parseInt(customOffsetX.value) || 0;
+				const drawY = parseInt(customOffsetY.value) || 0;
+				const opacity = (parseInt(customOpacity.value) || 100) / 100;
+
+				ctx.save();
+				ctx.globalAlpha = opacity;
+				ctx.drawImage(customDroppedImage, drawX, drawY, customDroppedImage.width, customDroppedImage.height);
+
+				// Visual feedback outline when dragging custom dropped item
+				if (isDraggingCustom) {
+					ctx.strokeStyle = "#c084fc";
+					ctx.lineWidth = 2;
+					ctx.setLineDash([4, 4]);
+					ctx.strokeRect(drawX, drawY, customDroppedImage.width, customDroppedImage.height);
+				}
+				ctx.restore();
 			}
 
 			// 5. RENDER BODY ZONES OVERLAY SE ATTIVO
@@ -1541,6 +1675,194 @@
 			}
 		});
 
+		function updateOffsetDisplays() {
+			const x = parseInt(customOffsetX.value) || 0;
+			const y = parseInt(customOffsetY.value) || 0;
+			xValDisplay.textContent = `${x} px`;
+			yValDisplay.textContent = `${y} px`;
+			if (creatorLeftInput && creatorTopInput) {
+				creatorLeftInput.value = x;
+				creatorTopInput.value = y;
+			}
+		}
+
+		function smartPositioningForImage(img, fileName) {
+			customPositionPanel.style.display = "block";
+			customDimBadge.textContent = `${img.width} × ${img.height} px`;
+
+			const lower = fileName.toLowerCase();
+
+			// 1. Full Canvas 500x1000
+			if (img.width === 500 && img.height === 1000) {
+				applyPosPreset("full");
+				return;
+			}
+			// 2. Standard BC Restraint 400x800 (Left 50, Top 200)
+			if (img.width === 400 && img.height === 800) {
+				customOffsetX.value = 50;
+				customOffsetY.value = 200;
+				customPosPreset.value = "custom";
+				updateOffsetDisplays();
+				return;
+			}
+			// 3. Head / Mask / Gag
+			if (img.height <= 300 && (lower.includes("head") || lower.includes("mask") || lower.includes("gag") || lower.includes("blindfold") || lower.includes("hood"))) {
+				applyPosPreset("head");
+				return;
+			}
+			// 4. Neck / Collar
+			if (lower.includes("collar") || lower.includes("neck") || lower.includes("choker")) {
+				applyPosPreset("neck");
+				return;
+			}
+			// 5. Torso / Corset / Bra / Harness
+			if (lower.includes("corset") || lower.includes("torso") || lower.includes("bra") || lower.includes("harness") || lower.includes("vest") || lower.includes("bodice")) {
+				applyPosPreset("torso");
+				return;
+			}
+			// 6. Waist / Belt
+			if (lower.includes("belt") || lower.includes("waist")) {
+				applyPosPreset("waist");
+				return;
+			}
+			// 7. Pelvis / Panties / Crotch
+			if (lower.includes("pant") || lower.includes("pelvis") || lower.includes("crotch") || lower.includes("chastity")) {
+				applyPosPreset("pelvis");
+				return;
+			}
+			// 8. Boots / Shoes / Feet
+			if (lower.includes("boot") || lower.includes("shoe") || lower.includes("feet") || lower.includes("heel") || lower.includes("ankle")) {
+				applyPosPreset("boots");
+				return;
+			}
+
+			// Default for any cropped item: auto-center horizontally, and place at torso/chest level (Y = 200) instead of floating at top!
+			const autoX = Math.max(0, Math.round((500 - img.width) / 2));
+			const autoY = (img.height < 500) ? 200 : 0;
+			customOffsetX.value = autoX;
+			customOffsetY.value = autoY;
+			customPosPreset.value = "custom";
+			updateOffsetDisplays();
+		}
+
+		function applyPosPreset(preset) {
+			customPosPreset.value = preset;
+			const w = customDroppedImage ? customDroppedImage.width : 500;
+			const h = customDroppedImage ? customDroppedImage.height : 1000;
+			const centerX = Math.max(0, Math.round((500 - w) / 2));
+
+			switch(preset) {
+				case "full":
+					customOffsetX.value = 0;
+					customOffsetY.value = 0;
+					break;
+				case "head":
+					customOffsetX.value = centerX;
+					customOffsetY.value = 0;
+					break;
+				case "face":
+					customOffsetX.value = centerX;
+					customOffsetY.value = 80;
+					break;
+				case "neck":
+					customOffsetX.value = centerX;
+					customOffsetY.value = 160;
+					break;
+				case "chest":
+					customOffsetX.value = centerX;
+					customOffsetY.value = 200;
+					break;
+				case "torso":
+					customOffsetX.value = centerX;
+					customOffsetY.value = 215;
+					break;
+				case "waist":
+					customOffsetX.value = centerX;
+					customOffsetY.value = 360;
+					break;
+				case "pelvis":
+					customOffsetX.value = centerX;
+					customOffsetY.value = 462;
+					break;
+				case "legs":
+					customOffsetX.value = centerX;
+					customOffsetY.value = 520;
+					break;
+				case "boots":
+					customOffsetX.value = centerX;
+					customOffsetY.value = 750;
+					break;
+				case "arms":
+					customOffsetX.value = (w < 200) ? 80 : centerX;
+					customOffsetY.value = 280;
+					break;
+				case "hands":
+					customOffsetX.value = centerX;
+					customOffsetY.value = 480;
+					break;
+				case "custom":
+				default:
+					break;
+			}
+			updateOffsetDisplays();
+			render();
+		}
+
+		function nudgeX(delta) {
+			customOffsetX.value = (parseInt(customOffsetX.value) || 0) + delta;
+			customPosPreset.value = "custom";
+			updateOffsetDisplays();
+			render();
+		}
+
+		function nudgeY(delta) {
+			customOffsetY.value = (parseInt(customOffsetY.value) || 0) + delta;
+			customPosPreset.value = "custom";
+			updateOffsetDisplays();
+			render();
+		}
+
+		function autoCenterX() {
+			if (!customDroppedImage) return;
+			customOffsetX.value = Math.max(0, Math.round((500 - customDroppedImage.width) / 2));
+			customPosPreset.value = "custom";
+			updateOffsetDisplays();
+			render();
+		}
+
+		function resetOffset() {
+			customOffsetX.value = 0;
+			customOffsetY.value = 0;
+			customPosPreset.value = "full";
+			updateOffsetDisplays();
+			render();
+		}
+
+		function sendCoordsToCreator() {
+			const x = parseInt(customOffsetX.value) || 0;
+			const y = parseInt(customOffsetY.value) || 0;
+			if (creatorLeftInput) creatorLeftInput.value = x;
+			if (creatorTopInput) creatorTopInput.value = y;
+			alert(`✅ Applied coordinates to Item Creator:\nLeft (X): ${x} px\nTop (Y): ${y} px`);
+		}
+
+		// Event listeners for offset controls
+		customPosPreset.addEventListener("change", (e) => applyPosPreset(e.target.value));
+		customOffsetX.addEventListener("input", () => {
+			customPosPreset.value = "custom";
+			updateOffsetDisplays();
+			render();
+		});
+		customOffsetY.addEventListener("input", () => {
+			customPosPreset.value = "custom";
+			updateOffsetDisplays();
+			render();
+		});
+		customOpacity.addEventListener("input", (e) => {
+			customOpacityVal.textContent = `${e.target.value}%`;
+			render();
+		});
+
 		function handleCustomFile(file) {
 			const reader = new FileReader();
 			reader.onload = (evt) => {
@@ -1555,6 +1877,12 @@
 					else if (file.name.includes("Shadow")) customLayerTarget.value = "shadow";
 					else customLayerTarget.value = "overlay";
 
+					// If user is currently in standard mode, automatically switch to CustomOnly so they see it immediately!
+					if (itemModeSelect.value !== "CustomOnly") {
+						itemModeSelect.value = "CustomOnly";
+					}
+
+					smartPositioningForImage(img, file.name);
 					render();
 				};
 				img.src = evt.target.result;
@@ -1565,6 +1893,7 @@
 		function clearCustomImage() {
 			customDroppedImage = null;
 			dropFileInfo.style.display = "none";
+			customPositionPanel.style.display = "none";
 			fileInput.value = "";
 			render();
 		}
@@ -1595,31 +1924,92 @@
 			});
 		}
 
-		// ==================== INTERACTIVE BODY ZONES MOUSE HANDLING ====================
-		canvas.addEventListener("mousemove", (e) => {
-			if (!showZonesCheckbox.checked) return;
+		// ==================== INTERACTIVE CANVAS MOUSE HANDLING (DRAG & ZONES) ====================
+		canvas.addEventListener("mousedown", (e) => {
+			if (!customDroppedImage) return;
 			const rect = canvas.getBoundingClientRect();
 			const scaleX = canvas.width / rect.width;
 			const scaleY = canvas.height / rect.height;
 			const mouseX = (e.clientX - rect.left) * scaleX;
 			const mouseY = (e.clientY - rect.top) * scaleY;
 
-			let found = null;
-			for (const z of BODY_ZONES) {
-				if (mouseX >= z.x && mouseX <= z.x + z.w && mouseY >= z.y && mouseY <= z.y + z.h) {
-					found = z;
-					break;
-				}
+			const curX = parseInt(customOffsetX.value) || 0;
+			const curY = parseInt(customOffsetY.value) || 0;
+			const w = customDroppedImage.width;
+			const h = customDroppedImage.height;
+
+			// If clicked inside the custom dropped image, start dragging!
+			if (mouseX >= curX && mouseX <= curX + w && mouseY >= curY && mouseY <= curY + h) {
+				isDraggingCustom = true;
+				dragStartX = mouseX;
+				dragStartY = mouseY;
+				dragInitialOffsetX = curX;
+				dragInitialOffsetY = curY;
+				canvas.style.cursor = "grabbing";
+				e.preventDefault();
+			}
+		});
+
+		canvas.addEventListener("mousemove", (e) => {
+			const rect = canvas.getBoundingClientRect();
+			const scaleX = canvas.width / rect.width;
+			const scaleY = canvas.height / rect.height;
+			const mouseX = (e.clientX - rect.left) * scaleX;
+			const mouseY = (e.clientY - rect.top) * scaleY;
+
+			// Handle dragging custom image
+			if (isDraggingCustom && customDroppedImage) {
+				const deltaX = Math.round(mouseX - dragStartX);
+				const deltaY = Math.round(mouseY - dragStartY);
+				customOffsetX.value = dragInitialOffsetX + deltaX;
+				customOffsetY.value = dragInitialOffsetY + deltaY;
+				customPosPreset.value = "custom";
+				updateOffsetDisplays();
+				render();
+				return;
 			}
 
-			if (found !== hoveredZone) {
-				hoveredZone = found;
-				canvas.style.cursor = found ? "pointer" : "default";
-				if (found) {
-					statusText.textContent = `🎯 Zone: ${found.label} | Primary Slot: ${found.primaryGroup} (Click to edit item for this slot)`;
-				} else {
-					statusText.textContent = `Zoom: ${Math.round(currentZoom * 100)}% | Canvas: 500 × 1000 px`;
+			// Handle Body Zones Overlay hover
+			if (showZonesCheckbox.checked) {
+				let found = null;
+				for (const z of BODY_ZONES) {
+					if (mouseX >= z.x && mouseX <= z.x + z.w && mouseY >= z.y && mouseY <= z.y + z.h) {
+						found = z;
+						break;
+					}
 				}
+
+				if (found !== hoveredZone) {
+					hoveredZone = found;
+					canvas.style.cursor = found ? "pointer" : "default";
+					if (found) {
+						statusText.textContent = `🎯 Zone: ${found.label} | Primary Slot: ${found.primaryGroup} (Click to set slot and snap)`;
+					} else {
+						statusText.textContent = `Zoom: ${Math.round(currentZoom * 100)}% | Canvas: 500 × 1000 px`;
+					}
+					render();
+				}
+				return;
+			}
+
+			// Hover cursor on custom image
+			if (customDroppedImage) {
+				const curX = parseInt(customOffsetX.value) || 0;
+				const curY = parseInt(customOffsetY.value) || 0;
+				const w = customDroppedImage.width;
+				const h = customDroppedImage.height;
+				if (mouseX >= curX && mouseX <= curX + w && mouseY >= curY && mouseY <= curY + h) {
+					canvas.style.cursor = "grab";
+				} else {
+					canvas.style.cursor = "default";
+				}
+			}
+		});
+
+		window.addEventListener("mouseup", () => {
+			if (isDraggingCustom) {
+				isDraggingCustom = false;
+				canvas.style.cursor = "default";
 				render();
 			}
 		});
@@ -1634,6 +2024,10 @@
 
 		canvas.addEventListener("click", () => {
 			if (showZonesCheckbox.checked && hoveredZone) {
+				// Snap custom image to zone if loaded
+				if (customDroppedImage) {
+					applyPosPreset(hoveredZone.id);
+				}
 				switchSidebarTab("creator");
 				document.getElementById("creatorGroupSelect").value = hoveredZone.primaryGroup;
 				validateCreatorForm();
@@ -1923,10 +2317,15 @@
 			const fetish = creatorFetishSelect.value;
 
 			const lines = [];
+			const leftVal = parseInt(creatorLeftInput.value) || 0;
+			const topVal = parseInt(creatorTopInput.value) || 0;
+
 			lines.push(`// Add inside Group: "${group}" Asset array in BondageClub/Scripts/Female3DCG.js:`);
 			lines.push(`{`);
 			lines.push(`\tName: "${name}",`);
 			lines.push(`\tPriority: ${priority},`);
+			if (leftVal !== 0) lines.push(`\tLeft: ${leftVal},`);
+			if (topVal !== 0) lines.push(`\tTop: ${topVal},`);
 
 			if (isRestraint) {
 				lines.push(`\tIsRestraint: true,`);
