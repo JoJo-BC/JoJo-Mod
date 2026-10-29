@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         JoJo Flat-Chest & Male Avatar Compatibility Mod (BC R133+)
 // @namespace    https://jojo-bc.github.io/JoJo-Mod/
-// @version      1.5.4
+// @version      1.5.5
 // @description  Unlocks and maps flat-chest (FlatSmall / FlatMedium) and all body sizes clothes and restraints in Bondage Club (Glossy Bodystocking, Echo Latex Top 乳胶衣 & Latex Bottom, Pantyhose fullBody, Glossy Fullbody Pantyhose, etc.), 100% ModSDK & BCX compliant.
 // @author       JoJo-BC
 // @match        https://*.bondageprojects.elementfx.com/R*/*
@@ -24,17 +24,17 @@
 		window.CommonDrawAppearanceBuild = window.CommonDrawAppearanceBuild.__jojoOrigBuild;
 	}
 
-	if (window.__JoJoFlatModLoaded === "1.5.4") {
-		console.log("[JoJo-Mod] v1.5.4 already active, refreshing characters.");
+	if (window.__JoJoFlatModLoaded === "1.5.5") {
+		console.log("[JoJo-Mod] v1.5.5 already active, refreshing characters.");
 		if (typeof window.__JoJoFlatModRefreshAll === "function") {
 			window.__JoJoFlatModRefreshAll();
 		}
 		return;
 	}
-	window.__JoJoFlatModLoaded = "1.5.4";
+	window.__JoJoFlatModLoaded = "1.5.5";
 
 	const TAG = "[JoJo-Mod]";
-	const VERSION = "1.5.4";
+	const VERSION = "1.5.5";
 	const REPO_BASE_URL = "https://jojo-bc.github.io/JoJo-Mod/";
 
 	console.log(`${TAG} v${VERSION} initializing...`);
@@ -756,8 +756,8 @@
 				Alpha: [],
 				FullAlpha: true,
 				Asset: asset,
-				DrawingLeft: 50,
-				DrawingTop: 200,
+				DrawingLeft: { "": 50 },
+				DrawingTop: { "": 200 },
 				Left: 50,
 				Top: 200,
 				HideAs: null,
@@ -793,8 +793,8 @@
 				Alpha: [],
 				FullAlpha: true,
 				Asset: asset,
-				DrawingLeft: 50,
-				DrawingTop: 200,
+				DrawingLeft: { "": 50 },
+				DrawingTop: { "": 200 },
 				Left: 50,
 				Top: 200,
 				HideAs: null,
@@ -830,8 +830,8 @@
 				Alpha: [],
 				FullAlpha: true,
 				Asset: asset,
-				DrawingLeft: 50,
-				DrawingTop: 200,
+				DrawingLeft: { "": 50 },
+				DrawingTop: { "": 200 },
 				Left: 50,
 				Top: 200,
 				HideAs: null,
@@ -935,8 +935,8 @@
 		if (!Array.isArray(asset.RemoveItemOnRemove)) asset.RemoveItemOnRemove = [];
 		if (!asset.ParentGroup || typeof asset.ParentGroup !== "object") asset.ParentGroup = {};
 		if (!Array.isArray(asset.Alpha)) asset.Alpha = [];
-		asset.DrawingLeft = 50;
-		asset.DrawingTop = 200;
+		asset.DrawingLeft = { "": 50 };
+		asset.DrawingTop = { "": 200 };
 		asset.Left = 50;
 		asset.Top = 200;
 		asset.Priority = 15;
@@ -953,10 +953,10 @@
 				if (!Array.isArray(l.StyleOverride)) l.StyleOverride = [];
 				if (!Array.isArray(l.CreateLayerTypesOverride)) l.CreateLayerTypesOverride = [];
 				if (!l.ColorSuffix || typeof l.ColorSuffix !== "object") l.ColorSuffix = {};
-				if (typeof l.DrawingLeft !== "number") l.DrawingLeft = 50;
-				if (typeof l.DrawingTop !== "number") l.DrawingTop = 200;
-				if (typeof l.Left !== "number") l.Left = 50;
-				if (typeof l.Top !== "number") l.Top = 200;
+				l.DrawingLeft = { "": 50 };
+				l.DrawingTop = { "": 200 };
+				l.Left = 50;
+				l.Top = 200;
 				if (typeof l.Priority !== "number") l.Priority = 15;
 				if (typeof l.Opacity !== "number") l.Opacity = 1;
 				if (typeof l.MinOpacity !== "number") l.MinOpacity = 1;
@@ -1226,6 +1226,18 @@
 										TextureAlphaMask: remapMaskArray(opts.TextureAlphaMask),
 									};
 								}
+								if (
+									(mappedSrc.includes("GlossyPantyhoseBody") || mappedSrc.includes("PantyhoseBody")) &&
+									!mappedSrc.includes("/Preview/")
+								) {
+									if (x === 0 || typeof x !== "number" || isNaN(x)) {
+										x = 50;
+									}
+									if (y === 0 || typeof y !== "number" || isNaN(y)) {
+										const overflow = typeof window.CanvasUpperOverflow === "number" ? window.CanvasUpperOverflow : 0;
+										y = 200 + overflow;
+									}
+								}
 								return fn.call(this, mappedSrc, x, y, opts, ...more);
 							};
 						};
@@ -1248,6 +1260,20 @@
 				if (typeof window[fnName] === "function") {
 					mod.hookFunction(fnName, 20, (args, next) => {
 						args[0] = remapImageUrl(args[0]);
+						if (
+							(fnName === "GLDrawImage" || fnName === "DrawImageEx") &&
+							args[0] &&
+							(args[0].includes("GlossyPantyhoseBody") || args[0].includes("PantyhoseBody")) &&
+							!args[0].includes("/Preview/")
+						) {
+							if (args[2] === 0 || typeof args[2] !== "number" || isNaN(args[2])) {
+								args[2] = 50;
+							}
+							if (args[3] === 0 || typeof args[3] !== "number" || isNaN(args[3])) {
+								const overflow = typeof window.CanvasUpperOverflow === "number" ? window.CanvasUpperOverflow : 0;
+								args[3] = 200 + overflow;
+							}
+						}
 						if (
 							(fnName === "GLDrawImage" || fnName === "DrawImageEx") &&
 							args[4] &&
