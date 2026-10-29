@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         JoJo Flat-Chest & Male Avatar Compatibility Mod (BC R133+)
 // @namespace    https://jojo-bc.github.io/JoJo-Mod/
-// @version      1.5.5
+// @version      1.5.6
 // @description  Unlocks and maps flat-chest (FlatSmall / FlatMedium) and all body sizes clothes and restraints in Bondage Club (Glossy Bodystocking, Echo Latex Top 乳胶衣 & Latex Bottom, Pantyhose fullBody, Glossy Fullbody Pantyhose, etc.), 100% ModSDK & BCX compliant.
 // @author       JoJo-BC
 // @match        https://*.bondageprojects.elementfx.com/R*/*
@@ -24,17 +24,17 @@
 		window.CommonDrawAppearanceBuild = window.CommonDrawAppearanceBuild.__jojoOrigBuild;
 	}
 
-	if (window.__JoJoFlatModLoaded === "1.5.5") {
-		console.log("[JoJo-Mod] v1.5.5 already active, refreshing characters.");
+	if (window.__JoJoFlatModLoaded === "1.5.6") {
+		console.log("[JoJo-Mod] v1.5.6 already active, refreshing characters.");
 		if (typeof window.__JoJoFlatModRefreshAll === "function") {
 			window.__JoJoFlatModRefreshAll();
 		}
 		return;
 	}
-	window.__JoJoFlatModLoaded = "1.5.5";
+	window.__JoJoFlatModLoaded = "1.5.6";
 
 	const TAG = "[JoJo-Mod]";
-	const VERSION = "1.5.5";
+	const VERSION = "1.5.6";
 	const REPO_BASE_URL = "https://jojo-bc.github.io/JoJo-Mod/";
 
 	console.log(`${TAG} v${VERSION} initializing...`);
@@ -1227,6 +1227,7 @@
 									};
 								}
 								if (
+									typeof mappedSrc === "string" &&
 									(mappedSrc.includes("GlossyPantyhoseBody") || mappedSrc.includes("PantyhoseBody")) &&
 									!mappedSrc.includes("/Preview/")
 								) {
@@ -1262,7 +1263,7 @@
 						args[0] = remapImageUrl(args[0]);
 						if (
 							(fnName === "GLDrawImage" || fnName === "DrawImageEx") &&
-							args[0] &&
+							typeof args[0] === "string" &&
 							(args[0].includes("GlossyPantyhoseBody") || args[0].includes("PantyhoseBody")) &&
 							!args[0].includes("/Preview/")
 						) {
