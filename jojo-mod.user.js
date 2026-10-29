@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         JoJo Flat-Chest & Male Avatar Compatibility Mod (BC R133+)
 // @namespace    https://jojo-bc.github.io/JoJo-Mod/
-// @version      1.5.3
+// @version      1.5.4
 // @description  Unlocks and maps flat-chest (FlatSmall / FlatMedium) and all body sizes clothes and restraints in Bondage Club (Glossy Bodystocking, Echo Latex Top 乳胶衣 & Latex Bottom, Pantyhose fullBody, Glossy Fullbody Pantyhose, etc.), 100% ModSDK & BCX compliant.
 // @author       JoJo-BC
 // @match        https://*.bondageprojects.elementfx.com/R*/*
@@ -24,17 +24,17 @@
 		window.CommonDrawAppearanceBuild = window.CommonDrawAppearanceBuild.__jojoOrigBuild;
 	}
 
-	if (window.__JoJoFlatModLoaded === "1.5.1") {
-		console.log("[JoJo-Mod] v1.5.1 already active, refreshing characters.");
+	if (window.__JoJoFlatModLoaded === "1.5.4") {
+		console.log("[JoJo-Mod] v1.5.4 already active, refreshing characters.");
 		if (typeof window.__JoJoFlatModRefreshAll === "function") {
 			window.__JoJoFlatModRefreshAll();
 		}
 		return;
 	}
-	window.__JoJoFlatModLoaded = "1.5.1";
+	window.__JoJoFlatModLoaded = "1.5.4";
 
 	const TAG = "[JoJo-Mod]";
-	const VERSION = "1.5.1";
+	const VERSION = "1.5.4";
 	const REPO_BASE_URL = "https://jojo-bc.github.io/JoJo-Mod/";
 
 	console.log(`${TAG} v${VERSION} initializing...`);
@@ -864,6 +864,14 @@
 		asset.Group = group;
 		asset.Family = group.Family || "Female3DCG";
 		asset.DynamicGroupName = dynamicGroupName;
+		if (typeof asset.Enable !== "boolean") asset.Enable = true;
+		if (typeof asset.Wear !== "boolean") asset.Wear = true;
+		if (typeof asset.Visible !== "boolean") asset.Visible = true;
+		if (!Array.isArray(asset.AvailableLocations)) asset.AvailableLocations = [];
+		if (!Array.isArray(asset.CreateLayerTypes)) asset.CreateLayerTypes = [];
+		if (!Array.isArray(asset.Category)) asset.Category = [];
+		if (!Array.isArray(asset.Fetish)) asset.Fetish = [];
+		if (typeof asset.AllowLockType === "undefined") asset.AllowLockType = null;
 		if (typeof asset.DynamicName !== "function") asset.DynamicName = function () { return this.Name; };
 		if (typeof asset.DynamicDescription !== "function") asset.DynamicDescription = function () { return this.Description; };
 		if (typeof asset.DynamicPreviewImage !== "function") asset.DynamicPreviewImage = function () { return ""; };
@@ -1075,6 +1083,23 @@
 	}
 
 	/**
+	 * Ensures all custom and flat unlocked assets are available in Player.Inventory so BC dialogs and inventory checks find them.
+	 */
+	function ensurePlayerInventory() {
+		if (typeof Player === "undefined" || !Array.isArray(Player.Inventory)) return;
+		for (const item of UNLOCKED_FLAT_ASSETS) {
+			const asset = AssetGet("Female3DCG", item.group, item.name);
+			if (!asset) continue;
+			const alreadyHas = Player.Inventory.some(
+				(inv) => inv && inv.Asset && inv.Asset.Name === item.name && inv.Asset.Group && inv.Asset.Group.Name === item.group
+			);
+			if (!alreadyHas) {
+				Player.Inventory.push({ Asset: asset });
+			}
+		}
+	}
+
+	/**
 	 * Removes "HasBreasts" prerequisite and "F" gender restriction from configured assets.
 	 */
 	function unlockFlatAssets() {
@@ -1095,6 +1120,9 @@
 			if (asset.Gender === "F") {
 				asset.Gender = undefined;
 			}
+			if (typeof asset.Enable !== "boolean") asset.Enable = true;
+			if (typeof asset.Wear !== "boolean") asset.Wear = true;
+			if (!Array.isArray(asset.AvailableLocations)) asset.AvailableLocations = [];
 			if (item.makeFreeInSession) {
 				if (typeof asset.Value === "number" && asset.Value > 0) {
 					asset.Value = 0;
@@ -1123,6 +1151,9 @@
 				}
 			}
 		}
+
+		// Ensure Player.Inventory has all unlocked flat assets and custom assets so vanilla inventory checks pass
+		ensurePlayerInventory();
 
 		// Clean up any invalid entries in Player.Inventory (must have .Asset to avoid DialogInventoryBuild crash)
 		if (typeof Player !== "undefined" && Array.isArray(Player.Inventory)) {
@@ -1470,16 +1501,14 @@
 				});
 			}
 
-			// 7. Ensure unlocked flat items always appear in the 3x3 Wardrobe DialogInventory
+			// 7. Ensure unlocked flat items and restraints always appear in DialogInventory (Wardrobe & Restraints)
 			if (typeof window.DialogInventoryBuild === "function") {
 				mod.hookFunction("DialogInventoryBuild", 25, (args, next) => {
+					ensurePlayerInventory();
 					const res = next(args);
-					// ONLY run in Wardrobe / Appearance screen (Cloth mode)! NEVER in restraints mode!
-					if (typeof window.CharacterAppearanceMode === "undefined" || window.CharacterAppearanceMode !== "Cloth") {
-						return res;
-					}
 					const C = args[0] || window.CharacterAppearanceSelection || (typeof Player !== "undefined" ? Player : null);
 					if (C && C.FocusGroup && Array.isArray(window.DialogInventory)) {
+						let added = false;
 						for (const unl of UNLOCKED_FLAT_ASSETS) {
 							if (unl.group === C.FocusGroup.Name) {
 								const asset = AssetGet("Female3DCG", unl.group, unl.name);
@@ -1487,17 +1516,38 @@
 								let invItem = window.DialogInventory.find((i) => i && i.Asset && i.Asset.Name === unl.name);
 								const worn = Array.isArray(C.Appearance) && C.Appearance.some((a) => a && a.Asset && a.Asset.Name === unl.name && a.Asset.Group.Name === unl.group);
 								if (!invItem) {
-									invItem = {
-										Asset: asset,
-										Worn: worn,
-										Icons: [],
-										SortOrder: `${worn ? "1" : "6"}${asset.Description}`,
-									};
-									window.DialogInventory.push(invItem);
+									if (typeof window.DialogInventoryAdd === "function") {
+										try {
+											window.DialogInventoryAdd(C, { Asset: asset }, worn);
+										} catch (err) {
+											console.warn(`${TAG} DialogInventoryAdd error for ${unl.name}:`, err);
+										}
+									}
+									// Fallback if DialogInventoryAdd was not present or did not add it
+									invItem = window.DialogInventory.find((i) => i && i.Asset && i.Asset.Name === unl.name);
+									if (!invItem) {
+										invItem = {
+											Asset: asset,
+											Worn: worn,
+											Icons: [],
+											SortOrder: `${worn ? "1" : "6"}${asset.Description || asset.Name}`,
+										};
+										window.DialogInventory.push(invItem);
+									}
+									added = true;
 								} else {
 									invItem.Worn = worn;
-									invItem.SortOrder = `${worn ? "1" : "6"}${asset.Description}`;
+									if (!invItem.SortOrder) {
+										invItem.SortOrder = `${worn ? "1" : "6"}${asset.Description || asset.Name}`;
+									}
 								}
+							}
+						}
+						if (added && typeof window.DialogInventorySort === "function") {
+							try {
+								window.DialogInventorySort();
+							} catch (err) {
+								// ignore sort error
 							}
 						}
 					}
