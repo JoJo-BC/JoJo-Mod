@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         JoJo Flat-Chest & Male Avatar Compatibility Mod (BC R133+)
 // @namespace    https://jojo-bc.github.io/JoJo-Mod/
-// @version      1.5.6
+// @version      1.5.7
 // @description  Unlocks and maps flat-chest (FlatSmall / FlatMedium) and all body sizes clothes and restraints in Bondage Club (Glossy Bodystocking, Echo Latex Top 乳胶衣 & Latex Bottom, Pantyhose fullBody, Glossy Fullbody Pantyhose, etc.), 100% ModSDK & BCX compliant.
 // @author       JoJo-BC
 // @match        https://*.bondageprojects.elementfx.com/R*/*
@@ -24,17 +24,17 @@
 		window.CommonDrawAppearanceBuild = window.CommonDrawAppearanceBuild.__jojoOrigBuild;
 	}
 
-	if (window.__JoJoFlatModLoaded === "1.5.6") {
-		console.log("[JoJo-Mod] v1.5.6 already active, refreshing characters.");
+	if (window.__JoJoFlatModLoaded === "1.5.7") {
+		console.log("[JoJo-Mod] v1.5.7 already active, refreshing characters.");
 		if (typeof window.__JoJoFlatModRefreshAll === "function") {
 			window.__JoJoFlatModRefreshAll();
 		}
 		return;
 	}
-	window.__JoJoFlatModLoaded = "1.5.6";
+	window.__JoJoFlatModLoaded = "1.5.7";
 
 	const TAG = "[JoJo-Mod]";
-	const VERSION = "1.5.6";
+	const VERSION = "1.5.7";
 	const REPO_BASE_URL = "https://jojo-bc.github.io/JoJo-Mod/";
 
 	console.log(`${TAG} v${VERSION} initializing...`);
@@ -911,23 +911,24 @@
 		if (typeof asset.MirrorExpression !== "boolean") asset.MirrorExpression = false;
 		if (typeof asset.FixedPosition !== "boolean") asset.FixedPosition = false;
 		if (typeof asset.LayerVisibility !== "boolean") asset.LayerVisibility = false;
-		if (typeof asset.IsRestraint !== "boolean") asset.IsRestraint = true;
+		asset.IsRestraint = true;
 		if (typeof asset.IsLock !== "boolean") asset.IsLock = false;
 		if (typeof asset.PickDifficulty !== "number") asset.PickDifficulty = 0;
 		if (typeof asset.OwnerOnly !== "boolean") asset.OwnerOnly = false;
 		if (typeof asset.LoverOnly !== "boolean") asset.LoverOnly = false;
 		if (typeof asset.FamilyOnly !== "boolean") asset.FamilyOnly = false;
 		if (typeof asset.Visible !== "boolean") asset.Visible = true;
-		if (!Array.isArray(asset.SetPose)) asset.SetPose = ["BackElbowTouch", "LegsClosed"];
-		if (!Array.isArray(asset.AllowPose)) asset.AllowPose = ["BackElbowTouch", "BackBoxTie", "BackCuffs", "Yoked", "OverTheHead", "LegsClosed"];
+		asset.SetPose = ["BackElbowTouch", "LegsClosed"];
+		asset.AllowActivePose = ["BackElbowTouch", "LegsClosed", "Kneel", "Hogtied"];
+		asset.AllowPose = ["BackElbowTouch", "LegsClosed", "Kneel", "Hogtied"];
 		if (!asset.PoseMapping || typeof asset.PoseMapping !== "object") asset.PoseMapping = {};
-		if (!Array.isArray(asset.Effect)) asset.Effect = ["Block", "BlockWardrobe", "Slow"];
-		if (!Array.isArray(asset.Hide)) asset.Hide = ["Cloth", "ClothLower", "Suit", "SuitLower", "Garters"];
+		asset.Effect = ["Block", "BlockWardrobe", "Slow"];
+		asset.Hide = ["Cloth", "ClothLower", "Suit", "SuitLower", "Garters"];
 		if (!Array.isArray(asset.HideItem)) asset.HideItem = [];
 		if (!Array.isArray(asset.HideItemExclude)) asset.HideItemExclude = [];
 		if (!Array.isArray(asset.HideItemAttribute)) asset.HideItemAttribute = [];
 		if (!Array.isArray(asset.Require)) asset.Require = [];
-		if (!Array.isArray(asset.Block)) asset.Block = ["ItemHands", "ItemHandheld", "ItemVulva", "ItemButt", "ItemVulvaPiercings", "ItemNipplesPiercings"];
+		asset.Block = ["ItemHands", "ItemHandheld", "ItemVulva", "ItemButt", "ItemVulvaPiercings", "ItemNipplesPiercings"];
 		if (!Array.isArray(asset.AllowBlock)) asset.AllowBlock = [];
 		if (!Array.isArray(asset.AllowEffect)) asset.AllowEffect = [];
 		if (!Array.isArray(asset.AllowHide)) asset.AllowHide = [];
@@ -935,6 +936,7 @@
 		if (!Array.isArray(asset.RemoveItemOnRemove)) asset.RemoveItemOnRemove = [];
 		if (!asset.ParentGroup || typeof asset.ParentGroup !== "object") asset.ParentGroup = {};
 		if (!Array.isArray(asset.Alpha)) asset.Alpha = [];
+		delete asset.ParentItem;
 		asset.DrawingLeft = { "": 50 };
 		asset.DrawingTop = { "": 200 };
 		asset.Left = 50;
@@ -978,13 +980,13 @@
 		const groupArms = AssetGroupGet("Female3DCG", "ItemArms");
 		let armsAsset = AssetGet("Female3DCG", "ItemArms", "GlossyPantyhoseBody");
 		if (armsAsset) {
+			delete armsAsset.ParentItem;
 			sanitizeCustomAsset(armsAsset, groupArms, "ItemArms");
 		} else if (groupArms && Array.isArray(groupArms.Asset)) {
 			armsAsset = {
 				Name: "GlossyPantyhoseBody",
 				Description: "Glossy Fullbody Pantyhose (Arms)",
 				Group: groupArms,
-				ParentItem: groupArms.Name,
 				AllowColorize: true,
 				Value: 0,
 				Difficulty: 6,
@@ -1697,11 +1699,15 @@
 				}
 			}
 			if (typeof Player !== "undefined" && Player) {
+				if (typeof PoseRefresh === "function") PoseRefresh(Player);
+				if (typeof CharacterLoadEffect === "function") CharacterLoadEffect(Player);
 				if (typeof CharacterRefresh === "function") CharacterRefresh(Player, false, false);
 				if (typeof CharacterLoadCanvas === "function") CharacterLoadCanvas(Player);
 			}
 			if (typeof ChatRoomCharacter !== "undefined" && Array.isArray(ChatRoomCharacter)) {
 				for (const C of ChatRoomCharacter) {
+					if (typeof PoseRefresh === "function") PoseRefresh(C);
+					if (typeof CharacterLoadEffect === "function") CharacterLoadEffect(C);
 					if (typeof CharacterRefresh === "function") CharacterRefresh(C, false, false);
 					if (typeof CharacterLoadCanvas === "function") CharacterLoadCanvas(C);
 				}
