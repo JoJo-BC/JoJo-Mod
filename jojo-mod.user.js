@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         JoJo Flat-Chest & Male Avatar Compatibility Mod (BC R133+)
 // @namespace    https://jojo-bc.github.io/JoJo-Mod/
-// @version      1.5.7
+// @version      1.5.8
 // @description  Unlocks and maps flat-chest (FlatSmall / FlatMedium) and all body sizes clothes and restraints in Bondage Club (Glossy Bodystocking, Echo Latex Top 乳胶衣 & Latex Bottom, Pantyhose fullBody, Glossy Fullbody Pantyhose, etc.), 100% ModSDK & BCX compliant.
 // @author       JoJo-BC
 // @match        https://*.bondageprojects.elementfx.com/R*/*
@@ -24,17 +24,17 @@
 		window.CommonDrawAppearanceBuild = window.CommonDrawAppearanceBuild.__jojoOrigBuild;
 	}
 
-	if (window.__JoJoFlatModLoaded === "1.5.7") {
-		console.log("[JoJo-Mod] v1.5.7 already active, refreshing characters.");
+	if (window.__JoJoFlatModLoaded === "1.5.8") {
+		console.log("[JoJo-Mod] v1.5.8 already active, refreshing characters.");
 		if (typeof window.__JoJoFlatModRefreshAll === "function") {
 			window.__JoJoFlatModRefreshAll();
 		}
 		return;
 	}
-	window.__JoJoFlatModLoaded = "1.5.7";
+	window.__JoJoFlatModLoaded = "1.5.8";
 
 	const TAG = "[JoJo-Mod]";
-	const VERSION = "1.5.7";
+	const VERSION = "1.5.8";
 	const REPO_BASE_URL = "https://jojo-bc.github.io/JoJo-Mod/";
 
 	console.log(`${TAG} v${VERSION} initializing...`);
@@ -592,13 +592,28 @@
 	let currentDrawingCharacter = null;
 
 	/**
-	 * Detects the leg size (BodyLower) of a character.
+	 * Detects the chest size (BodyUpper) of a character (defaults to Player if drawing context absent).
+	 * @param {Character|null} C
+	 * @returns {string|null}
+	 */
+	function getCharacterBodyUpperSize(C) {
+		const target = C || (typeof Player !== "undefined" ? Player : null);
+		if (!target || !Array.isArray(target.Appearance)) return null;
+		const item = target.Appearance.find(
+			(a) => a && a.Asset && a.Asset.Group && a.Asset.Group.Name === "BodyUpper"
+		);
+		return item && item.Asset ? item.Asset.Name : null;
+	}
+
+	/**
+	 * Detects the leg size (BodyLower) of a character (defaults to Player if drawing context absent).
 	 * @param {Character|null} C
 	 * @returns {string|null}
 	 */
 	function getCharacterBodyLowerSize(C) {
-		if (!C || !Array.isArray(C.Appearance)) return null;
-		const item = C.Appearance.find(
+		const target = C || (typeof Player !== "undefined" ? Player : null);
+		if (!target || !Array.isArray(target.Appearance)) return null;
+		const item = target.Appearance.find(
 			(a) => a && a.Asset && a.Asset.Group && a.Asset.Group.Name === "BodyLower"
 		);
 		return item && item.Asset ? item.Asset.Name : null;
@@ -618,8 +633,12 @@
 		try { decoded = decodeURIComponent(src); } catch (_) {}
 
 		const assetsIdx = decoded.indexOf("Assets/Female3DCG/");
-		const cleanSrc =
+		let cleanSrc =
 			assetsIdx !== -1 ? decoded.slice(assetsIdx) : decoded.startsWith("./") ? decoded.slice(2) : decoded;
+
+		// Strip query parameters (?v=...)
+		const qIdx = cleanSrc.indexOf("?");
+		if (qIdx !== -1) cleanSrc = cleanSrc.slice(0, qIdx);
 
 		// Normalize ItemTorso/GlossyPantyhoseBody and ItemTorso2/GlossyPantyhoseBody to ItemArms/GlossyPantyhoseBody
 		let canonicalSrc = cleanSrc;
@@ -662,7 +681,7 @@
 			return "Icons/TightenLoosen.png";
 		}
 
-		// Fallback for custom asset without size suffix (e.g. GlossyPantyhoseBody_BaseColor.png -> _Normal_BaseColor.png or _Small_BaseColor.png)
+		// Fallback for custom asset without size suffix (e.g. GlossyPantyhoseBody_BaseColor.png -> _FlatMedium_BaseColor.png or avatar size)
 		if (
 			canonicalSrc.includes("GlossyPantyhoseBody_") &&
 			!canonicalSrc.includes("_Flat") &&
@@ -671,13 +690,41 @@
 			!canonicalSrc.includes("_Large") &&
 			!canonicalSrc.includes("_XLarge")
 		) {
-			const normalFallback = canonicalSrc.replace("GlossyPantyhoseBody_", "GlossyPantyhoseBody_Normal_");
-			if (CUSTOM_PNG_MANIFEST.has(normalFallback)) {
-				return REPO_BASE_URL + "assets/" + normalFallback;
+			const bodySize = getCharacterBodyUpperSize(currentDrawingCharacter) || "FlatMedium";
+			const legSize = getCharacterBodyLowerSize(currentDrawingCharacter);
+			let sizedCandidate = canonicalSrc.replace("GlossyPantyhoseBody_", `GlossyPantyhoseBody_${bodySize}_`);
+			if (legSize === "Small") {
+				const legCandidate = sizedCandidate.replace(`_${bodySize}_`, `_${bodySize}_LegsSmall_`);
+				if (CUSTOM_PNG_MANIFEST.has(legCandidate)) {
+					sizedCandidate = legCandidate;
+				}
 			}
-			const smallFallback = canonicalSrc.replace("GlossyPantyhoseBody_", "GlossyPantyhoseBody_Small_");
-			if (CUSTOM_PNG_MANIFEST.has(smallFallback)) {
-				return REPO_BASE_URL + "assets/" + smallFallback;
+			if (CUSTOM_PNG_MANIFEST.has(sizedCandidate)) {
+				return REPO_BASE_URL + "assets/" + sizedCandidate;
+			}
+			for (const fb of [`GlossyPantyhoseBody_${bodySize}_`, "GlossyPantyhoseBody_FlatMedium_", "GlossyPantyhoseBody_FlatSmall_", "GlossyPantyhoseBody_Small_", "GlossyPantyhoseBody_Normal_"]) {
+				const candidate = canonicalSrc.replace("GlossyPantyhoseBody_", fb);
+				if (CUSTOM_PNG_MANIFEST.has(candidate)) {
+					return REPO_BASE_URL + "assets/" + candidate;
+				}
+			}
+		}
+
+		// Fallback for vanilla PantyhoseBody without size suffix
+		if (
+			canonicalSrc.includes("PantyhoseBody") &&
+			!canonicalSrc.includes("Glossy") &&
+			!canonicalSrc.includes("_Flat") &&
+			!canonicalSrc.includes("_Small") &&
+			!canonicalSrc.includes("_Normal") &&
+			!canonicalSrc.includes("_Large") &&
+			!canonicalSrc.includes("_XLarge") &&
+			!canonicalSrc.includes("/Preview/")
+		) {
+			const bodySize = getCharacterBodyUpperSize(currentDrawingCharacter) || "FlatMedium";
+			const candidate = `Assets/Female3DCG/ItemArms/PantyhoseBody_${bodySize}.png`;
+			if (CUSTOM_PNG_MANIFEST.has(candidate)) {
+				return REPO_BASE_URL + "assets/" + candidate;
 			}
 		}
 
@@ -750,7 +797,7 @@
 				AllowTypes: null,
 				CreateLayerTypes: [],
 				Visibility: null,
-				ParentGroup: {},
+				ParentGroup: { "": "BodyUpper" },
 				Priority: 15,
 				InheritColor: null,
 				Alpha: [],
@@ -787,7 +834,7 @@
 				AllowTypes: null,
 				CreateLayerTypes: [],
 				Visibility: null,
-				ParentGroup: {},
+				ParentGroup: { "": "BodyUpper" },
 				Priority: 15,
 				InheritColor: null,
 				Alpha: [],
@@ -824,7 +871,7 @@
 				AllowTypes: null,
 				CreateLayerTypes: [],
 				Visibility: null,
-				ParentGroup: {},
+				ParentGroup: { "": "BodyUpper" },
 				Priority: 15,
 				InheritColor: null,
 				Alpha: [],
@@ -934,7 +981,7 @@
 		if (!Array.isArray(asset.AllowHide)) asset.AllowHide = [];
 		if (!Array.isArray(asset.AllowHideItem)) asset.AllowHideItem = [];
 		if (!Array.isArray(asset.RemoveItemOnRemove)) asset.RemoveItemOnRemove = [];
-		if (!asset.ParentGroup || typeof asset.ParentGroup !== "object") asset.ParentGroup = {};
+		asset.ParentGroup = { "": "BodyUpper" };
 		if (!Array.isArray(asset.Alpha)) asset.Alpha = [];
 		delete asset.ParentItem;
 		asset.DrawingLeft = { "": 50 };
@@ -949,7 +996,7 @@
 			for (const l of asset.Layer) {
 				l.Asset = asset;
 				if (!l.PoseMapping || typeof l.PoseMapping !== "object") l.PoseMapping = {};
-				if (!l.ParentGroup || typeof l.ParentGroup !== "object") l.ParentGroup = {};
+				l.ParentGroup = { "": "BodyUpper" };
 				if (!Array.isArray(l.Alpha)) l.Alpha = [];
 				if (!Array.isArray(l.CreateLayerTypes)) l.CreateLayerTypes = [];
 				if (!Array.isArray(l.StyleOverride)) l.StyleOverride = [];
