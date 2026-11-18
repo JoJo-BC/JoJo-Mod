@@ -1,35 +1,9 @@
 === BONDAGE CLUB ARCADE & LOCK RECOVERY — DIAGNOSTIC LOG ===
-Exported At: 2026-11-18T22:21:36.477Z
-Total Entries: 31
+Exported At: 2026-11-18T22:22:04.925Z
+Total Entries: 5
 ============================================================
-001. [2026-11-18T22:14:37.975Z] [SYSTEM] Registered minigame module: crack (Crack the Padlock)
-002. [2026-11-18T22:14:37.976Z] [SYSTEM] Registered minigame module: struggle (Struggle & Escape)
-003. [2026-11-18T22:14:37.976Z] [SYSTEM] Registered minigame module: gagspeak (Gag Speak Hangman)
-004. [2026-11-18T22:14:37.977Z] [SYSTEM] BC Arcade Engine v1.1 initialized | DATA: {"url":"https://jojo-bc.github.io/JoJo-Mod/games/index.html"}
-005. [2026-11-18T22:14:38.115Z] [SYSTEM] Configuration loaded | DATA: {"enabledGames":["crack","struggle","gagspeak"],"registeredVictims":1}
-006. [2026-11-18T22:14:46.458Z] [CHALLENGE] Victim lookup requested | DATA: {"query":"112233"}
-007. [2026-11-18T22:14:46.458Z] [CHALLENGE] Matched challenge by ID/Hint | DATA: {"query":"112233","label":"112233"}
-008. [2026-11-18T22:14:46.458Z] [CHALLENGE] Loaded challenge from ID/Hint Lookup (112233) | DATA: {"gameId":"crack","difficulty":2,"victim":"112233"}
-009. [2026-11-18T22:14:46.459Z] [GAME] Started Crack the Padlock | DATA: {"mode":"digits","len":4,"maxAttempts":6,"difficulty":2}
-010. [2026-11-18T22:15:10.365Z] [ADMIN] Admin authenticated & Cloud GitHub Sync unlocked automatically
-011. [2026-11-18T22:16:14.710Z] [CHALLENGE] Victim lookup requested | DATA: {"query":"11223s"}
-012. [2026-11-18T22:16:14.710Z] [WARN] No challenge found for victim lookup query | DATA: {"query":"11223s"}
-013. [2026-11-18T22:16:18.178Z] [CHALLENGE] Victim lookup requested | DATA: {"query":"112233"}
-014. [2026-11-18T22:16:18.178Z] [CHALLENGE] Matched challenge by ID/Hint | DATA: {"query":"112233","label":"112233"}
-015. [2026-11-18T22:16:18.178Z] [CHALLENGE] Loaded challenge from ID/Hint Lookup (112233) | DATA: {"gameId":"crack","difficulty":2,"victim":"112233"}
-016. [2026-11-18T22:16:18.179Z] [GAME] Started Crack the Padlock | DATA: {"mode":"digits","len":4,"maxAttempts":6,"difficulty":2}
-017. [2026-11-18T22:17:40.597Z] [GAME] Crack the Padlock LOST | DATA: {"attemptsUsed":6,"secret":"0359"}
-018. [2026-11-18T22:17:44.376Z] [GAME] Started Crack the Padlock | DATA: {"mode":"digits","len":4,"maxAttempts":6,"difficulty":2}
-019. [2026-11-18T22:18:19.246Z] [GAME] Crack the Padlock WON | DATA: {"attemptsUsed":3,"secret":"6714"}
-020. [2026-11-18T22:18:19.610Z] [CHALLENGE] Challenge WON — Password revealed to player | DATA: {"victim":"112233","revealedPassword":"SUBBY44"}
-021. [2026-11-18T22:18:37.122Z] [ADMIN] Admin triggered instant win bypass
-022. [2026-11-18T22:18:37.122Z] [CHALLENGE] Challenge WON — Password revealed to player | DATA: {"victim":"112233","revealedPassword":"SUBBY44"}
-023. [2026-11-18T22:18:38.181Z] [ADMIN] Admin triggered instant win bypass
-024. [2026-11-18T22:18:38.182Z] [CHALLENGE] Challenge WON — Password revealed to player | DATA: {"victim":"112233","revealedPassword":"SUBBY44"}
-025. [2026-11-18T22:18:42.355Z] [GAME] Started Crack the Padlock | DATA: {"mode":"digits","len":4,"maxAttempts":6,"difficulty":2}
-026. [2026-11-18T22:18:46.607Z] [CHALLENGE] Victim lookup requested | DATA: {"query":"112233"}
-027. [2026-11-18T22:18:46.608Z] [CHALLENGE] Matched challenge by ID/Hint | DATA: {"query":"112233","label":"112233"}
-028. [2026-11-18T22:18:46.608Z] [CHALLENGE] Loaded challenge from ID/Hint Lookup (112233) | DATA: {"gameId":"crack","difficulty":2,"victim":"112233"}
-029. [2026-11-18T22:18:46.608Z] [GAME] Started Crack the Padlock | DATA: {"mode":"digits","len":4,"maxAttempts":6,"difficulty":2}
-030. [2026-11-18T22:21:32.470Z] [CRYPTO] Encoded challenge | DATA: {"lockType":"comb","gameId":"struggle","difficulty":2,"victim":"121212","note":"asdasd"}
-031. [2026-11-18T22:21:32.471Z] [SYSTEM] Saved configuration to localStorage | DATA: {"registeredVictims":3}
+001. [2026-11-18T22:22:00.752Z] [SYSTEM] Registered minigame module: crack (Crack the Padlock)
+002. [2026-11-18T22:22:00.752Z] [SYSTEM] Registered minigame module: struggle (Struggle & Escape)
+003. [2026-11-18T22:22:00.752Z] [SYSTEM] Registered minigame module: gagspeak (Gag Speak Hangman)
+004. [2026-11-18T22:22:00.753Z] [SYSTEM] BC Arcade Engine v1.1 initialized | DATA: {"url":"https://jojo-bc.github.io/JoJo-Mod/games/index.html"}
+005. [2026-11-18T22:22:00.909Z] [SYSTEM] Configuration loaded | DATA: {"enabledGames":["crack","struggle","gagspeak"],"registeredVictims":3}
