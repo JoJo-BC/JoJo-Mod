@@ -82,12 +82,12 @@
       "createdAt": "2026-11-18T21:36:56.197Z"
     },
     "121212": {
-      "ticket": "BC-Pb3B1rccU1lvAAcrKtm2vPnK0sU8PiUxXypkKd_I-dHQraFGLxcgQA",
+      "ticket": "BC-Ehewrdul82J9el9AaGqtjLzkioO4zVErcE8iDA_eiw",
       "label": "121212",
-      "note": "asdasd",
-      "gameId": "struggle",
+      "note": "",
+      "gameId": "crack",
       "difficulty": 2,
-      "createdAt": "2026-11-18T22:21:32.471Z"
+      "createdAt": "2026-11-18T22:22:53.438Z"
     },
     "asdasd": {
       "ticket": "BC-Pb3B1rccU1lvAAcrKtm2vPnK0sU8PiUxXypkKd_I-dHQraFGLxcgQA",
@@ -98,5 +98,5 @@
       "createdAt": "2026-11-18T22:21:32.471Z"
     }
   },
-  "updatedAt": "2026-11-18T22:21:32.471Z"
+  "updatedAt": "2026-11-18T22:22:53.438Z"
 }
