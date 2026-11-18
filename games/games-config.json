@@ -1,6 +1,5 @@
 {
   "version": "1.0.0",
-  "updatedAt": "2026-11-18T22:15:00.000Z",
   "games": {
     "crack": {
       "enabled": true,
@@ -25,18 +24,63 @@
     }
   },
   "customPhrases": [
-    { "phrase": "THANK YOU MISS", "category": "Etichetta & Disciplina BC" },
-    { "phrase": "LATEX ARMBINDER", "category": "Restraint Braccia (ItemArms)" },
-    { "phrase": "COMBINATION PADLOCK", "category": "Lucchetto a 4 Cifre (ItemMisc)" },
-    { "phrase": "STURDY LEATHER BELTS", "category": "Cinghie di Cuoio (Three Straps)" },
-    { "phrase": "BALL GAG TIGHT", "category": "Bavaglio Classico (ItemMouth)" },
-    { "phrase": "VIBRATING EGG MAXIMUM", "category": "Toy Controllato a Distanza" },
-    { "phrase": "OWNER PADLOCK KEY", "category": "Massima Autorità del Club" },
-    { "phrase": "BALLET HEELS LOCKED", "category": "Postura Forzata (ItemBoots)" },
-    { "phrase": "PONY RACE HURDLE", "category": "Minigioco Arena 40x40" },
-    { "phrase": "GLOSSY BODYSTOCKING", "category": "Outfit Speciale JoJo-Mod" },
-    { "phrase": "HEAVY STEEL CHAINS", "category": "Vincolo Metallico Pesante" },
-    { "phrase": "HIGH SECURITY PADLOCK", "category": "Lucchetto a 8 Membri" }
+    {
+      "phrase": "THANK YOU MISS",
+      "category": "Etichetta & Disciplina BC"
+    },
+    {
+      "phrase": "LATEX ARMBINDER",
+      "category": "Restraint Braccia (ItemArms)"
+    },
+    {
+      "phrase": "COMBINATION PADLOCK",
+      "category": "Lucchetto a 4 Cifre (ItemMisc)"
+    },
+    {
+      "phrase": "STURDY LEATHER BELTS",
+      "category": "Cinghie di Cuoio (Three Straps)"
+    },
+    {
+      "phrase": "BALL GAG TIGHT",
+      "category": "Bavaglio Classico (ItemMouth)"
+    },
+    {
+      "phrase": "VIBRATING EGG MAXIMUM",
+      "category": "Toy Controllato a Distanza"
+    },
+    {
+      "phrase": "OWNER PADLOCK KEY",
+      "category": "Massima Autorità del Club"
+    },
+    {
+      "phrase": "BALLET HEELS LOCKED",
+      "category": "Postura Forzata (ItemBoots)"
+    },
+    {
+      "phrase": "PONY RACE HURDLE",
+      "category": "Minigioco Arena 40x40"
+    },
+    {
+      "phrase": "GLOSSY BODYSTOCKING",
+      "category": "Outfit Speciale JoJo-Mod"
+    },
+    {
+      "phrase": "HEAVY STEEL CHAINS",
+      "category": "Vincolo Metallico Pesante"
+    },
+    {
+      "phrase": "HIGH SECURITY PADLOCK",
+      "category": "Lucchetto a 8 Membri"
+    }
   ],
-  "victimChallenges": {}
+  "victimChallenges": {
+    "112233": {
+      "ticket": "BC-xGYuaQUy7vnb3duzpAoAMw9eXCgq1MePrKjygXF5W2oXT1h6h4uouPnypVFM",
+      "label": "112233",
+      "gameId": "crack",
+      "difficulty": 2,
+      "createdAt": "2026-11-18T21:36:56.197Z"
+    }
+  },
+  "updatedAt": "2026-11-18T22:15:00.000Z"
 }
