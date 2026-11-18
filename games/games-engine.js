@@ -1295,33 +1295,47 @@
 		},
 
 		switchTab(tabId) {
-			document.querySelectorAll(".nav-tab-btn").forEach((btn) => {
-				btn.classList.toggle("active", btn.getAttribute("data-tab") === tabId);
-			});
-			document.querySelectorAll(".view-section").forEach((sec) => {
-				sec.style.display = sec.id === `view-${tabId}` ? "block" : "none";
-			});
-			if (tabId === "lockmaster") {
-				this.renderDomActiveChallenges();
-			}
 			if (tabId === "admin") {
-				this.renderAdminView();
+				const admSec = document.getElementById("view-admin");
+				if (admSec) {
+					admSec.style.display = "block";
+					this.renderAdminView();
+					admSec.scrollIntoView({ behavior: "smooth" });
+				}
 			}
 		},
 
 		bindNavigation() {
-			document.querySelectorAll(".nav-tab-btn").forEach((btn) => {
-				btn.addEventListener("click", () => {
-					const tabId = btn.getAttribute("data-tab");
-					this.switchTab(tabId);
+			const freeplayBtn = document.getElementById("btn-toggle-freeplay");
+			const freeplayDrawer = document.getElementById("freeplay-drawer");
+			if (freeplayBtn && freeplayDrawer) {
+				freeplayBtn.addEventListener("click", () => {
+					const isOpen = freeplayDrawer.style.display !== "none";
+					freeplayDrawer.style.display = isOpen ? "none" : "block";
+					freeplayBtn.textContent = isOpen
+						? "🕹️ Open Free Play Minigames ▾"
+						: "🕹️ Hide Free Play Minigames ▴";
 				});
-			});
+			}
+
+			const adminBtn = document.getElementById("btn-toggle-admin");
+			const adminSec = document.getElementById("view-admin");
+			if (adminBtn && adminSec) {
+				adminBtn.addEventListener("click", () => {
+					const isOpen = adminSec.style.display !== "none";
+					adminSec.style.display = isOpen ? "none" : "block";
+					if (!isOpen) {
+						this.renderAdminView();
+						adminSec.scrollIntoView({ behavior: "smooth" });
+					}
+				});
+			}
 
 			const muteBtn = document.getElementById("btn-toggle-audio");
 			if (muteBtn) {
 				muteBtn.addEventListener("click", () => {
 					BC_SOUND_FX.muted = !BC_SOUND_FX.muted;
-					muteBtn.textContent = BC_SOUND_FX.muted ? "🔇 Audio Off" : "🔊 Audio On";
+					muteBtn.textContent = BC_SOUND_FX.muted ? "🔇 Audio Off" : "🔊 Audio";
 				});
 			}
 		},
@@ -2160,6 +2174,7 @@
 			loginGate.style.display = "none";
 			dashBody.style.display = "block";
 
+			this.renderDomActiveChallenges();
 			this.renderAdminGamesConfig();
 			this.renderAdminVault();
 			this.renderAdminLogs();

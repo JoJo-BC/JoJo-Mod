@@ -3,7 +3,7 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>BC Arcade &amp; Lock Recovery — Bondage Club Minigames</title>
+	<title>BC Lock Recovery &amp; Minigames</title>
 	<style>
 		:root {
 			--bg: #0b0d14;
@@ -12,7 +12,7 @@
 			--border: #262c42;
 			--accent: #d943d4;
 			--accent-hover: #f05ceb;
-			--accent-glow: rgba(217, 67, 212, 0.25);
+			--accent-glow: rgba(217, 67, 212, 0.22);
 			--text: #e6e9f4;
 			--muted: #8e98b5;
 			--code-bg: #07080d;
@@ -24,103 +24,75 @@
 		* { box-sizing: border-box; }
 		body {
 			margin: 0;
-			padding: 24px 16px 60px;
+			padding: 24px 16px 48px;
 			font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
 			background: var(--bg);
 			color: var(--text);
-			line-height: 1.5;
+			line-height: 1.45;
 		}
 		.container {
-			max-width: 920px;
+			max-width: 720px;
 			margin: 0 auto;
 		}
-		.top-bar {
+
+		/* Compact Header */
+		.top-header {
 			display: flex;
 			align-items: center;
-			justify-content: flex-end;
-			margin-bottom: 12px;
-		}
-		.header {
-			background: linear-gradient(135deg, rgba(217, 67, 212, 0.14), rgba(19, 23, 34, 0.95));
-			border: 1px solid var(--border);
-			border-radius: 16px;
-			padding: 22px;
-			margin-bottom: 20px;
-			box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4);
-		}
-		.header h1 {
-			margin: 0 0 6px 0;
-			font-size: 1.8rem;
-			color: #fff;
-			display: flex;
-			align-items: center;
+			justify-content: space-between;
+			margin-bottom: 18px;
 			gap: 10px;
 			flex-wrap: wrap;
 		}
+		.brand-title {
+			margin: 0;
+			font-size: 1.45rem;
+			color: #fff;
+			display: flex;
+			align-items: center;
+			gap: 8px;
+		}
+		.top-actions {
+			display: flex;
+			gap: 8px;
+		}
+
+		/* Generic Cards & Inputs */
+		.card {
+			background: var(--card);
+			border: 1px solid var(--border);
+			border-radius: 14px;
+			padding: 18px 20px;
+			margin-bottom: 14px;
+			box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+		}
+		.card h2 {
+			margin: 0 0 6px 0;
+			font-size: 1.12rem;
+			color: #fff;
+			display: flex;
+			align-items: center;
+			gap: 8px;
+		}
+		.card-subtext {
+			margin: 0 0 12px 0;
+			font-size: 0.86rem;
+			color: var(--muted);
+		}
 		.badge {
-			font-size: 0.75rem;
-			padding: 3px 10px;
+			font-size: 0.72rem;
+			padding: 2px 8px;
 			border-radius: 999px;
 			background: var(--accent-glow);
 			color: #f78ef3;
 			border: 1px solid rgba(217, 67, 212, 0.45);
 			font-weight: 600;
 		}
-		.header p {
-			margin: 0 0 16px 0;
-			color: var(--muted);
-			font-size: 0.95rem;
-		}
-		.nav-tabs {
-			display: flex;
-			gap: 10px;
-			flex-wrap: wrap;
-		}
-		.nav-tab-btn {
-			display: inline-flex;
-			align-items: center;
-			gap: 8px;
-			padding: 10px 18px;
-			border-radius: 10px;
-			background: var(--card-sub);
-			border: 1px solid var(--border);
-			color: var(--text);
-			font-size: 0.92rem;
-			font-weight: 600;
-			cursor: pointer;
-			transition: all 0.15s ease;
-		}
-		.nav-tab-btn:hover {
-			border-color: var(--accent);
-			background: #21283e;
-		}
-		.nav-tab-btn.active {
-			background: var(--accent);
-			border-color: var(--accent);
-			color: #fff;
-			box-shadow: 0 4px 14px rgba(217, 67, 212, 0.35);
-		}
-		.card {
-			background: var(--card);
-			border: 1px solid var(--border);
-			border-radius: 14px;
-			padding: 22px;
-			margin-bottom: 20px;
-			box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-		}
-		.card h2 {
-			margin: 0 0 8px 0;
-			font-size: 1.25rem;
-			color: #fff;
-			display: flex;
-			align-items: center;
-			gap: 8px;
-		}
 		.btn {
 			display: inline-flex;
 			align-items: center;
 			justify-content: center;
-			gap: 7px;
+			gap: 6px;
 			padding: 10px 16px;
 			border-radius: 8px;
 			font-weight: 600;
@@ -131,6 +103,7 @@
 			cursor: pointer;
 			text-decoration: none;
 			transition: all 0.15s ease;
+			white-space: nowrap;
 		}
 		.btn:hover {
 			border-color: var(--accent);
@@ -153,7 +126,7 @@
 			border-radius: 8px;
 			padding: 10px 12px;
 			color: #fff;
-			font-size: 0.94rem;
+			font-size: 0.92rem;
 			font-family: inherit;
 			outline: none;
 		}
@@ -161,55 +134,54 @@
 			border-color: var(--accent);
 		}
 
-		/* Victim Lookup Box & Multi-Lock Selector */
-		.lookup-box {
+		/* 1. Play by ID / Hint Row */
+		.unlock-card {
+			border-color: rgba(217, 67, 212, 0.45);
 			background: linear-gradient(90deg, rgba(19, 23, 34, 0.98), rgba(29, 22, 46, 0.92));
-			border: 2px solid rgba(217, 67, 212, 0.5);
 		}
-		.lookup-row {
+		.inline-row {
 			display: flex;
-			gap: 10px;
-			margin-top: 12px;
+			gap: 8px;
 			flex-wrap: wrap;
 		}
-		.lookup-row input {
+		.inline-row input {
 			flex: 1;
-			min-width: 220px;
-			font-size: 1rem;
+			min-width: 160px;
 		}
 		.lookup-feedback {
-			margin-top: 10px;
-			font-size: 0.9rem;
+			margin-top: 8px;
+			font-size: 0.86rem;
 			font-weight: 600;
 		}
 		.lookup-feedback.error { color: #f87171; }
 		.lookup-feedback.success { color: #34d399; }
 
+		/* Multi-Lock Selector */
 		.vlock-selector {
-			margin-top: 16px;
-			padding-top: 14px;
+			margin-top: 12px;
+			padding-top: 12px;
 			border-top: 1px solid var(--border);
 		}
 		.vlock-header {
-			font-size: 0.92rem;
+			font-size: 0.86rem;
 			color: #d5dcf2;
-			margin-bottom: 10px;
+			margin-bottom: 8px;
 		}
 		.vlock-list {
 			display: flex;
 			flex-direction: column;
-			gap: 10px;
+			gap: 8px;
 		}
 		.vlock-card {
 			display: flex;
 			align-items: center;
 			justify-content: space-between;
-			gap: 12px;
+			gap: 10px;
 			flex-wrap: wrap;
 			background: var(--card-sub);
 			border: 1px solid var(--border);
 			border-radius: 10px;
-			padding: 12px 16px;
+			padding: 10px 14px;
 		}
 		.vlock-card.vlock-solved {
 			border-color: var(--success);
@@ -219,77 +191,105 @@
 			display: flex;
 			align-items: center;
 			gap: 8px;
-			font-size: 1rem;
+			font-size: 0.95rem;
 			color: #fff;
-			margin-bottom: 4px;
 		}
 		.vlock-meta {
-			font-size: 0.82rem;
+			font-size: 0.78rem;
 			color: var(--muted);
-			display: flex;
-			gap: 8px;
-			flex-wrap: wrap;
 		}
 		.vlock-action {
 			display: flex;
 			align-items: center;
-			gap: 10px;
+			gap: 8px;
 		}
 
-		/* Arcade Cards Grid */
+		/* 2. Create Lock Row */
+		.create-grid {
+			display: grid;
+			grid-template-columns: 1.2fr 1fr 1.1fr auto;
+			gap: 8px;
+		}
+		@media (max-width: 640px) {
+			.create-grid {
+				grid-template-columns: 1fr;
+			}
+		}
+		.output-panel {
+			margin-top: 12px;
+			background: rgba(16, 185, 129, 0.08);
+			border: 1px solid var(--success);
+			border-radius: 10px;
+			padding: 12px 14px;
+		}
+		.adm-highlight-code {
+			font-family: Consolas, monospace;
+			font-weight: 800;
+			font-size: 1.05rem;
+			color: #34d399;
+			background: rgba(16, 185, 129, 0.16);
+			padding: 2px 8px;
+			border-radius: 6px;
+		}
+
+		/* 3. Free Play Toggle Button & Drawer */
+		.freeplay-toggle-btn {
+			width: 100%;
+			padding: 13px;
+			font-size: 0.96rem;
+			background: var(--card);
+			border: 1px solid var(--border);
+			border-radius: 12px;
+			margin-bottom: 14px;
+		}
 		.games-grid {
 			display: grid;
-			grid-template-columns: repeat(auto-fill, minmax(265px, 1fr));
-			gap: 16px;
+			grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+			gap: 12px;
+			margin-top: 10px;
 		}
 		.game-card {
 			background: var(--card-sub);
 			border: 1px solid var(--border);
-			border-radius: 12px;
-			padding: 18px;
+			border-radius: 10px;
+			padding: 14px;
 			display: flex;
 			flex-direction: column;
 			justify-content: space-between;
-			transition: transform 0.15s, border-color 0.15s;
-		}
-		.game-card:hover {
-			border-color: var(--accent);
-			transform: translateY(-2px);
 		}
 		.gc-top {
 			display: flex;
 			align-items: center;
 			justify-content: space-between;
-			margin-bottom: 10px;
+			margin-bottom: 6px;
 		}
-		.gc-icon { font-size: 2rem; }
+		.gc-icon { font-size: 1.6rem; }
 		.gc-badge {
-			font-size: 0.74rem;
-			padding: 3px 9px;
+			font-size: 0.7rem;
+			padding: 2px 7px;
 			border-radius: 999px;
 			background: rgba(255, 255, 255, 0.07);
 			color: #d5dcf2;
 		}
 		.game-card h3 {
-			margin: 0 0 6px 0;
-			font-size: 1.15rem;
+			margin: 0 0 4px 0;
+			font-size: 1rem;
 			color: #fff;
 		}
 		.game-card p {
-			margin: 0 0 14px 0;
-			font-size: 0.87rem;
+			margin: 0 0 12px 0;
+			font-size: 0.8rem;
 			color: var(--muted);
 			flex: 1;
 		}
 		.gc-actions {
 			display: flex;
-			gap: 8px;
-			align-items: center;
+			gap: 6px;
 		}
 		.gc-diff-select {
 			flex: 1;
-			padding: 8px 10px;
-			font-size: 0.84rem;
+			padding: 6px 8px;
+			font-size: 0.8rem;
 		}
 
 		/* Active Minigame Stage */
@@ -302,30 +302,30 @@
 			align-items: center;
 			justify-content: space-between;
 			border-bottom: 1px solid var(--border);
-			padding-bottom: 12px;
-			margin-bottom: 14px;
+			padding-bottom: 10px;
+			margin-bottom: 12px;
 			flex-wrap: wrap;
-			gap: 10px;
+			gap: 8px;
 		}
 		.stage-header h2 { margin: 0; }
 		.ch-banner {
 			background: rgba(217, 67, 212, 0.15);
 			border: 1px solid rgba(217, 67, 212, 0.45);
-			border-radius: 10px;
-			padding: 12px 16px;
-			margin-bottom: 14px;
-			font-size: 0.9rem;
+			border-radius: 8px;
+			padding: 10px 14px;
+			margin-bottom: 12px;
+			font-size: 0.86rem;
 		}
 		.ch-banner-main {
 			display: flex;
 			align-items: center;
-			gap: 10px;
+			gap: 8px;
 			flex-wrap: wrap;
 		}
 		.ch-hint {
 			color: #f78ef3;
 			margin-left: auto;
-			font-size: 0.85rem;
+			font-size: 0.82rem;
 		}
 		.mg-header-bar {
 			display: flex;
@@ -333,28 +333,28 @@
 			justify-content: space-between;
 			background: var(--code-bg);
 			border: 1px solid var(--border);
-			border-radius: 10px;
-			padding: 10px 14px;
-			margin-bottom: 14px;
+			border-radius: 8px;
+			padding: 8px 12px;
+			margin-bottom: 12px;
 			flex-wrap: wrap;
-			gap: 10px;
-			font-size: 0.86rem;
+			gap: 8px;
+			font-size: 0.84rem;
 		}
 		.mg-tag {
 			display: inline-flex;
 			align-items: center;
 			gap: 5px;
-			margin-right: 12px;
+			margin-right: 10px;
 		}
 		.mg-legend {
 			display: flex;
-			gap: 12px;
+			gap: 10px;
 			flex-wrap: wrap;
-			font-size: 0.8rem;
+			font-size: 0.78rem;
 			color: var(--muted);
 		}
-		.leg-item { display: inline-flex; align-items: center; gap: 5px; }
-		.dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+		.leg-item { display: inline-flex; align-items: center; gap: 4px; }
+		.dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
 		.dot.green { background: var(--success); }
 		.dot.yellow { background: var(--warning); }
 		.dot.gray { background: #4b5563; }
@@ -363,21 +363,21 @@
 		.crack-board {
 			display: flex;
 			flex-direction: column;
-			gap: 8px;
+			gap: 7px;
 			align-items: center;
-			margin: 16px 0;
+			margin: 14px 0;
 		}
-		.crack-row { display: flex; gap: 8px; }
+		.crack-row { display: flex; gap: 7px; }
 		.crack-cell {
-			width: 54px;
-			height: 56px;
-			border-radius: 10px;
+			width: 50px;
+			height: 52px;
+			border-radius: 9px;
 			background: var(--code-bg);
 			border: 2px solid var(--border);
 			display: flex;
 			align-items: center;
 			justify-content: center;
-			font-size: 1.55rem;
+			font-size: 1.45rem;
 			font-weight: 800;
 			font-family: Consolas, monospace;
 			color: #fff;
@@ -406,29 +406,29 @@
 			flex-wrap: wrap;
 			gap: 6px;
 			justify-content: center;
-			max-width: 540px;
+			max-width: 520px;
 			margin: 0 auto;
 		}
 		.kp-btn {
-			min-width: 44px;
-			height: 46px;
-			padding: 0 12px;
+			min-width: 42px;
+			height: 44px;
+			padding: 0 11px;
 			border-radius: 8px;
 			background: var(--card-sub);
 			border: 1px solid var(--border);
 			color: #fff;
 			font-weight: 700;
-			font-size: 0.95rem;
+			font-size: 0.92rem;
 			cursor: pointer;
 		}
 		.kp-btn:hover { border-color: var(--accent); background: #262e47; }
-		.kp-btn.kp-enter { background: var(--accent); border-color: var(--accent); padding: 0 18px; }
+		.kp-btn.kp-enter { background: var(--accent); border-color: var(--accent); padding: 0 16px; }
 		.kp-btn.k-correct { background: var(--success); border-color: var(--success); color: #052e16; }
 		.kp-btn.k-present { background: var(--warning); border-color: var(--warning); color: #451a03; }
 		.kp-btn.k-absent { background: #141720; border-color: #262b38; color: #4b5563; }
 
 		/* Struggle & Escape */
-		.strug-arena { padding: 8px; border-radius: 12px; }
+		.strug-arena { padding: 6px; border-radius: 10px; }
 		@keyframes vibeShakeAnim {
 			0%, 100% { transform: translate(0, 0); }
 			25% { transform: translate(-3px, 2px); }
@@ -437,29 +437,29 @@
 		}
 		.vibe-shake {
 			animation: vibeShakeAnim 0.14s infinite;
-			box-shadow: 0 0 24px rgba(240, 92, 235, 0.45);
+			box-shadow: 0 0 20px rgba(240, 92, 235, 0.45);
 		}
 		.vibe-lv1 { color: #f9a8d4; }
 		.vibe-lv2 { color: #f472b6; font-weight: 700; }
 		.vibe-lv3 { color: #ff2cdf; font-weight: 800; }
 		.strug-strap-title {
 			text-align: center;
-			font-size: 1.1rem;
+			font-size: 1.05rem;
 			font-weight: 700;
 			color: #fff;
-			margin-bottom: 10px;
+			margin-bottom: 8px;
 		}
 		.strug-buckles-row {
 			display: flex;
 			gap: 8px;
 			justify-content: center;
 			flex-wrap: wrap;
-			margin-bottom: 16px;
+			margin-bottom: 14px;
 		}
 		.buckle-pill {
-			padding: 5px 12px;
+			padding: 4px 10px;
 			border-radius: 999px;
-			font-size: 0.8rem;
+			font-size: 0.78rem;
 			font-weight: 600;
 			background: var(--code-bg);
 			border: 1px solid var(--border);
@@ -467,10 +467,10 @@
 		}
 		.buckle-pill.current { border-color: var(--accent); color: #fff; background: var(--accent-glow); }
 		.buckle-pill.unlocked { border-color: var(--success); color: #6ee7b7; background: rgba(16, 185, 129, 0.15); }
-		.strug-track-wrap { padding: 12px 0; }
+		.strug-track-wrap { padding: 10px 0; }
 		.strug-track {
 			position: relative;
-			height: 44px;
+			height: 40px;
 			background: #07090f;
 			border: 2px solid var(--border);
 			border-radius: 999px;
@@ -497,25 +497,25 @@
 		.strug-bars-grid {
 			display: grid;
 			grid-template-columns: 1fr 1fr;
-			gap: 14px;
-			margin: 14px 0;
+			gap: 12px;
+			margin: 12px 0;
 		}
 		@media (max-width: 600px) { .strug-bars-grid { grid-template-columns: 1fr; } }
 		.strug-bar-box {
 			background: var(--code-bg);
 			border: 1px solid var(--border);
-			border-radius: 10px;
-			padding: 10px 14px;
+			border-radius: 8px;
+			padding: 8px 12px;
 		}
 		.strug-bar-label {
 			display: flex;
 			justify-content: space-between;
-			font-size: 0.82rem;
-			margin-bottom: 6px;
+			font-size: 0.78rem;
+			margin-bottom: 5px;
 			color: var(--muted);
 		}
 		.strug-bar-bg {
-			height: 10px;
+			height: 8px;
 			background: #1a1f2e;
 			border-radius: 999px;
 			overflow: hidden;
@@ -523,24 +523,24 @@
 		.strug-bar-fill { height: 100%; transition: width 0.18s ease; }
 		.fill-green { background: var(--success); }
 		.fill-red { background: var(--danger); }
-		.strug-hit-btn { width: 100%; padding: 15px; font-size: 1.05rem; }
+		.strug-hit-btn { width: 100%; padding: 14px; font-size: 1rem; }
 
 		/* Gag Speak Hangman */
 		.gag-status-card {
 			display: flex;
 			align-items: center;
-			gap: 16px;
+			gap: 14px;
 			background: var(--card-sub);
 			border: 1px solid var(--border);
-			border-radius: 12px;
-			padding: 14px;
-			margin-bottom: 16px;
+			border-radius: 10px;
+			padding: 12px;
+			margin-bottom: 14px;
 		}
 		.gag-avatar-icon {
-			font-size: 2.5rem;
-			width: 62px;
-			height: 62px;
-			border-radius: 14px;
+			font-size: 2.2rem;
+			width: 54px;
+			height: 54px;
+			border-radius: 12px;
 			background: var(--code-bg);
 			border: 1px solid var(--border);
 			display: flex;
@@ -548,37 +548,37 @@
 			justify-content: center;
 			flex-shrink: 0;
 		}
-		.gag-stage-name { font-weight: 700; font-size: 1.02rem; color: #fff; }
-		.gag-stage-desc { font-size: 0.84rem; color: var(--muted); margin-bottom: 6px; }
+		.gag-stage-name { font-weight: 700; font-size: 0.98rem; color: #fff; }
+		.gag-stage-desc { font-size: 0.8rem; color: var(--muted); margin-bottom: 4px; }
 		.gag-bubble {
 			display: inline-block;
 			background: rgba(217, 67, 212, 0.14);
 			border: 1px solid rgba(217, 67, 212, 0.35);
 			color: #f5a9f2;
-			padding: 5px 10px;
-			border-radius: 8px;
+			padding: 4px 10px;
+			border-radius: 6px;
 			font-style: italic;
-			font-size: 0.88rem;
+			font-size: 0.84rem;
 		}
 		.gag-word-box {
 			display: flex;
 			flex-wrap: wrap;
-			gap: 16px;
+			gap: 14px;
 			justify-content: center;
-			margin: 20px 0;
+			margin: 16px 0;
 		}
-		.gag-word-group { display: flex; gap: 6px; }
+		.gag-word-group { display: flex; gap: 5px; }
 		.gag-letter-slot {
-			width: 34px;
-			height: 42px;
-			border-radius: 8px;
+			width: 32px;
+			height: 40px;
+			border-radius: 7px;
 			background: var(--code-bg);
 			border: 1px solid var(--border);
 			display: flex;
 			align-items: center;
 			justify-content: center;
 			font-family: Consolas, monospace;
-			font-size: 1.25rem;
+			font-size: 1.2rem;
 			font-weight: 700;
 			color: var(--muted);
 		}
@@ -590,123 +590,96 @@
 
 		/* Result Overlay */
 		.stage-result-overlay {
-			margin-top: 16px;
-			padding: 20px;
-			border-radius: 12px;
+			margin-top: 14px;
+			padding: 18px;
+			border-radius: 10px;
 			background: rgba(7, 8, 13, 0.95);
 			border: 1px solid var(--border);
 			display: flex;
 			justify-content: center;
 			text-align: center;
 		}
-		.res-box { max-width: 460px; width: 100%; }
-		.res-icon { font-size: 2.6rem; margin-bottom: 6px; }
-		.res-box h3 { margin: 0 0 8px 0; font-size: 1.3rem; color: #fff; }
+		.res-box { max-width: 440px; width: 100%; }
+		.res-icon { font-size: 2.3rem; margin-bottom: 4px; }
+		.res-box h3 { margin: 0 0 6px 0; font-size: 1.2rem; color: #fff; }
 		.revealed-code-box {
 			background: var(--card-sub);
 			border: 2px solid var(--success);
-			border-radius: 12px;
-			padding: 16px;
-			margin: 14px 0;
+			border-radius: 10px;
+			padding: 14px;
+			margin: 12px 0;
 		}
 		.rc-label {
-			font-size: 0.8rem;
+			font-size: 0.76rem;
 			text-transform: uppercase;
 			color: #6ee7b7;
 			margin-bottom: 4px;
 		}
 		.rc-value {
 			font-family: Consolas, monospace;
-			font-size: 2.2rem;
+			font-size: 2rem;
 			font-weight: 900;
 			color: #fff;
 			letter-spacing: 3px;
-			margin-bottom: 12px;
+			margin-bottom: 10px;
 		}
-		.res-actions { display: flex; gap: 10px; justify-content: center; margin-top: 10px; }
+		.res-actions { display: flex; gap: 8px; justify-content: center; margin-top: 8px; }
 
-		/* Forms & Tables */
-		.form-grid {
-			display: grid;
-			grid-template-columns: 1fr 1fr;
-			gap: 14px;
-		}
-		@media (max-width: 650px) { .form-grid { grid-template-columns: 1fr; } }
-		.form-field { display: flex; flex-direction: column; gap: 5px; }
-		.form-field label { font-size: 0.88rem; font-weight: 600; color: #fff; }
-		.field-hint { font-size: 0.78rem; color: var(--muted); }
-		.input-with-btn { display: flex; gap: 8px; }
-		.input-with-btn input { flex: 1; }
-		.output-panel {
-			margin-top: 18px;
-			background: rgba(16, 185, 129, 0.08);
-			border: 2px solid var(--success);
-			border-radius: 12px;
-			padding: 18px;
-		}
+		/* Admin Panel Styles */
 		.adm-game-box {
 			background: var(--card-sub);
 			border: 1px solid var(--border);
 			border-radius: 10px;
-			padding: 16px;
-			margin-bottom: 12px;
+			padding: 14px;
+			margin-bottom: 10px;
 		}
 		.adm-game-head {
 			display: flex;
 			align-items: center;
 			justify-content: space-between;
-			margin-bottom: 12px;
-			padding-bottom: 8px;
+			margin-bottom: 10px;
+			padding-bottom: 6px;
 			border-bottom: 1px solid var(--border);
 		}
 		.adm-params-grid {
 			display: grid;
-			grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-			gap: 10px;
+			grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+			gap: 8px;
 		}
 		.adm-param-row {
 			display: flex;
 			align-items: center;
 			justify-content: space-between;
 			background: var(--code-bg);
-			padding: 8px 12px;
-			border-radius: 8px;
-			font-size: 0.84rem;
+			padding: 6px 10px;
+			border-radius: 6px;
+			font-size: 0.82rem;
 			gap: 8px;
 		}
 		.adm-param-row input[type="number"], .adm-param-row select {
-			width: 85px;
-			padding: 5px 8px;
-		}
-		.adm-highlight-code {
-			font-family: Consolas, monospace;
-			font-weight: 800;
-			font-size: 1.05rem;
-			color: #34d399;
-			background: rgba(16, 185, 129, 0.16);
-			padding: 3px 9px;
-			border-radius: 6px;
+			width: 80px;
+			padding: 4px 6px;
 		}
 		.adm-table {
 			width: 100%;
 			border-collapse: collapse;
-			font-size: 0.86rem;
+			font-size: 0.82rem;
 		}
 		.adm-table th, .adm-table td {
 			text-align: left;
-			padding: 10px;
+			padding: 8px;
 			border-bottom: 1px solid var(--border);
 		}
 		.adm-table th { color: var(--muted); font-weight: 600; }
 		.log-viewer {
 			background: var(--code-bg);
 			border: 1px solid var(--border);
-			border-radius: 10px;
-			padding: 12px;
+			border-radius: 8px;
+			padding: 10px;
 			font-family: Consolas, monospace;
-			font-size: 0.78rem;
+			font-size: 0.75rem;
 			color: #cbd5e1;
-			max-height: 260px;
+			max-height: 220px;
 			overflow-y: auto;
 			white-space: pre-wrap;
 		}
@@ -714,233 +687,167 @@
 </head>
 <body>
 	<div class="container">
-		<!-- Top Bar -->
-		<div class="top-bar">
-			<button type="button" id="btn-toggle-audio" class="btn btn-sm">🔊 Audio On</button>
-		</div>
-
-		<!-- Header -->
-		<header class="header">
-			<h1>🎮 BC Arcade &amp; Lock Recovery <span class="badge">v1.2</span></h1>
-			<p>Play Bondage Club minigames for fun or beat a challenge to reveal your padlock code.</p>
-			<div class="nav-tabs">
-				<button type="button" class="nav-tab-btn active" data-tab="arcade">🔓 Unlock Padlock &amp; Play</button>
-				<button type="button" class="nav-tab-btn" data-tab="lockmaster">🔐 Create Lock Challenge</button>
-				<button type="button" class="nav-tab-btn" data-tab="admin">🛡️ Admin</button>
+		<!-- Minimal Header -->
+		<header class="top-header">
+			<h1 class="brand-title">🎮 BC Lock Recovery <span class="badge">v1.3</span></h1>
+			<div class="top-actions">
+				<button type="button" id="btn-toggle-audio" class="btn btn-sm">🔊 Audio</button>
+				<button type="button" id="btn-toggle-admin" class="btn btn-sm" title="Admin Panel">🛡️ Admin</button>
 			</div>
 		</header>
 
-		<!-- =================================================================
-		     VIEW 1: UNLOCK PADLOCK & FREE PLAY ARCADE
-		     ================================================================= -->
-		<main id="view-arcade" class="view-section">
-			<!-- Player Lookup Box -->
-			<section class="card lookup-box">
-				<h2>🔓 Need to Unlock a Padlock?</h2>
-				<p style="margin:0; font-size:0.92rem; color:var(--muted);">
-					Enter your <strong>Player ID</strong> (or Clue Code) below to see your active locks and play to reveal the password:
-				</p>
-				<div class="lookup-row">
-					<input type="text" id="victim-lookup-input" placeholder="Enter your Player ID or Clue Code (e.g. 123456)...">
-					<button type="button" id="victim-lookup-btn" class="btn btn-primary">🔍 Find My Locks</button>
-				</div>
-				<div id="victim-lookup-feedback" class="lookup-feedback"></div>
-
-				<!-- Multi-Lock Selector (Shows all active locks for this Player ID) -->
-				<div id="victim-locks-selector" class="vlock-selector" style="display:none;"></div>
-			</section>
-
-			<!-- Active Game Stage -->
-			<section id="active-game-stage-wrap" class="card stage-wrap" style="display:none;">
-				<div class="stage-header">
-					<h2 id="stage-game-title">Minigame</h2>
-					<div style="display:flex; gap:8px;">
-						<button type="button" id="btn-admin-force-win" class="btn btn-sm" style="display:none; background:#b45309; border-color:#f59e0b;">
-							⚡ Admin Bypass (Reveal Code)
-						</button>
-						<button type="button" id="btn-close-stage" class="btn btn-sm">✖ Close</button>
-					</div>
-				</div>
-
-				<div id="stage-challenge-banner" class="ch-banner" style="display:none;"></div>
-				<div id="stage-game-container"></div>
-				<div id="stage-result-overlay" class="stage-result-overlay" style="display:none;"></div>
-			</section>
-
-			<!-- Free Play Arcade -->
-			<section class="card">
-				<h2>🕹️ Free Play Arcade</h2>
-				<div id="arcade-cards-grid" class="games-grid" style="margin-top:12px;"></div>
-			</section>
-		</main>
-
-		<!-- =================================================================
-		     VIEW 2: CREATE LOCK CHALLENGE (FOR KEYHOLDERS / DOMS)
-		     ================================================================= -->
-		<section id="view-lockmaster" class="view-section" style="display:none;">
-			<div class="card">
-				<h2>🔐 Create a Lock Challenge</h2>
-				<p style="margin:0 0 16px 0; font-size:0.92rem; color:var(--muted);">
-					Set up a minigame challenge for a padlock. You can create multiple locks for the same Player ID — just specify which restraint each lock is on (e.g. <em>Armbinder</em>, <em>Collar</em>, <em>Ankle Cuffs</em>).
-				</p>
-
-				<div class="form-grid">
-					<div class="form-field">
-						<label for="lm-victim-name">1. Target Player ID (or Clue Code)</label>
-						<input type="text" id="lm-victim-name" placeholder="e.g. 123456">
-						<span class="field-hint">The locked player will type this ID on the main screen to find their locks.</span>
-					</div>
-
-					<div class="form-field">
-						<label for="lm-dom-note">2. Which Restraint / Lock Name?</label>
-						<input type="text" id="lm-dom-note" placeholder="e.g. Latex Armbinder, Collar, Lock #1">
-						<span class="field-hint">Helps the player know which padlock this code opens if they have multiple locks.</span>
-					</div>
-
-					<div class="form-field">
-						<label for="lm-secret-code">3. Padlock Code or Password</label>
-						<div class="input-with-btn">
-							<input type="text" id="lm-secret-code" placeholder="e.g. 4829 or LOCKED99" maxlength="8">
-							<button type="button" id="lm-btn-rand-4" class="btn btn-sm" title="Generate 4 digits">🎲 4-Digit</button>
-							<button type="button" id="lm-btn-rand-word" class="btn btn-sm" title="Generate password">🎲 Word</button>
-						</div>
-						<span class="field-hint">The secret code used on the padlock in Bondage Club (revealed upon victory).</span>
-					</div>
-
-					<div class="form-field">
-						<label for="lm-game-select">4. Minigame &amp; Difficulty</label>
-						<div style="display:flex; gap:8px;">
-							<select id="lm-game-select" style="flex:1;"></select>
-							<select id="lm-diff-select" style="width:120px;">
-								<option value="1">🟢 Easy</option>
-								<option value="2" selected>🟡 Normal</option>
-								<option value="3">🔴 Hard</option>
-							</select>
-						</div>
-					</div>
-				</div>
-
-				<div style="margin-top: 18px;">
-					<button type="button" id="lm-btn-generate" class="btn btn-primary" style="width:100%; padding:14px; font-size:1.05rem;">
-						✅ ACTIVATE CHALLENGE &amp; CREATE LINK
+		<!-- ACTIVE GAME STAGE (Appears on top when playing) -->
+		<section id="active-game-stage-wrap" class="card stage-wrap" style="display:none;">
+			<div class="stage-header">
+				<h2 id="stage-game-title">Minigame</h2>
+				<div style="display:flex; gap:8px;">
+					<button type="button" id="btn-admin-force-win" class="btn btn-sm" style="display:none; background:#b45309; border-color:#f59e0b;">
+						⚡ Admin Bypass
 					</button>
-				</div>
-
-				<!-- Confirmation Box -->
-				<div id="lm-output-box" class="output-panel" style="display:none;">
-					<div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
-						<h3 style="margin:0; color:#6ee7b7;">
-							🎉 Challenge Active! (Padlock Code: <span id="lm-out-password" class="adm-highlight-code"></span>)
-						</h3>
-						<button type="button" id="lm-btn-test-now" class="btn btn-primary btn-sm">▶ Test as Player Now</button>
-					</div>
-
-					<p style="margin:0 0 10px 0; font-size:0.92rem;">
-						👉 <strong>Option 1 (By Player ID):</strong> Tell the player to enter their ID on the main page to unlock <span id="lm-out-victim-key" class="adm-highlight-code"></span>.
-					</p>
-
-					<div class="form-field">
-						<label style="font-size:0.9rem;">👉 Option 2 (Direct Link): Or send them this link in chat (starts the game immediately):</label>
-						<div class="input-with-btn">
-							<input type="text" id="lm-out-url" readonly>
-							<button type="button" id="lm-copy-url" class="btn btn-primary">📋 Copy Direct Link</button>
-						</div>
-					</div>
+					<button type="button" id="btn-close-stage" class="btn btn-sm">✖ Close</button>
 				</div>
 			</div>
+			<div id="stage-challenge-banner" class="ch-banner" style="display:none;"></div>
+			<div id="stage-game-container"></div>
+			<div id="stage-result-overlay" class="stage-result-overlay" style="display:none;"></div>
+		</section>
 
-			<!-- Active Challenges Table -->
-			<div class="card">
-				<h2>📋 Active Lock Challenges</h2>
-				<div style="overflow-x:auto;">
-					<table class="adm-table">
-						<thead>
-							<tr>
-								<th>Player ID</th>
-								<th>Restraint / Lock</th>
-								<th>Padlock Code</th>
-								<th>Minigame</th>
-								<th>Actions</th>
-							</tr>
-						</thead>
-						<tbody id="lm-active-list-body"></tbody>
-					</table>
+		<!-- =================================================================
+		     ESSENTIAL 1: PLAY USING ID OR HINT (FOR LOCKED PLAYERS)
+		     ================================================================= -->
+		<section class="card unlock-card">
+			<h2>🔓 1. Unlock a Padlock</h2>
+			<p class="card-subtext">Enter your Player ID or Hint to play and reveal your padlock code:</p>
+			<div class="inline-row">
+				<input type="text" id="victim-lookup-input" placeholder="Player ID or Hint (e.g. 123456)...">
+				<button type="button" id="victim-lookup-btn" class="btn btn-primary">▶ Play to Unlock</button>
+			</div>
+			<div id="victim-lookup-feedback" class="lookup-feedback"></div>
+			<div id="victim-locks-selector" class="vlock-selector" style="display:none;"></div>
+		</section>
+
+		<!-- =================================================================
+		     ESSENTIAL 2: CREATE A LOCK / LINK (CODE OPTIONAL OR GENERATED)
+		     ================================================================= -->
+		<section class="card">
+			<h2>🔐 2. Create a Lock Challenge</h2>
+			<p class="card-subtext">Enter a Player ID / Hint. Leave the code blank to generate one automatically:</p>
+			<div class="create-grid">
+				<input type="text" id="lm-victim-name" placeholder="Player ID or Hint (e.g. 123456)">
+				<input type="text" id="lm-secret-code" placeholder="Code (optional)" maxlength="8">
+				<select id="lm-game-select" aria-label="Minigame"></select>
+				<button type="button" id="lm-btn-generate" class="btn btn-primary">⚡ Create Lock</button>
+			</div>
+
+			<!-- Optional Restraint Label (small inline toggle/field) -->
+			<div style="margin-top:8px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+				<input type="text" id="lm-dom-note" placeholder="Restraint name (optional, e.g. Armbinder, Collar)" style="flex:1; padding:7px 10px; font-size:0.84rem;">
+				<select id="lm-diff-select" style="padding:7px 10px; font-size:0.84rem;" aria-label="Difficulty">
+					<option value="1">🟢 Easy</option>
+					<option value="2" selected>🟡 Normal</option>
+					<option value="3">🔴 Hard</option>
+				</select>
+			</div>
+
+			<!-- Instant Output Box -->
+			<div id="lm-output-box" class="output-panel" style="display:none;">
+				<div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+					<div>
+						✅ <strong>Padlock Code for BC:</strong> <span id="lm-out-password" class="adm-highlight-code"></span>
+						<span style="font-size:0.84rem; color:var(--muted); margin-left:6px;">(ID/Hint: <strong id="lm-out-victim-key" style="color:#fff;"></strong>)</span>
+					</div>
+					<button type="button" id="lm-btn-test-now" class="btn btn-sm">▶ Test</button>
+				</div>
+				<div class="inline-row">
+					<input type="text" id="lm-out-url" readonly style="font-size:0.84rem;">
+					<button type="button" id="lm-copy-url" class="btn btn-primary btn-sm">📋 Copy Link</button>
 				</div>
 			</div>
 		</section>
 
 		<!-- =================================================================
-		     VIEW 3: PROTECTED ADMIN PANEL
+		     ESSENTIAL 3: BUTTON TO OPEN FREE PLAY MINIGAMES
 		     ================================================================= -->
-		<section id="view-admin" class="view-section" style="display:none;">
-			<div id="adm-login-gate" class="card" style="max-width:440px; margin:0 auto; text-align:center;">
-				<h2>🛡️ Admin Control Panel</h2>
-				<p style="font-size:0.9rem; color:var(--muted);">Enter the Master Password to manage games, inspect codes, and enable automatic Cloud Sync:</p>
-				<div style="display:flex; gap:8px; margin-top:14px;">
-					<input type="password" id="adm-pass-input" placeholder="Master Password..." style="flex:1;">
+		<button type="button" id="btn-toggle-freeplay" class="btn freeplay-toggle-btn">
+			🕹️ Open Free Play Minigames ▾
+		</button>
+
+		<section id="freeplay-drawer" class="card" style="display:none;">
+			<h2>🕹️ Free Play Minigames</h2>
+			<div id="arcade-cards-grid" class="games-grid"></div>
+		</section>
+
+		<!-- =================================================================
+		     PROTECTED ADMIN PANEL (Hidden by default, toggled via 🛡️ Admin)
+		     ================================================================= -->
+		<section id="view-admin" style="display:none; margin-top:16px;">
+			<div id="adm-login-gate" class="card" style="text-align:center;">
+				<h2>🛡️ Admin Login</h2>
+				<div class="inline-row" style="max-width:360px; margin:12px auto 0;">
+					<input type="password" id="adm-pass-input" placeholder="Master Password...">
 					<button type="button" id="adm-login-btn" class="btn btn-primary">🔓 Unlock</button>
 				</div>
-				<div id="adm-login-error" style="display:none; color:var(--danger); font-size:0.85rem; margin-top:10px;">
+				<div id="adm-login-error" style="display:none; color:var(--danger); font-size:0.84rem; margin-top:8px;">
 					❌ Invalid password.
 				</div>
 			</div>
 
 			<div id="adm-dashboard-body" style="display:none;">
-				<div class="card" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+				<div class="card" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
 					<div>
 						<h2 style="margin:0;">🎛️ Admin Control Panel</h2>
-						<span style="font-size:0.85rem; color:#34d399;">☁️ Automatic Cloud Sync active for challenges and logs!</span>
+						<span style="font-size:0.8rem; color:#34d399;">☁️ Automatic Cloud Sync active</span>
 					</div>
 					<button type="button" id="adm-logout-btn" class="btn btn-sm">🔒 Lock Panel</button>
 				</div>
 
-				<!-- 1. Password Inspector -->
+				<!-- 1. Active Challenges Manager -->
 				<div class="card">
-					<h2>🕵️ 1. Inspect Password of Any Link or Player ID</h2>
-					<div class="input-with-btn">
-						<input type="text" id="adm-decrypt-input" placeholder="Paste Link (?c=...), Ticket (BC-...) or Player ID">
-						<button type="button" id="adm-btn-decrypt" class="btn btn-primary">🔍 Reveal Code</button>
-					</div>
-					<div id="adm-decrypt-result" class="output-panel" style="display:none; margin-top:12px;"></div>
-				</div>
-
-				<!-- 2. Enable/Disable Games & Parameters -->
-				<div class="card">
-					<h2>⚙️ 2. Enable / Disable Minigames &amp; Parameters</h2>
-					<div id="adm-games-config-list"></div>
-					<div style="margin-top:12px; display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-						<button type="button" id="adm-sync-github-btn" class="btn btn-primary btn-sm">☁️ Force Cloud Save Now</button>
-						<span id="adm-gh-sync-status" style="font-size:0.85rem;"></span>
-					</div>
-				</div>
-
-				<!-- 3. Lock History Vault -->
-				<div class="card">
-					<h2>🗄️ 3. Generated Locks History</h2>
+					<h2>📋 1. Active Challenges</h2>
 					<div style="overflow-x:auto;">
 						<table class="adm-table">
 							<thead>
 								<tr>
-									<th>Date</th>
-									<th>Player ID &amp; Lock</th>
+									<th>Player ID</th>
+									<th>Lock</th>
 									<th>Code</th>
 									<th>Game</th>
-									<th>Link</th>
+									<th>Actions</th>
 								</tr>
 							</thead>
-							<tbody id="adm-vault-table-body"></tbody>
+							<tbody id="lm-active-list-body"></tbody>
 						</table>
+					</div>
+				</div>
+
+				<!-- 2. Password Inspector -->
+				<div class="card">
+					<h2>🕵️ 2. Inspect Password of Any Link or ID</h2>
+					<div class="inline-row">
+						<input type="text" id="adm-decrypt-input" placeholder="Paste Link (?c=...), Ticket (BC-...) or Player ID">
+						<button type="button" id="adm-btn-decrypt" class="btn btn-primary">🔍 Reveal</button>
+					</div>
+					<div id="adm-decrypt-result" class="output-panel" style="display:none;"></div>
+				</div>
+
+				<!-- 3. Games & Parameters -->
+				<div class="card">
+					<h2>⚙️ 3. Enable / Disable Minigames &amp; Parameters</h2>
+					<div id="adm-games-config-list"></div>
+					<div style="margin-top:10px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+						<button type="button" id="adm-sync-github-btn" class="btn btn-primary btn-sm">☁️ Force Cloud Save</button>
+						<span id="adm-gh-sync-status" style="font-size:0.82rem;"></span>
 					</div>
 				</div>
 
 				<!-- 4. Diagnostic Log -->
 				<div class="card">
-					<h2>📋 4. Diagnostic Log (Cloud Synced)</h2>
+					<h2>📋 4. Diagnostic Log</h2>
 					<pre id="adm-diagnostic-log-view" class="log-viewer"></pre>
-					<div style="display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;">
+					<div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">
 						<button type="button" id="adm-sync-log-gh" class="btn btn-primary btn-sm">☁️ Sync Log to Cloud</button>
 						<button type="button" id="adm-copy-log" class="btn btn-sm">📋 Copy Log</button>
-						<button type="button" id="adm-clear-log" class="btn btn-sm">🧹 Clear Log</button>
+						<button type="button" id="adm-clear-log" class="btn btn-sm">🧹 Clear</button>
 					</div>
 				</div>
 			</div>
