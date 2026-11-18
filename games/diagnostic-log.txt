@@ -1,6 +1,6 @@
 === BONDAGE CLUB ARCADE & LOCK RECOVERY — DIAGNOSTIC LOG ===
-Exported At: 2026-11-18T22:18:46.356Z
-Total Entries: 25
+Exported At: 2026-11-18T22:18:50.610Z
+Total Entries: 29
 ============================================================
 001. [2026-11-18T22:14:37.975Z] [SYSTEM] Registered minigame module: crack (Crack the Padlock)
 002. [2026-11-18T22:14:37.976Z] [SYSTEM] Registered minigame module: struggle (Struggle & Escape)
@@ -27,3 +27,7 @@ Total Entries: 25
 023. [2026-11-18T22:18:38.181Z] [ADMIN] Admin triggered instant win bypass
 024. [2026-11-18T22:18:38.182Z] [CHALLENGE] Challenge WON — Password revealed to player | DATA: {"victim":"112233","revealedPassword":"SUBBY44"}
 025. [2026-11-18T22:18:42.355Z] [GAME] Started Crack the Padlock | DATA: {"mode":"digits","len":4,"maxAttempts":6,"difficulty":2}
+026. [2026-11-18T22:18:46.607Z] [CHALLENGE] Victim lookup requested | DATA: {"query":"112233"}
+027. [2026-11-18T22:18:46.608Z] [CHALLENGE] Matched challenge by ID/Hint | DATA: {"query":"112233","label":"112233"}
+028. [2026-11-18T22:18:46.608Z] [CHALLENGE] Loaded challenge from ID/Hint Lookup (112233) | DATA: {"gameId":"crack","difficulty":2,"victim":"112233"}
+029. [2026-11-18T22:18:46.608Z] [GAME] Started Crack the Padlock | DATA: {"mode":"digits","len":4,"maxAttempts":6,"difficulty":2}
