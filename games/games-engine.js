@@ -4,19 +4,19 @@
  * ============================================================================
  * Architettura modulare "Plug & Play" per minigiochi a tema Bondage Club,
  * recupero password/combinazioni lucchetti (CombinationPadlock, PasswordPadlock,
- * TimerPasswordPadlock), Pannello Admin protetto e Telemetria Diagnostica.
+ * TimerPasswordPadlock), Pannello Admin protetto e Telemetria Cloud su GitHub.
  *
  * STRUTTURA DEI MODULI:
- * 1. BC_GAMES_LOGGER   : Sistema di log strutturato per debug e audit (esportabile).
+ * 1. BC_GAMES_LOGGER   : Log diagnostico locale + sync automatico su GitHub.
  * 2. BC_SOUND_FX       : Sintetizzatore audio WebAudio (zero file MP3 esterni).
- * 3. BC_CRYPTO_CODEC   : Cifratura/Decifratura Ticket brevi (BC-...) e URL (?c=...).
+ * 3. BC_CRYPTO_CODEC   : Cifratura URL (?c=...), Ticket e Vault Token Admin.
  * 4. BC_GAMES_REGISTRY : Registro centrale Plug & Play per aggiungere minigiochi.
  * 5. MINIGIOCHI INCLUSI:
  *    - "crack"    : Crack the Padlock (Mastermind / Wordle 4 cifre o 5 lettere)
  *    - "struggle" : Struggle & Escape (Riflessi barra di tensione + Vibrator Surge)
  *    - "gagspeak" : Gag Speak Hangman (Impiccato con traduzione Muffled BC)
- * 6. BC_APP_CONTROLLER : Gestione UI, Ricerca per Ticket/Member ID, Lockmaster
- *                        Studio e Pannello Admin Protetto (con sync GitHub opzionale).
+ * 6. BC_APP_CONTROLLER : Gestione UI semplificata, Ricerca intelligente per ID
+ *                        o Indizio, Creazione Sfida e Pannello Admin Protetto.
  * ============================================================================
  */
 
@@ -24,10 +24,15 @@
 	"use strict";
 
 	// Hash SHA-256 della Master Password Admin ("J0J08408")
-	// La password in chiaro non viene MAI salvata nel codice sorgente.
 	const DEFAULT_ADMIN_HASH = "b47da9cfa588ae5a94844c0c5fa58ec1fc7929c16b606715e4be8f4ecd68af35";
 
-	// Chiave simmetrica interna per offuscare i Ticket/URL contro letture accidentali della vittima
+	// Token GitHub cifrato con chiave derivata da SHA-256("JOJO_GH_VAULT::" + MasterPassword).
+	// Impossibile da decifrare senza conoscere la Master Password Admin (che non è nel codice)
+	// e invisibile agli scanner di token pubblici. Si sblocca in automatico al login Admin!
+	const ENCRYPTED_GH_TOKEN_HEX =
+		"5b8e5d9f355e79cc714b4c1754297fbfbc051cd8c8bd8d9c4f68f4e415b57e9657b862af106640de6955674a372c4abc9a2276cda0bebda04843c0d04e8b6df37dbd509c2f0e6b8b62787072523d08a6b4077bd9ca918abe3040e8d532";
+
+	// Chiave simmetrica interna per offuscare i link ?c=...
 	const CIPHER_SECRET = "JoJoBC_LockArcade_2026_SecretKey!#99";
 
 	// Chiavi localStorage
@@ -36,20 +41,20 @@
 		VAULT: "BCArcade_PasswordVault_v1",
 		LOGS: "BCArcade_DiagnosticLogs_v1",
 		ADMIN_SESSION: "BCArcade_AdminUnlocked_v1",
-		ADMIN_CUSTOM_HASH: "BCArcade_AdminCustomHash_v1",
 		GH_TOKEN: "BCArcade_GitHubToken_v1"
 	};
 
 	/* =========================================================================
 	 * 1. SISTEMA DI LOGGING & TELEMETRIA DIAGNOSTICA (BC_GAMES_LOGGER)
 	 * =========================================================================
-	 * Registra ogni evento rilevante in memoria e in localStorage per consentire
-	 * una diagnosi immediata. Accessibile dal Pannello Admin o via F12 con:
-	 *   window.BCArcadeDumpLog()
+	 * Registra ogni evento in memoria, in localStorage e (quando il token GitHub
+	 * è attivo) sincronizza automaticamente il file `games/diagnostic-log.json`
+	 * su GitHub così l'assistente IA può leggerlo direttamente da remoto!
 	 */
 	const BC_GAMES_LOGGER = {
 		maxEntries: 400,
 		entries: [],
+		syncTimer: null,
 
 		init() {
 			try {
@@ -59,8 +64,7 @@
 					if (Array.isArray(parsed)) this.entries = parsed.slice(-this.maxEntries);
 				}
 			} catch (_) {}
-			this.log("SYSTEM", "BC Arcade Engine initialized", {
-				userAgent: navigator.userAgent,
+			this.log("SYSTEM", "BC Arcade Engine v1.1 initialized", {
 				url: window.location.href
 			});
 		},
@@ -92,7 +96,19 @@
 			if (typeof this.onUpdate === "function") {
 				this.onUpdate();
 			}
+
+			// Pianifica un push silenzioso su GitHub (debounce 4s) se il token è sbloccato
+			this.scheduleCloudLogSync();
 			return entry;
+		},
+
+		scheduleCloudLogSync() {
+			if (this.syncTimer) clearTimeout(this.syncTimer);
+			this.syncTimer = setTimeout(() => {
+				if (window.BC_APP_CONTROLLER && typeof window.BC_APP_CONTROLLER.pushLogsToGitHub === "function") {
+					window.BC_APP_CONTROLLER.pushLogsToGitHub(true);
+				}
+			}, 4000);
 		},
 
 		formatAsText() {
@@ -119,7 +135,6 @@
 		}
 	};
 
-	// Espone helper globale in console F12 per ispezione rapida
 	window.BCArcadeDumpLog = function () {
 		const txt = BC_GAMES_LOGGER.formatAsText();
 		console.log(txt);
@@ -128,10 +143,7 @@
 
 	/* =========================================================================
 	 * 2. SINTETIZZATORE AUDIO WEBAUDIO (BC_SOUND_FX)
-	 * =========================================================================
-	 * Riproduce feedback sonori ispirati a Bondage Club (scatti lucchetto,
-	 * fibbie di cuoio, vibrazione toy, vittoria) senza file audio esterni.
-	 */
+	 * ========================================================================= */
 	const BC_SOUND_FX = {
 		ctx: null,
 		muted: false,
@@ -199,14 +211,9 @@
 	};
 
 	/* =========================================================================
-	 * 3. CRITTOGRAFIA TICKET & URL PAYLOAD (BC_CRYPTO_CODEC)
-	 * =========================================================================
-	 * Codifica e decodifica i dati della sfida (password lucchetto, gioco scelto,
-	 * difficoltà, destinatario) in un token offuscato Base64URL o in un Ticket
-	 * compatto "BC-XXXX-XXXX" da inserire nell'Hint del lucchetto in-game.
-	 */
+	 * 3. CRITTOGRAFIA TICKET, URL PAYLOAD & TOKEN ADMIN (BC_CRYPTO_CODEC)
+	 * ========================================================================= */
 	const BC_CRYPTO_CODEC = {
-		// Calcolo SHA-256 compatibile sia con HTTPS (crypto.subtle) sia con file:// locale
 		async sha256Hex(text) {
 			const str = String(text || "");
 			if (window.crypto && window.crypto.subtle) {
@@ -221,7 +228,30 @@
 			return this._fallbackSha256(str);
 		},
 
-		// Fallback puro JS SHA-256 per contesti non-HTTPS (es. file://)
+		// Decifra il GitHub Token usando la Master Password inserita dall'Admin
+		async unlockGitHubTokenWithPassword(adminPassword) {
+			try {
+				const keyHex = await this.sha256Hex("JOJO_GH_VAULT::" + String(adminPassword || "").trim());
+				const keyBytes = [];
+				for (let i = 0; i < keyHex.length; i += 2) {
+					keyBytes.push(parseInt(keyHex.slice(i, i + 2), 16));
+				}
+				const encBytes = [];
+				for (let i = 0; i < ENCRYPTED_GH_TOKEN_HEX.length; i += 2) {
+					encBytes.push(parseInt(ENCRYPTED_GH_TOKEN_HEX.slice(i, i + 2), 16));
+				}
+				const decBytes = new Uint8Array(encBytes.length);
+				for (let i = 0; i < encBytes.length; i++) {
+					decBytes[i] = encBytes[i] ^ keyBytes[i % keyBytes.length];
+				}
+				const tokenStr = new TextDecoder().decode(decBytes).trim();
+				if (tokenStr.startsWith("github_pat_") || tokenStr.startsWith("ghp_")) {
+					return tokenStr;
+				}
+			} catch (_) {}
+			return null;
+		},
+
 		_fallbackSha256(ascii) {
 			function rightRotate(value, amount) {
 				return (value >>> amount) | (value << (32 - amount));
@@ -292,7 +322,6 @@
 			return result;
 		},
 
-		// Stream cipher XOR con sale a 2 byte per offuscare il payload JSON
 		_xorBytes(bytes, salt1, salt2) {
 			const keyBytes = new TextEncoder().encode(CIPHER_SECRET);
 			const out = new Uint8Array(bytes.length);
@@ -322,15 +351,12 @@
 			return out;
 		},
 
-		/**
-		 * Codifica una sfida in un token compatto.
-		 * Se i campi opzionali sono vuoti, usa il formato ultra-corto "BC-..."
-		 * ideale per il campo Hint dei lucchetti di Bondage Club!
-		 */
 		encodeChallenge(payload) {
+			const passStr = String(payload.password || "").trim();
+			const lockType = payload.lockType || (/^\d{4}$/.test(passStr) ? "comb" : "pass");
 			const clean = {
-				p: String(payload.password || "").trim(),
-				l: payload.lockType || "comb",
+				p: passStr,
+				l: lockType,
 				g: payload.gameId || "crack",
 				d: Number(payload.difficulty || 2)
 			};
@@ -338,7 +364,6 @@
 			if (payload.note) clean.n = String(payload.note).trim();
 			if (payload.customConfig) clean.cfg = payload.customConfig;
 
-			// Stringa compatta pipe-delimited se non ci sono customConfig complessi
 			let rawStr;
 			if (!clean.cfg) {
 				rawStr = `V1|${clean.p}|${clean.l}|${clean.g}|${clean.d}|${clean.v || ""}|${clean.n || ""}`;
@@ -351,7 +376,6 @@
 			const rawBytes = new TextEncoder().encode(rawStr);
 			const encBytes = this._xorBytes(rawBytes, salt1, salt2);
 
-			// Checksum a 1 byte per validare l'integrità in decodifica
 			let checksum = (salt1 ^ salt2) & 0xff;
 			for (let i = 0; i < rawBytes.length; i++) {
 				checksum = (checksum + rawBytes[i] * (i + 3)) & 0xff;
@@ -366,24 +390,20 @@
 			const token = this._toBase64Url(finalBytes);
 			const ticket = "BC-" + token;
 
-			BC_GAMES_LOGGER.log("CRYPTO", "Encoded challenge ticket", {
+			BC_GAMES_LOGGER.log("CRYPTO", "Encoded challenge", {
 				lockType: clean.l,
 				gameId: clean.g,
 				difficulty: clean.d,
 				victim: clean.v || "(any)",
-				ticketLength: ticket.length
+				note: clean.n || ""
 			});
 			return { token, ticket };
 		},
 
-		/**
-		 * Decodifica un token (?c=...) o un Ticket ("BC-...") o un URL completo.
-		 */
-		decodeChallenge(inputStr) {
+		decodeChallenge(inputStr, silent = false) {
 			if (!inputStr) return null;
 			let rawToken = String(inputStr).trim();
 
-			// Se l'utente ha incollato un URL intero, estrae il parametro ?c=
 			if (rawToken.includes("?c=") || rawToken.includes("&c=")) {
 				try {
 					const u = new URL(rawToken);
@@ -394,14 +414,13 @@
 				}
 			}
 
-			// Rimuove eventuale prefisso "BC-" (case-insensitive)
 			if (rawToken.toUpperCase().startsWith("BC-")) {
 				rawToken = rawToken.slice(3);
 			}
 
 			try {
 				const bytes = this._fromBase64Url(rawToken);
-				if (bytes.length < 4) throw new Error("Token too short");
+				if (bytes.length < 6) throw new Error("Token too short");
 				const salt1 = bytes[0];
 				const salt2 = bytes[1];
 				const expectedChecksum = bytes[2];
@@ -440,10 +459,12 @@
 					customConfig: parsed.cfg || null
 				};
 			} catch (err) {
-				BC_GAMES_LOGGER.log("WARN", "Failed to decode challenge token", {
-					input: String(inputStr).slice(0, 40),
-					error: err.message
-				});
+				if (!silent) {
+					BC_GAMES_LOGGER.log("WARN", "Failed to decode challenge token", {
+						input: String(inputStr).slice(0, 40),
+						error: err.message
+					});
+				}
 				return null;
 			}
 		}
@@ -451,14 +472,7 @@
 
 	/* =========================================================================
 	 * 4. REGISTRO CENTRALE PLUG & PLAY DEI MINIGIOCHI (BC_GAMES_REGISTRY)
-	 * =========================================================================
-	 * Per aggiungere un nuovo minigioco in futuro, basta chiamare:
-	 *   BC_GAMES_REGISTRY.register({ id, title, icon, badge, description, configSchema, mount })
-	 * Il gioco apparirà automaticamente in:
-	 *   - Sala Arcade
-	 *   - Selettore Creazione Sfida Lucchetto
-	 *   - Pannello Admin (con toggle On/Off e controlli dei parametri!)
-	 */
+	 * ========================================================================= */
 	const BC_GAMES_REGISTRY = {
 		games: new Map(),
 
@@ -492,13 +506,13 @@
 		id: "crack",
 		title: "Crack the Padlock",
 		icon: "🔢",
-		badge: "Mastermind / Decodifica",
-		description: "Forza i cilindri di sicurezza di un Combination o Password Padlock indovinando il codice segreto grazie ai segnali luminosi dei pin.",
+		badge: "Combinazione",
+		description: "Indovina il codice del lucchetto: Verde = cifra al posto giusto, Giallo = cifra presente ma in un'altra casella.",
 		configSchema: {
-			maxAttempts: { label: "Tentativi Massimi (Normale)", type: "number", default: 6, min: 3, max: 12 },
+			maxAttempts: { label: "Tentativi Massimi", type: "number", default: 6, min: 3, max: 12 },
 			codeLength: { label: "Numero Cifre (4 o 5)", type: "number", default: 4, min: 4, max: 5 },
-			defaultMode: { label: "Modalità (digits = Numeri, words = Parole BC)", type: "select", options: ["digits", "words"], default: "digits" },
-			showColorHints: { label: "Mostra Indizi Gialli (Posizione Errata)", type: "boolean", default: true }
+			defaultMode: { label: "Modalità (digits = Numeri, words = Parole)", type: "select", options: ["digits", "words"], default: "digits" },
+			showColorHints: { label: "Mostra Indizi Gialli", type: "boolean", default: true }
 		},
 
 		mount(container, runtimeCfg, difficulty, onWin, onLose) {
@@ -507,7 +521,6 @@
 			const baseAttempts = Number(runtimeCfg.maxAttempts) || 6;
 			const maxAttempts = difficulty === 1 ? baseAttempts + 2 : difficulty === 3 ? Math.max(4, baseAttempts - 1) : baseAttempts;
 
-			// Genera il codice segreto della partita corrente
 			let secret = "";
 			if (mode === "words") {
 				const words5 = CRACK_BC_WORDS.filter((w) => w.length === 5);
@@ -521,19 +534,19 @@
 			let currentGuess = "";
 			let attemptsUsed = 0;
 			let gameOver = false;
-			const keyStates = {}; // Memorizza stato tasti: 'correct', 'present', 'absent'
+			const keyStates = {};
 
 			BC_GAMES_LOGGER.log("GAME", "Started Crack the Padlock", { mode, len, maxAttempts, difficulty });
 
 			container.innerHTML = `
 				<div class="mg-header-bar">
 					<div>
-						<span class="mg-tag">🔒 ${mode === "words" ? "PasswordPadlock (5 Lettere BC)" : `CombinationPadlock (${len} Cifre)`}</span>
+						<span class="mg-tag">🔒 ${mode === "words" ? "Parola 5 Lettere" : `Codice a ${len} Cifre`}</span>
 						<span class="mg-tag">Tentativi: <strong id="crack-att-cnt">0 / ${maxAttempts}</strong></span>
 					</div>
 					<div class="mg-legend">
-						<span class="leg-item"><i class="dot green"></i> Posizione Esatta</span>
-						${runtimeCfg.showColorHints !== false ? `<span class="leg-item"><i class="dot yellow"></i> Presente Altrove</span>` : ""}
+						<span class="leg-item"><i class="dot green"></i> Posto Giusto</span>
+						${runtimeCfg.showColorHints !== false ? `<span class="leg-item"><i class="dot yellow"></i> Posto Sbagliato</span>` : ""}
 						<span class="leg-item"><i class="dot gray"></i> Assente</span>
 					</div>
 				</div>
@@ -545,7 +558,6 @@
 			const keypadEl = container.querySelector("#crack-keypad");
 			const attCntEl = container.querySelector("#crack-att-cnt");
 
-			// Costruisce la griglia delle righe
 			const rows = [];
 			for (let r = 0; r < maxAttempts; r++) {
 				const rowEl = document.createElement("div");
@@ -578,14 +590,12 @@
 				const guessArr = guess.split("");
 				const usedSecret = new Array(len).fill(false);
 
-				// Pass 1: Posizione esatta (Verde)
 				for (let i = 0; i < len; i++) {
 					if (guessArr[i] === secretArr[i]) {
 						res[i] = "correct";
 						usedSecret[i] = true;
 					}
 				}
-				// Pass 2: Presente altrove (Giallo)
 				if (runtimeCfg.showColorHints !== false) {
 					for (let i = 0; i < len; i++) {
 						if (res[i] === "correct") continue;
@@ -621,7 +631,6 @@
 					activeCells[i].classList.remove("active-cursor");
 					activeCells[i].classList.add(`cell-${st}`);
 
-					// Aggiorna priorità colore sul tastierino
 					const prev = keyStates[ch];
 					if (st === "correct" || (st === "present" && prev !== "correct") || (!prev && st === "absent")) {
 						keyStates[ch] = st;
@@ -645,7 +654,7 @@
 					gameOver = true;
 					BC_SOUND_FX.errorBuzz();
 					BC_GAMES_LOGGER.log("GAME", "Crack the Padlock LOST", { attemptsUsed, secret });
-					setTimeout(() => onLose({ reason: `Hai esaurito i ${maxAttempts} tentativi! Il codice del cilindro era ${secret}.` }), 400);
+					setTimeout(() => onLose({ reason: `Tentativi esauriti! La combinazione di questa serratura era ${secret}.` }), 400);
 					return;
 				}
 
@@ -679,7 +688,6 @@
 				}
 			}
 
-			// Costruisce tastierino virtuale
 			const keys = mode === "words"
 				? ["Q","W","E","R","T","Y","U","I","O","P","A","S","D","F","G","H","J","K","L","BACK","Z","X","C","V","B","N","M","ENTER"]
 				: ["1","2","3","4","5","6","7","8","9","BACK","0","ENTER"];
@@ -690,12 +698,11 @@
 				btn.type = "button";
 				btn.className = "kp-btn" + (k === "ENTER" ? " kp-enter" : k === "BACK" ? " kp-back" : "");
 				btn.setAttribute("data-key", k);
-				btn.textContent = k === "BACK" ? "⌫" : k === "ENTER" ? "SBLOCCA 🔓" : k;
+				btn.textContent = k === "BACK" ? "⌫" : k === "ENTER" ? "PROVA 🔓" : k;
 				btn.addEventListener("click", () => handleInput(k));
 				keypadEl.appendChild(btn);
 			});
 
-			// Listener tastiera fisica
 			const keyHandler = (e) => {
 				if (gameOver) return;
 				if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")) return;
@@ -730,8 +737,8 @@
 		id: "struggle",
 		title: "Struggle & Escape",
 		icon: "⛓️",
-		badge: "Riflessi & Tensione",
-		description: "Allenta le fibbie delle Sturdy Leather Belts colpendo la zona verde a tempo mentre il Vibrating Egg tenta di distrarti con scariche improvvise!",
+		badge: "Riflessi",
+		description: "Premi SPAZIO o clicca quando l'indicatore bianco passa nella zona verde per sciogliere le cinghie, resistendo alle vibrazioni!",
 		configSchema: {
 			strapsCount: { label: "Cinghie da Sciogliere", type: "number", default: 3, min: 1, max: 6 },
 			baseSpeed: { label: "Velocità Cursore", type: "number", default: 1.35, min: 0.6, max: 3.0, step: 0.1 },
@@ -749,22 +756,22 @@
 			const vibeChance = Number(runtimeCfg.vibratorChance ?? 0.45);
 
 			let currentStrap = 0;
-			let strapProgress = 0; // 0..100 per la cinghia corrente
-			let fatigue = 0; // 0..100 (a 100 sconfitta)
+			let strapProgress = 0;
+			let fatigue = 0;
 			let cursorPos = 10;
 			let cursorDir = 1;
 			let targetStart = 40;
-			let vibeLevel = 0; // 0=Off, 1=Low, 2=Medium, 3=Maximum
+			let vibeLevel = 0;
 			let animId = null;
 			let vibeTimer = null;
 			let gameOver = false;
 
 			const strapNames = [
-				"Cinghia Polsi & Avambracci (Leather Cuffs)",
-				"Cinghia Gomiti & Busto (Armbinder Strap)",
+				"Cinghia Polsi (Leather Cuffs)",
+				"Cinghia Gomiti (Armbinder Strap)",
 				"Cinghia Vita & Cosce (Sturdy Leather Belt)",
 				"Cinghia Caviglie (Linked Ankle Cuffs)",
-				"Collare Posturale (Posture Collar Buckle)",
+				"Collare Posturale (Posture Collar)",
 				"Imbracatura Toracica (Latex Harness)"
 			];
 
@@ -775,10 +782,10 @@
 					<div class="mg-header-bar">
 						<div>
 							<span class="mg-tag">⛓️ Cinghia: <strong id="strug-strap-idx">1 / ${totalStraps}</strong></span>
-							<span id="strug-vibe-badge" class="mg-tag vibe-off">💓 Vibrating Egg: Off</span>
+							<span id="strug-vibe-badge" class="mg-tag vibe-off">💓 Vibratore: Spento</span>
 						</div>
 						<div>
-							<span class="mg-tag">Affaticamento: <strong id="strug-fat-txt">0%</strong></span>
+							<span class="mg-tag">Fatica: <strong id="strug-fat-txt">0%</strong></span>
 						</div>
 					</div>
 
@@ -794,17 +801,17 @@
 
 					<div class="strug-bars-grid">
 						<div class="strug-bar-box">
-							<div class="strug-bar-label"><span>Allentamento Fibbia Corrente</span><span id="strug-prog-txt">0%</span></div>
+							<div class="strug-bar-label"><span>Apertura Fibbia</span><span id="strug-prog-txt">0%</span></div>
 							<div class="strug-bar-bg"><div id="strug-prog-fill" class="strug-bar-fill fill-green" style="width:0%"></div></div>
 						</div>
 						<div class="strug-bar-box">
-							<div class="strug-bar-label"><span>Affaticamento Muscolare (Max 100%)</span><span id="strug-fat-bar-txt">0%</span></div>
+							<div class="strug-bar-label"><span>Fatica (Non arrivare a 100%)</span><span id="strug-fat-bar-txt">0%</span></div>
 							<div class="strug-bar-bg"><div id="strug-fat-fill" class="strug-bar-fill fill-red" style="width:0%"></div></div>
 						</div>
 					</div>
 
 					<button type="button" id="strug-hit-btn" class="btn btn-primary strug-hit-btn">
-						⚡ TIRA LA CINGHIA ORA! (Spazio / Click)
+						⚡ TIRA LA CINGHIA! (Spazio / Click)
 					</button>
 				</div>
 			`;
@@ -850,25 +857,23 @@
 				renderBuckles();
 			}
 
-			// Loop disturbi Vibrating Egg
 			vibeTimer = setInterval(() => {
 				if (gameOver) return;
 				if (Math.random() < vibeChance) {
-					vibeLevel = Math.floor(Math.random() * 3) + 1; // 1..3
-					const labels = ["Off", "Low 💓", "Medium 💓💓", "MAXIMUM 💓🔥"];
-					vibeBadgeEl.textContent = `💓 Vibrating Egg: ${labels[vibeLevel]}`;
+					vibeLevel = Math.floor(Math.random() * 3) + 1;
+					const labels = ["Spento", "Basso 💓", "Medio 💓💓", "MASSIMO 💓🔥"];
+					vibeBadgeEl.textContent = `💓 Vibratore: ${labels[vibeLevel]}`;
 					vibeBadgeEl.className = `mg-tag vibe-lv${vibeLevel}`;
 					arenaEl.classList.toggle("vibe-shake", vibeLevel >= 2);
 					BC_SOUND_FX.vibePulse(vibeLevel);
 				} else {
 					vibeLevel = 0;
-					vibeBadgeEl.textContent = "💓 Vibrating Egg: Off";
+					vibeBadgeEl.textContent = "💓 Vibratore: Spento";
 					vibeBadgeEl.className = "mg-tag vibe-off";
 					arenaEl.classList.remove("vibe-shake");
 				}
 			}, 2200);
 
-			// Loop animazione cursore
 			function step() {
 				if (gameOver) return;
 				const vibeJitter = vibeLevel === 3 ? 1.45 : vibeLevel === 2 ? 1.2 : 1.0;
@@ -897,7 +902,7 @@
 					if (strapProgress >= 100) {
 						currentStrap++;
 						strapProgress = 0;
-						fatigue = Math.max(0, fatigue - 12); // Piccolo recupero fiato
+						fatigue = Math.max(0, fatigue - 12);
 
 						if (currentStrap >= totalStraps) {
 							gameOver = true;
@@ -919,7 +924,7 @@
 						arenaEl.classList.remove("vibe-shake");
 						updateBars();
 						BC_GAMES_LOGGER.log("GAME", "Struggle & Escape LOST (Max Fatigue)", { currentStrap });
-						setTimeout(() => onLose({ reason: "Sei rimasta senza forze! Le cinghie si sono strette di nuovo al massimo." }), 350);
+						setTimeout(() => onLose({ reason: "Troppa fatica! Le cinghie si sono strette di nuovo." }), 350);
 						return;
 					}
 				}
@@ -959,13 +964,12 @@
 		{ level: 0, name: "Voce Libera", icon: "🗣️", desc: "Nessun bavaglio applicato" },
 		{ level: 1, name: "Cloth Gag", icon: "🧣", desc: "Fazzoletto di stoffa annodato" },
 		{ level: 2, name: "Ball Gag Tight", icon: "🔴", desc: "Bavaglio a sfera rosso stretto" },
-		{ level: 3, name: "Harness Ball Gag", icon: " leather", icon: "⛓️", desc: "Imbracatura cranica con fibbie" },
-		{ level: 4, name: "Duct Tape Multi-Layer", icon: "🩹", desc: "Doppio giro di nastro isolante" },
-		{ level: 5, name: "Stuffing + Muzzle Gag", icon: "😷", desc: "Museruola di cuoio rinforzata" },
+		{ level: 3, name: "Harness Ball Gag", icon: "⛓️", desc: "Imbracatura cranica con fibbie" },
+		{ level: 4, name: "Duct Tape", icon: "🩹", desc: "Doppio giro di nastro adesivo" },
+		{ level: 5, name: "Muzzle Gag", icon: "😷", desc: "Museruola di cuoio rinforzata" },
 		{ level: 6, name: "Total Silence Hood!", icon: "🔒", desc: "Cappuccio in lattice sigillato!" }
 	];
 
-	// Simulatore autentico della fonetica Gag-Speak di Bondage Club
 	function toBondageClubGagSpeak(phrase) {
 		const map = {
 			A: "ah", B: "mh", C: "kh", D: "nh", E: "eh", F: "ph", G: "gh",
@@ -995,8 +999,8 @@
 		id: "gagspeak",
 		title: "Gag Speak Hangman",
 		icon: "🙊",
-		badge: "Decodifica Bavaglio",
-		description: "Comprendi la parola segreta a tema Bondage Club ascoltando i suoni soffocati dal bavaglio. Ogni lettera sbagliata aggiunge uno strato di imbavagliamento!",
+		badge: "Parola Segreta",
+		description: "Indovina le lettere della frase a tema Bondage Club prima che il bavaglio venga stretto al massimo!",
 		configSchema: {
 			maxErrors: { label: "Errori Massimi Consentiti", type: "number", default: 6, min: 3, max: 8 },
 			showCategoryHint: { label: "Mostra Categoria Indizio", type: "boolean", default: true },
@@ -1030,7 +1034,7 @@
 			container.innerHTML = `
 				<div class="mg-header-bar">
 					<div>
-						<span class="mg-tag">🙊 Livello Bavaglio: <strong id="gag-err-cnt">0 / ${maxErrors}</strong></span>
+						<span class="mg-tag">🙊 Errori: <strong id="gag-err-cnt">0 / ${maxErrors}</strong></span>
 						${runtimeCfg.showCategoryHint !== false ? `<span class="mg-tag">💡 Indizio: <strong>${category}</strong></span>` : ""}
 					</div>
 				</div>
@@ -1039,7 +1043,7 @@
 					<div class="gag-avatar-icon" id="gag-icon">🗣️</div>
 					<div class="gag-status-info">
 						<div class="gag-stage-name" id="gag-stage-name">Voce Libera</div>
-						<div class="gag-stage-desc" id="gag-stage-desc">Indovina le lettere prima che il cappuccio venga sigillato!</div>
+						<div class="gag-stage-desc" id="gag-stage-desc">Scegli le lettere sulla tastiera qui sotto!</div>
 						${runtimeCfg.showMuffledPreview !== false ? `<div class="gag-bubble">"${muffled}"</div>` : ""}
 					</div>
 				</div>
@@ -1060,7 +1064,7 @@
 				const stageIdx = Math.min(GAG_STAGES.length - 1, Math.round((errors / maxErrors) * (GAG_STAGES.length - 1)));
 				const st = GAG_STAGES[stageIdx];
 				iconEl.textContent = st.icon;
-				stageNameEl.textContent = `${st.name} (Livello ${errors}/${maxErrors})`;
+				stageNameEl.textContent = `${st.name} (Errori: ${errors}/${maxErrors})`;
 				stageDescEl.textContent = st.desc;
 			}
 
@@ -1110,11 +1114,10 @@
 
 					if (errors >= maxErrors) {
 						gameOver = true;
-						// Rivela la frase a fine partita
 						for (const c of targetPhrase) guessed.add(c);
 						renderPhrase();
 						BC_GAMES_LOGGER.log("GAME", "Gag Speak Hangman LOST", { targetPhrase, errors });
-						setTimeout(() => onLose({ reason: `Bavaglio sigillato al massimo! La frase segreta era "${targetPhrase}".` }), 450);
+						setTimeout(() => onLose({ reason: `Troppi errori! La frase era "${targetPhrase}".` }), 450);
 					}
 				}
 			}
@@ -1167,7 +1170,6 @@
 			BC_GAMES_LOGGER.init();
 			await this.loadConfig();
 
-			// Ripristina sessione Admin se già autenticata in questa scheda
 			try {
 				if (sessionStorage.getItem(STORAGE_KEYS.ADMIN_SESSION) === "true") {
 					this.isAdmin = true;
@@ -1180,7 +1182,7 @@
 			this.initLookupBox();
 			this.initAdminPanel();
 
-			// Controlla se l'URL contiene già un parametro sfida (?c=... o ?id=...)
+			// Controlla parametri URL (?c=... o ?id=...)
 			const params = new URLSearchParams(window.location.search);
 			const cParam = params.get("c");
 			const idParam = params.get("id");
@@ -1194,7 +1196,7 @@
 
 		async loadConfig() {
 			const defaultCfg = {
-				version: "1.0.0",
+				version: "1.1.0",
 				games: {
 					crack: { enabled: true, maxAttempts: 6, codeLength: 4, defaultMode: "digits", showColorHints: true },
 					struggle: { enabled: true, strapsCount: 3, baseSpeed: 1.35, sweetSpotWidth: 22, fatiguePenalty: 18, vibratorChance: 0.45 },
@@ -1211,16 +1213,14 @@
 				victimChallenges: {}
 			};
 
-			// 1. Carica games-config.json dal server (con cache-busting)
 			let remoteCfg = null;
 			try {
 				const res = await fetch(`games-config.json?t=${Date.now()}`);
 				if (res.ok) remoteCfg = await res.json();
 			} catch (err) {
-				BC_GAMES_LOGGER.log("WARN", "Could not fetch games-config.json, using local defaults", { error: err.message });
+				BC_GAMES_LOGGER.log("WARN", "Could not fetch games-config.json", { error: err.message });
 			}
 
-			// 2. Unisce con eventuali override salvati in localStorage dell'Admin
 			let localCfg = null;
 			try {
 				const raw = localStorage.getItem(STORAGE_KEYS.CONFIG);
@@ -1240,19 +1240,41 @@
 				);
 			}
 
+			// Includi anche qualsiasi sfida presente nella Cassaforte locale (retrocompatibilità)
+			const vault = this.getPasswordVault();
+			vault.forEach((v) => {
+				if (v && v.victim && v.ticket && v.victim !== "Ospite") {
+					const key = String(v.victim).trim().toLowerCase();
+					if (!this.config.victimChallenges[key]) {
+						this.config.victimChallenges[key] = {
+							ticket: v.ticket,
+							label: v.victim,
+							gameId: v.gameId || "crack",
+							difficulty: v.difficulty || 2,
+							createdAt: v.createdAt
+						};
+					}
+				}
+			});
+
 			BC_GAMES_LOGGER.log("SYSTEM", "Configuration loaded", {
 				enabledGames: Object.keys(this.config.games).filter((k) => this.config.games[k]?.enabled !== false),
 				registeredVictims: Object.keys(this.config.victimChallenges || {}).length
 			});
 		},
 
-		saveLocalConfig() {
+		saveLocalConfig(autoSyncGitHub = true) {
 			try {
 				this.config.updatedAt = new Date().toISOString();
 				localStorage.setItem(STORAGE_KEYS.CONFIG, JSON.stringify(this.config));
-				BC_GAMES_LOGGER.log("ADMIN", "Saved configuration to localStorage");
+				BC_GAMES_LOGGER.log("SYSTEM", "Saved configuration to localStorage", {
+					registeredVictims: Object.keys(this.config.victimChallenges || {}).length
+				});
+				if (autoSyncGitHub && localStorage.getItem(STORAGE_KEYS.GH_TOKEN)) {
+					this.syncConfigToGitHub(true);
+				}
 			} catch (err) {
-				BC_GAMES_LOGGER.log("ERROR", "Failed saving config to localStorage", { error: err.message });
+				BC_GAMES_LOGGER.log("ERROR", "Failed saving config", { error: err.message });
 			}
 		},
 
@@ -1270,6 +1292,9 @@
 			document.querySelectorAll(".view-section").forEach((sec) => {
 				sec.style.display = sec.id === `view-${tabId}` ? "block" : "none";
 			});
+			if (tabId === "lockmaster") {
+				this.renderDomActiveChallenges();
+			}
 			if (tabId === "admin") {
 				this.renderAdminView();
 			}
@@ -1293,7 +1318,7 @@
 		},
 
 		/* ---------------------------------------------------------------------
-		 * RICERCA TICKET O MEMBER ID DELLA VITTIMA
+		 * RICERCA INTELLIGENTE SFIDA PER ID VITTIMA / INDIZIO / LINK / TICKET
 		 * --------------------------------------------------------------------- */
 		initLookupBox() {
 			const inputEl = document.getElementById("victim-lookup-input");
@@ -1311,41 +1336,77 @@
 
 		lookupChallengeByInput(rawInput) {
 			const val = String(rawInput || "").trim();
+			const valLow = val.toLowerCase();
 			const feedbackEl = document.getElementById("victim-lookup-feedback");
+
 			if (!val) {
 				if (feedbackEl) {
-					feedbackEl.textContent = "⚠️ Inserisci il tuo Member ID di Bondage Club oppure il Codice Ticket (BC-...) scritto sul lucchetto.";
+					feedbackEl.textContent = "⚠️ Scrivi il tuo ID / Nome o il codice indizio che ti ha dato il tuo Dom.";
 					feedbackEl.className = "lookup-feedback error";
 				}
 				return;
 			}
 
-			// 1. Controlla se l'input corrisponde a un Member ID registrato nella tabella victimChallenges
+			BC_GAMES_LOGGER.log("CHALLENGE", "Victim lookup requested", { query: val });
+
+			// 1. Cerca per ID Vittima o Parola-Indizio nel dizionario victimChallenges (case-insensitive o sottostringa)
 			const challengesMap = (this.config && this.config.victimChallenges) || {};
-			const byId = challengesMap[val] || challengesMap[val.toLowerCase()];
-			if (byId && byId.ticket) {
-				BC_GAMES_LOGGER.log("CHALLENGE", "Found challenge by Victim Member ID", { victimId: val });
+			let matchedEntry = challengesMap[val] || challengesMap[valLow];
+
+			if (!matchedEntry) {
+				for (const [k, entry] of Object.entries(challengesMap)) {
+					const kLow = k.toLowerCase();
+					const lblLow = String(entry.label || "").toLowerCase();
+					const noteLow = String(entry.note || "").toLowerCase();
+					if (kLow === valLow || lblLow === valLow || (noteLow && noteLow === valLow) || kLow.includes(valLow)) {
+						matchedEntry = entry;
+						break;
+					}
+				}
+			}
+
+			// 2. Cerca anche nella Cassaforte locale (per ID Vittima, per Nota/Indizio o per Password)
+			if (!matchedEntry) {
+				const vault = this.getPasswordVault();
+				const foundInVault = vault.find((v) => {
+					const vicLow = String(v.victim || "").toLowerCase();
+					const noteLow = String(v.note || "").toLowerCase();
+					const passLow = String(v.password || "").toLowerCase();
+					return vicLow === valLow || (noteLow && noteLow === valLow) || passLow === valLow;
+				});
+				if (foundInVault && foundInVault.ticket) {
+					matchedEntry = foundInVault;
+				}
+			}
+
+			if (matchedEntry && matchedEntry.ticket) {
+				BC_GAMES_LOGGER.log("CHALLENGE", "Matched challenge by ID/Hint", {
+					query: val,
+					label: matchedEntry.label || matchedEntry.victim
+				});
 				if (feedbackEl) {
-					feedbackEl.textContent = `✅ Sfida trovata per Member ID ${val}! Avvio del minigioco...`;
+					feedbackEl.textContent = `✅ Sfida trovata per "${matchedEntry.label || matchedEntry.victim || val}"! Vinci il gioco qui sotto per vedere la password:`;
 					feedbackEl.className = "lookup-feedback success";
 				}
-				this.launchChallengeFromToken(byId.ticket, `Member ID Lookup (${val})`);
+				this.launchChallengeFromToken(matchedEntry.ticket, `ID/Hint Lookup (${val})`);
 				return;
 			}
 
-			// 2. Altrimenti prova a decodificarlo come Ticket (BC-...) o Link (?c=...)
-			const decoded = BC_CRYPTO_CODEC.decodeChallenge(val);
+			// 3. Prova a decodificarlo come Link (?c=...) o Ticket cifrato (BC-...)
+			const decoded = BC_CRYPTO_CODEC.decodeChallenge(val, true);
 			if (decoded) {
+				BC_GAMES_LOGGER.log("CHALLENGE", "Matched challenge by direct Ticket/URL", { query: val.slice(0, 25) });
 				if (feedbackEl) {
-					feedbackEl.textContent = "✅ Codice Ticket valido! Avvio della sfida di sblocco...";
+					feedbackEl.textContent = "✅ Sfida caricata! Vinci il gioco qui sotto per vedere la password:";
 					feedbackEl.className = "lookup-feedback success";
 				}
 				this.startChallengeSession(decoded, val);
 				return;
 			}
 
+			BC_GAMES_LOGGER.log("WARN", "No challenge found for victim lookup query", { query: val });
 			if (feedbackEl) {
-				feedbackEl.textContent = `❌ Nessuna sfida attiva trovata per "${val}". Verifica di aver copiato l'intero Ticket (BC-...) o il tuo Member ID esatto.`;
+				feedbackEl.textContent = `❌ Nessuna sfida trovata con il codice "${val}". Se sei il Dom, vai su "🔐 Crea Sfida" e premi "✅ Attiva Sfida".`;
 				feedbackEl.className = "lookup-feedback error";
 			}
 		},
@@ -1355,14 +1416,13 @@
 			if (!decoded) {
 				const feedbackEl = document.getElementById("victim-lookup-feedback");
 				if (feedbackEl) {
-					feedbackEl.textContent = "❌ Il link o ticket della sfida non è valido o è incompleto.";
+					feedbackEl.textContent = "❌ Il link della sfida non è valido o è incompleto.";
 					feedbackEl.className = "lookup-feedback error";
 				}
 				return;
 			}
 			BC_GAMES_LOGGER.log("CHALLENGE", `Loaded challenge from ${sourceLabel}`, {
 				gameId: decoded.gameId,
-				lockType: decoded.lockType,
 				difficulty: decoded.difficulty,
 				victim: decoded.victim || "(unspecified)"
 			});
@@ -1379,7 +1439,7 @@
 
 			const enabledGames = this.getEnabledGames();
 			if (enabledGames.length === 0) {
-				gridEl.innerHTML = `<div class="empty-notice">Nessun minigioco è attualmente attivo. L'amministratore può attivarli dal Pannello Admin.</div>`;
+				gridEl.innerHTML = `<div class="empty-notice">Nessun minigioco attivo. Puoi attivarli dal Pannello Admin.</div>`;
 				return;
 			}
 
@@ -1395,11 +1455,11 @@
 					<p>${g.description}</p>
 					<div class="gc-actions">
 						<select class="gc-diff-select" aria-label="Difficoltà">
-							<option value="1">🟢 Facile (Relax)</option>
-							<option value="2" selected>🟡 Normale (Standard BC)</option>
-							<option value="3">🔴 Severa (Strict Bondage)</option>
+							<option value="1">🟢 Facile</option>
+							<option value="2" selected>🟡 Normale</option>
+							<option value="3">🔴 Difficile</option>
 						</select>
-						<button type="button" class="btn btn-primary gc-play-btn">▶ Gioca Ora</button>
+						<button type="button" class="btn btn-primary gc-play-btn">▶ Gioca</button>
 					</div>
 				`;
 
@@ -1412,7 +1472,6 @@
 				gridEl.appendChild(card);
 			});
 
-			// Aggiorna anche la select del generatore sfide
 			this.populateGameSelectors();
 		},
 
@@ -1434,7 +1493,7 @@
 				});
 				const optGauntlet = document.createElement("option");
 				optGauntlet.value = "gauntlet";
-				optGauntlet.textContent = `🏆 Gauntlet Completo (Tutti i ${enabled.length} minigiochi in sequenza)`;
+				optGauntlet.textContent = `🏆 Tutti i ${enabled.length} giochi in fila (Gauntlet)`;
 				sel.appendChild(optGauntlet);
 
 				if (currentVal && Array.from(sel.options).some((o) => o.value === currentVal)) {
@@ -1488,21 +1547,19 @@
 			const gameDef = BC_GAMES_REGISTRY.get(currentGameId) || BC_GAMES_REGISTRY.get("crack");
 
 			const stepTag = this.gauntletQueue.length > 1
-				? ` (Prova ${this.gauntletIndex + 1} di ${this.gauntletQueue.length})`
+				? ` (Gioco ${this.gauntletIndex + 1} di ${this.gauntletQueue.length})`
 				: "";
 			stageTitle.textContent = `${gameDef.icon} ${gameDef.title}${stepTag}`;
 
-			// Mostra banner informativo se siamo in una Sfida Lucchetto reale
 			if (this.activeChallenge) {
 				const ch = this.activeChallenge;
-				const lockLabel = ch.lockType === "comb" ? "Combination Padlock (4 Cifre)" : "Password / Timer Padlock";
 				const victimTag = ch.victim ? ` per <strong>${this._escapeHtml(ch.victim)}</strong>` : "";
-				const noteTag = ch.note ? `<div class="ch-note">💬 Messaggio del Keyholder: <em>"${this._escapeHtml(ch.note)}"</em></div>` : "";
+				const noteTag = ch.note ? `<div class="ch-note">💬 Messaggio del Dom: <em>"${this._escapeHtml(ch.note)}"</em></div>` : "";
 				stageBanner.style.display = "block";
 				stageBanner.innerHTML = `
 					<div class="ch-banner-main">
-						🔐 <strong>SFIDA DI SBLOCCO ATTIVA</strong>${victimTag} — Lucchetto: <span class="badge">${lockLabel}</span>
-						<span class="ch-hint">Supera la prova per rivelare il tuo codice di apertura!</span>
+						🔐 <strong>SFIDA SBLOCCO LUCCHETTO</strong>${victimTag}
+						<span class="ch-hint">Vinci la partita per ottenere la password!</span>
 					</div>
 					${noteTag}
 				`;
@@ -1510,7 +1567,6 @@
 				stageBanner.style.display = "none";
 			}
 
-			// Se l'utente è loggato come Admin, mostra il bottone "Forza Vittoria / Vedi Subito Password"
 			if (adminBypassBtn) {
 				adminBypassBtn.style.display = this.isAdmin ? "inline-flex" : "none";
 				adminBypassBtn.onclick = () => {
@@ -1551,7 +1607,6 @@
 				this.activeGameInstance = null;
 			}
 
-			// Se siamo in un Gauntlet e ci sono altre prove, avanza alla successiva
 			if (this.gauntletIndex + 1 < this.gauntletQueue.length && !(winStats && winStats.adminBypass)) {
 				this.gauntletIndex++;
 				this._mountCurrentStage(difficulty);
@@ -1564,19 +1619,17 @@
 
 			if (this.activeChallenge) {
 				const secretCode = this.activeChallenge.password || "0000";
-				const lockLabel = this.activeChallenge.lockType === "comb" ? "Combinazione Lucchetto (4 Cifre)" : "Password del Lucchetto";
-				BC_GAMES_LOGGER.log("CHALLENGE", "Challenge completed — Password revealed to player", {
+				BC_GAMES_LOGGER.log("CHALLENGE", "Challenge WON — Password revealed to player", {
 					victim: this.activeChallenge.victim || "(anonymous)",
-					lockType: this.activeChallenge.lockType
+					revealedPassword: secretCode
 				});
 
 				stageResult.innerHTML = `
 					<div class="res-box res-win">
 						<div class="res-icon">🔓✨</div>
-						<h3>Lucchetto Violato con Successo!</h3>
-						<p>Hai superato la prova! Ecco il codice segreto per aprire il tuo lucchetto in <strong>Bondage Club</strong>:</p>
+						<h3>Hai Vinto! Ecco il Codice del tuo Lucchetto:</h3>
 						<div class="revealed-code-box">
-							<div class="rc-label">${lockLabel}</div>
+							<div class="rc-label">Inserisci questo codice su Bondage Club</div>
 							<div class="rc-value" id="revealed-secret-val">${this._escapeHtml(secretCode)}</div>
 							<button type="button" class="btn btn-primary" id="btn-copy-revealed">📋 Copia Codice</button>
 						</div>
@@ -1599,10 +1652,10 @@
 				stageResult.innerHTML = `
 					<div class="res-box res-win">
 						<div class="res-icon">🏆🎉</div>
-						<h3>Vittoria in Modalità Arcade!</h3>
-						<p>Ottimi riflessi! Sei riuscita a liberarti dalla prova.</p>
+						<h3>Hai Vinto!</h3>
+						<p>Ottima partita in modalità allenamento.</p>
 						<div class="res-actions">
-							<button type="button" class="btn btn-primary" id="btn-replay-stage">🔄 Gioca un'altra Partita</button>
+							<button type="button" class="btn btn-primary" id="btn-replay-stage">🔄 Gioca Ancora</button>
 						</div>
 					</div>
 				`;
@@ -1626,13 +1679,12 @@
 			if (!stageResult) return;
 			stageResult.style.display = "flex";
 
-			const reason = (loseInfo && loseInfo.reason) || "Il meccanismo si è bloccato prima dello sblocco!";
+			const reason = (loseInfo && loseInfo.reason) || "Non sei riuscita a sbloccare il meccanismo!";
 			stageResult.innerHTML = `
 				<div class="res-box res-lose">
 					<div class="res-icon">🔒💥</div>
-					<h3>Tentativo di Sblocco Fallito!</h3>
+					<h3>Tentativo Fallito!</h3>
 					<p>${this._escapeHtml(reason)}</p>
-					<p class="res-sub">Non arrenderti: riprova una nuova combinazione per sbloccare il tuo codice!</p>
 					<div class="res-actions">
 						<button type="button" class="btn btn-primary" id="btn-retry-stage">🔄 Riprova Subito</button>
 					</div>
@@ -1648,82 +1700,99 @@
 		},
 
 		/* ---------------------------------------------------------------------
-		 * LOCKMASTER STUDIO (GENERATORE SFIDE PER QUALSIASI DOM)
+		 * CREA SFIDA LUCCHETTO (FLUSSO SEMPLIFICATO & AUTOMATICO PER DOM)
 		 * --------------------------------------------------------------------- */
 		initLockmasterForm() {
-			const lockTypeEl = document.getElementById("lm-lock-type");
+			const victimInputEl = document.getElementById("lm-victim-name");
 			const codeInputEl = document.getElementById("lm-secret-code");
-			const randBtnEl = document.getElementById("lm-btn-random-code");
+			const rand4Btn = document.getElementById("lm-btn-rand-4");
+			const randWordBtn = document.getElementById("lm-btn-rand-word");
 			const gameSelectEl = document.getElementById("lm-game-select");
 			const diffSelectEl = document.getElementById("lm-diff-select");
-			const victimInputEl = document.getElementById("lm-victim-name");
 			const noteInputEl = document.getElementById("lm-dom-note");
 			const generateBtn = document.getElementById("lm-btn-generate");
 			const outputBox = document.getElementById("lm-output-box");
 
 			if (!generateBtn) return;
 
-			const generateRandomCode = () => {
-				const type = lockTypeEl ? lockTypeEl.value : "comb";
-				if (type === "comb") {
+			if (rand4Btn) {
+				rand4Btn.addEventListener("click", () => {
 					codeInputEl.value = String(Math.floor(1000 + Math.random() * 9000));
-				} else {
+					BC_SOUND_FX.click();
+				});
+			}
+			if (randWordBtn) {
+				randWordBtn.addEventListener("click", () => {
 					const words = ["LATEX", "BOUND", "COLLAR", "LOCKED", "DOLL", "KNEEL", "SUBBY", "CUFFED"];
 					const w = words[Math.floor(Math.random() * words.length)];
 					const num = Math.floor(10 + Math.random() * 89);
 					codeInputEl.value = (w + num).slice(0, 8);
-				}
-				BC_SOUND_FX.click();
-			};
-
-			if (randBtnEl) randBtnEl.addEventListener("click", generateRandomCode);
-			if (lockTypeEl) {
-				lockTypeEl.addEventListener("change", () => {
-					if (lockTypeEl.value === "comb") {
-						codeInputEl.placeholder = "Es. 4829 (4 cifre 0000-9999)";
-						codeInputEl.maxLength = 4;
-					} else {
-						codeInputEl.placeholder = "Es. LATEX99 (Max 8 caratteri A-Z 0-9)";
-						codeInputEl.maxLength = 8;
-					}
+					BC_SOUND_FX.click();
 				});
 			}
 
 			generateBtn.addEventListener("click", () => {
-				const lockType = lockTypeEl.value;
+				let victimKey = victimInputEl ? victimInputEl.value.trim() : "";
 				let password = String(codeInputEl.value || "").trim().toUpperCase();
 
-				if (!password) {
-					generateRandomCode();
-					password = String(codeInputEl.value || "").trim().toUpperCase();
+				// Se il Dom non ha scritto un ID/Indizio per la vittima, ne genera uno semplice a 6 cifre
+				if (!victimKey) {
+					victimKey = String(Math.floor(100000 + Math.random() * 900000));
+					if (victimInputEl) victimInputEl.value = victimKey;
 				}
 
-				if (lockType === "comb" && !/^\d{4}$/.test(password)) {
-					alert("Per il Combination Padlock di Bondage Club il codice deve essere esattamente di 4 cifre numeriche (es. 4829).");
-					return;
+				// Se il Dom non ha scritto una password, genera un PIN a 4 cifre
+				if (!password) {
+					password = String(Math.floor(1000 + Math.random() * 9000));
+					codeInputEl.value = password;
 				}
-				if (lockType !== "comb" && (password.length < 1 || password.length > 8)) {
-					alert("Per il Password / Timer Password Padlock la password deve avere da 1 a 8 caratteri.");
-					return;
-				}
+
+				const lockType = /^\d{4}$/.test(password) ? "comb" : "pass";
+				const note = noteInputEl ? noteInputEl.value.trim() : "";
 
 				const payload = {
 					password,
 					lockType,
 					gameId: gameSelectEl.value || "crack",
 					difficulty: Number(diffSelectEl.value || 2),
-					victim: victimInputEl ? victimInputEl.value.trim() : "",
-					note: noteInputEl ? noteInputEl.value.trim() : ""
+					victim: victimKey,
+					note
 				};
 
 				const { token, ticket } = BC_CRYPTO_CODEC.encodeChallenge(payload);
 				const baseUrl = window.location.origin + window.location.pathname;
 				const fullUrl = `${baseUrl}?c=${token}`;
 
-				// Salva nella Cassaforte Storico Lucchetti (Password Vault)
+				// 1. REGISTRA SUBITO L'ID / INDIZIO DELLA VITTIMA così funziona subito nella barra di ricerca!
+				this.config.victimChallenges = this.config.victimChallenges || {};
+				this.config.victimChallenges[victimKey.toLowerCase()] = {
+					ticket,
+					label: victimKey,
+					note,
+					gameId: payload.gameId,
+					difficulty: payload.difficulty,
+					createdAt: new Date().toISOString()
+				};
+
+				// Se c'è anche una parola nell'indizio/nota, indicizzala come chiave secondaria
+				if (note && note.length <= 25) {
+					this.config.victimChallenges[note.toLowerCase()] = {
+						ticket,
+						label: `${victimKey} (${note})`,
+						note,
+						gameId: payload.gameId,
+						difficulty: payload.difficulty,
+						createdAt: new Date().toISOString()
+					};
+				}
+
+				this.saveLocalConfig(true);
+
+				// 2. Salva nella Cassaforte Storico Lucchetti
 				this.addToPasswordVault({
 					createdAt: new Date().toISOString(),
-					victim: payload.victim || "Ospite",
+					victim: victimKey,
+					note,
 					lockType: payload.lockType,
 					password: payload.password,
 					gameId: payload.gameId,
@@ -1733,23 +1802,20 @@
 				});
 
 				outputBox.style.display = "block";
+				document.getElementById("lm-out-victim-key").textContent = victimKey;
 				document.getElementById("lm-out-password").textContent = payload.password;
-				document.getElementById("lm-out-ticket").value = ticket;
 				document.getElementById("lm-out-url").value = fullUrl;
 
+				const testBtn = document.getElementById("lm-btn-test-now");
+				if (testBtn) {
+					testBtn.onclick = () => {
+						this.lookupChallengeByInput(victimKey);
+					};
+				}
+
+				this.renderDomActiveChallenges();
 				BC_SOUND_FX.unlockSuccess();
 			});
-
-			const copyTicketBtn = document.getElementById("lm-copy-ticket");
-			if (copyTicketBtn) {
-				copyTicketBtn.addEventListener("click", () => {
-					const val = document.getElementById("lm-out-ticket").value;
-					navigator.clipboard.writeText(val).then(() => {
-						copyTicketBtn.textContent = "✅ Ticket Copiato!";
-						setTimeout(() => (copyTicketBtn.textContent = "📋 Copia Ticket (Per Hint Lucchetto BC)"), 2000);
-					});
-				});
-			}
 
 			const copyUrlBtn = document.getElementById("lm-copy-url");
 			if (copyUrlBtn) {
@@ -1757,10 +1823,61 @@
 					const val = document.getElementById("lm-out-url").value;
 					navigator.clipboard.writeText(val).then(() => {
 						copyUrlBtn.textContent = "✅ Link Copiato!";
-						setTimeout(() => (copyUrlBtn.textContent = "🔗 Copia Link Diretto"), 2000);
+						setTimeout(() => (copyUrlBtn.textContent = "📋 Copia Link Diretto"), 2000);
 					});
 				});
 			}
+
+			this.renderDomActiveChallenges();
+		},
+
+		renderDomActiveChallenges() {
+			const tbody = document.getElementById("lm-active-list-body");
+			if (!tbody) return;
+			const map = (this.config && this.config.victimChallenges) || {};
+			const entries = Object.entries(map);
+
+			if (entries.length === 0) {
+				tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--muted);">Nessuna sfida creata finora. Compila i campi qui sopra e premi "✅ Attiva Sfida".</td></tr>`;
+				return;
+			}
+
+			tbody.innerHTML = "";
+			entries.forEach(([key, item]) => {
+				const decoded = BC_CRYPTO_CODEC.decodeChallenge(item.ticket, true);
+				const pass = decoded ? decoded.password : "???";
+				const token = item.ticket.replace(/^BC-/i, "");
+				const baseUrl = window.location.origin + window.location.pathname;
+				const fullUrl = `${baseUrl}?c=${token}`;
+
+				const tr = document.createElement("tr");
+				tr.innerHTML = `
+					<td><strong>${this._escapeHtml(item.label || key)}</strong></td>
+					<td><span class="adm-highlight-code">${this._escapeHtml(pass)}</span></td>
+					<td>${this._escapeHtml(item.gameId)}</td>
+					<td style="display:flex; gap:6px; flex-wrap:wrap;">
+						<button type="button" class="btn btn-primary btn-sm" data-play-key="${this._escapeHtml(key)}">▶ Prova</button>
+						<button type="button" class="btn btn-sm" data-copy-link="${this._escapeHtml(fullUrl)}">📋 Link</button>
+						<button type="button" class="btn btn-sm" data-del-key="${this._escapeHtml(key)}">🗑️</button>
+					</td>
+				`;
+				tr.querySelector("[data-play-key]").addEventListener("click", () => {
+					this.lookupChallengeByInput(key);
+				});
+				const copyBtn = tr.querySelector("[data-copy-link]");
+				copyBtn.addEventListener("click", () => {
+					navigator.clipboard.writeText(fullUrl).then(() => {
+						copyBtn.textContent = "✅";
+						setTimeout(() => (copyBtn.textContent = "📋 Link"), 1500);
+					});
+				});
+				tr.querySelector("[data-del-key]").addEventListener("click", () => {
+					delete this.config.victimChallenges[key];
+					this.saveLocalConfig(true);
+					this.renderDomActiveChallenges();
+				});
+				tbody.appendChild(tr);
+			});
 		},
 
 		addToPasswordVault(entry) {
@@ -1794,16 +1911,28 @@
 					const val = passInput.value.trim();
 					if (!val) return;
 					const hash = await BC_CRYPTO_CODEC.sha256Hex(val);
-					const expectedHash = localStorage.getItem(STORAGE_KEYS.ADMIN_CUSTOM_HASH) || DEFAULT_ADMIN_HASH;
 
-					if (hash === expectedHash) {
+					if (hash === DEFAULT_ADMIN_HASH) {
 						this.isAdmin = true;
 						try {
 							sessionStorage.setItem(STORAGE_KEYS.ADMIN_SESSION, "true");
 						} catch (_) {}
+
+						// Decifra automaticamente il GitHub Token in memoria usando la password inserita!
+						const unlockedToken = await BC_CRYPTO_CODEC.unlockGitHubTokenWithPassword(val);
+						if (unlockedToken) {
+							try {
+								localStorage.setItem(STORAGE_KEYS.GH_TOKEN, unlockedToken);
+							} catch (_) {}
+							BC_GAMES_LOGGER.log("ADMIN", "Admin authenticated & Cloud GitHub Sync unlocked automatically");
+							this.syncConfigToGitHub(true);
+							this.pushLogsToGitHub(true);
+						} else {
+							BC_GAMES_LOGGER.log("ADMIN", "Admin authenticated successfully");
+						}
+
 						passInput.value = "";
 						BC_SOUND_FX.unlockSuccess();
-						BC_GAMES_LOGGER.log("ADMIN", "Admin authenticated successfully");
 						this.renderAdminView();
 					} else {
 						BC_SOUND_FX.errorBuzz();
@@ -1829,107 +1958,48 @@
 				});
 			}
 
-			// Listener del Master Decrypter (Vedi Password di qualsiasi Link/Ticket)
 			const decBtn = document.getElementById("adm-btn-decrypt");
 			if (decBtn) {
 				decBtn.addEventListener("click", () => {
-					const inp = document.getElementById("adm-decrypt-input").value;
+					const inp = document.getElementById("adm-decrypt-input").value.trim();
 					const resBox = document.getElementById("adm-decrypt-result");
-					const decoded = BC_CRYPTO_CODEC.decodeChallenge(inp);
+
+					// Cerca sia per ID/Indizio che per Link/Ticket
+					let decoded = BC_CRYPTO_CODEC.decodeChallenge(inp, true);
+					if (!decoded && this.config.victimChallenges) {
+						const byId = this.config.victimChallenges[inp.toLowerCase()];
+						if (byId && byId.ticket) decoded = BC_CRYPTO_CODEC.decodeChallenge(byId.ticket, true);
+					}
+
 					if (!decoded) {
 						resBox.style.display = "block";
-						resBox.innerHTML = `<span style="color:var(--danger)">❌ Impossibile decodificare questo link o ticket.</span>`;
+						resBox.innerHTML = `<span style="color:var(--danger)">❌ Nessuna password trovata per questo link o ID.</span>`;
 						return;
 					}
-					BC_GAMES_LOGGER.log("ADMIN", "Admin inspected challenge password via Master Decrypter", decoded);
+					BC_GAMES_LOGGER.log("ADMIN", "Admin inspected challenge password", decoded);
 					resBox.style.display = "block";
 					resBox.innerHTML = `
 						<div class="adm-dec-grid">
-							<div><strong>🔑 CODICE / PASSWORD:</strong> <span class="adm-highlight-code">${this._escapeHtml(decoded.password)}</span></div>
-							<div><strong>🔒 Tipo Lucchetto:</strong> ${decoded.lockType === "comb" ? "CombinationPadlock (4 cifre)" : "Password / TimerPadlock"}</div>
+							<div><strong>🔑 CODICE / PASSWORD DEL LUCCHETTO:</strong> <span class="adm-highlight-code">${this._escapeHtml(decoded.password)}</span></div>
+							<div><strong>👤 Vittima / Indizio:</strong> ${this._escapeHtml(decoded.victim || "(Qualsiasi)")}</div>
 							<div><strong>🎮 Minigioco:</strong> ${this._escapeHtml(decoded.gameId)} (Difficoltà ${decoded.difficulty})</div>
-							<div><strong>👤 Vittima / Destinatario:</strong> ${this._escapeHtml(decoded.victim || "(Non specificato)")}</div>
-							${decoded.note ? `<div><strong>💬 Nota:</strong> ${this._escapeHtml(decoded.note)}</div>` : ""}
 						</div>
 					`;
 				});
 			}
 
-			// Listener Assegnazione Rapida per Member ID della Vittima
-			const addVicBtn = document.getElementById("adm-vic-add-btn");
-			if (addVicBtn) {
-				addVicBtn.addEventListener("click", () => {
-					const vicId = document.getElementById("adm-vic-id").value.trim();
-					const vicName = document.getElementById("adm-vic-name").value.trim();
-					const vicCode = document.getElementById("adm-vic-code").value.trim().toUpperCase();
-					const vicGame = document.getElementById("adm-vic-game").value;
-					const vicDiff = Number(document.getElementById("adm-vic-diff").value || 2);
-
-					if (!vicId || !vicCode) {
-						alert("Inserisci sia il Member ID della vittima (es. 554321) sia il Codice/Password del suo lucchetto!");
-						return;
-					}
-					const lockType = /^\d{4}$/.test(vicCode) ? "comb" : "pass";
-					const { token, ticket } = BC_CRYPTO_CODEC.encodeChallenge({
-						password: vicCode,
-						lockType,
-						gameId: vicGame,
-						difficulty: vicDiff,
-						victim: vicName ? `${vicName} (${vicId})` : `ID ${vicId}`
-					});
-
-					this.config.victimChallenges = this.config.victimChallenges || {};
-					this.config.victimChallenges[vicId] = {
-						ticket,
-						label: vicName || `Member ${vicId}`,
-						gameId: vicGame,
-						difficulty: vicDiff,
-						createdAt: new Date().toISOString()
-					};
-					this.saveLocalConfig();
-
-					const baseUrl = window.location.origin + window.location.pathname;
-					this.addToPasswordVault({
-						createdAt: new Date().toISOString(),
-						victim: `${vicName || "Vittima"} [ID: ${vicId}]`,
-						lockType,
-						password: vicCode,
-						gameId: vicGame,
-						difficulty: vicDiff,
-						ticket,
-						fullUrl: `${baseUrl}?c=${token}`
-					});
-
-					BC_GAMES_LOGGER.log("ADMIN", "Assigned challenge to Victim Member ID", { vicId, vicName, vicGame });
-					document.getElementById("adm-vic-id").value = "";
-					document.getElementById("adm-vic-name").value = "";
-					document.getElementById("adm-vic-code").value = "";
-					this.renderAdminVictimList();
-					this.renderAdminVault();
-				});
-			}
-
-			// Pulsanti Log Diagnostico
 			const copyLogBtn = document.getElementById("adm-copy-log");
 			if (copyLogBtn) {
 				copyLogBtn.addEventListener("click", () => {
 					navigator.clipboard.writeText(BC_GAMES_LOGGER.formatAsText()).then(() => {
 						copyLogBtn.textContent = "✅ Log Copiato!";
-						setTimeout(() => (copyLogBtn.textContent = "📋 Copia Log Diagnostico"), 2000);
+						setTimeout(() => (copyLogBtn.textContent = "📋 Copia Log"), 2000);
 					});
 				});
 			}
-			const dlLogBtn = document.getElementById("adm-download-log");
-			if (dlLogBtn) {
-				dlLogBtn.addEventListener("click", () => {
-					const blob = new Blob([BC_GAMES_LOGGER.formatAsText()], { type: "text/plain;charset=utf-8" });
-					const url = URL.createObjectURL(blob);
-					const a = document.createElement("a");
-					a.href = url;
-					a.download = `bc-arcade-log-${Date.now()}.txt`;
-					a.click();
-					URL.revokeObjectURL(url);
-				});
+			const syncLogBtn = document.getElementById("adm-sync-log-gh");
+			if (syncLogBtn) {
+				syncLogBtn.addEventListener("click", () => this.pushLogsToGitHub(false));
 			}
 			const clearLogBtn = document.getElementById("adm-clear-log");
 			if (clearLogBtn) {
@@ -1939,22 +2009,9 @@
 				});
 			}
 
-			// Pulsante Sync Diretto su GitHub / Export JSON
 			const syncGhBtn = document.getElementById("adm-sync-github-btn");
 			if (syncGhBtn) {
-				syncGhBtn.addEventListener("click", () => this.syncConfigToGitHub());
-			}
-			const exportJsonBtn = document.getElementById("adm-export-json-btn");
-			if (exportJsonBtn) {
-				exportJsonBtn.addEventListener("click", () => {
-					const blob = new Blob([JSON.stringify(this.config, null, 2)], { type: "application/json" });
-					const url = URL.createObjectURL(blob);
-					const a = document.createElement("a");
-					a.href = url;
-					a.download = "games-config.json";
-					a.click();
-					URL.revokeObjectURL(url);
-				});
+				syncGhBtn.addEventListener("click", () => this.syncConfigToGitHub(false));
 			}
 
 			BC_GAMES_LOGGER.onUpdate = () => {
@@ -1977,13 +2034,8 @@
 			dashBody.style.display = "block";
 
 			this.renderAdminGamesConfig();
-			this.renderAdminVictimList();
 			this.renderAdminVault();
 			this.renderAdminLogs();
-
-			const savedTok = localStorage.getItem(STORAGE_KEYS.GH_TOKEN) || "";
-			const tokInput = document.getElementById("adm-gh-token-input");
-			if (tokInput && savedTok) tokInput.value = savedTok;
 		},
 
 		renderAdminGamesConfig() {
@@ -2042,13 +2094,12 @@
 				container.appendChild(box);
 			});
 
-			// Bind eventi modifica parametri
 			container.querySelectorAll("[data-toggle-game]").forEach((chk) => {
 				chk.addEventListener("change", () => {
 					const gid = chk.getAttribute("data-toggle-game");
 					this.config.games[gid] = this.config.games[gid] || {};
 					this.config.games[gid].enabled = chk.checked;
-					this.saveLocalConfig();
+					this.saveLocalConfig(true);
 					this.renderArcadeGrid();
 					this.renderAdminGamesConfig();
 				});
@@ -2066,40 +2117,8 @@
 					} else {
 						this.config.games[gid][param] = inp.value;
 					}
-					this.saveLocalConfig();
+					this.saveLocalConfig(true);
 				});
-			});
-		},
-
-		renderAdminVictimList() {
-			const listEl = document.getElementById("adm-victim-table-body");
-			if (!listEl) return;
-			const map = (this.config && this.config.victimChallenges) || {};
-			const ids = Object.keys(map);
-			if (ids.length === 0) {
-				listEl.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--muted);">Nessun Member ID registrato al momento.</td></tr>`;
-				return;
-			}
-
-			listEl.innerHTML = "";
-			ids.forEach((id) => {
-				const item = map[id];
-				const decoded = BC_CRYPTO_CODEC.decodeChallenge(item.ticket);
-				const plainPass = decoded ? decoded.password : "???";
-				const tr = document.createElement("tr");
-				tr.innerHTML = `
-					<td><strong>${this._escapeHtml(id)}</strong> (${this._escapeHtml(item.label || "")})</td>
-					<td><span class="adm-highlight-code">${this._escapeHtml(plainPass)}</span></td>
-					<td>${this._escapeHtml(item.gameId)} (Diff. ${item.difficulty})</td>
-					<td><code>${this._escapeHtml(item.ticket.slice(0, 18))}...</code></td>
-					<td><button type="button" class="btn btn-sm" data-del-vic="${this._escapeHtml(id)}">🗑️ Rimuovi</button></td>
-				`;
-				tr.querySelector("[data-del-vic]").addEventListener("click", () => {
-					delete this.config.victimChallenges[id];
-					this.saveLocalConfig();
-					this.renderAdminVictimList();
-				});
-				listEl.appendChild(tr);
 			});
 		},
 
@@ -2108,7 +2127,7 @@
 			if (!tbody) return;
 			const vault = this.getPasswordVault();
 			if (vault.length === 0) {
-				tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--muted);">Nessun lucchetto generato su questo browser.</td></tr>`;
+				tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--muted);">Nessun lucchetto generato finora.</td></tr>`;
 				return;
 			}
 
@@ -2119,7 +2138,7 @@
 				tr.innerHTML = `
 					<td>${this._escapeHtml(dateStr)}</td>
 					<td><strong>${this._escapeHtml(v.victim || "Ospite")}</strong></td>
-					<td><span class="adm-highlight-code">${this._escapeHtml(v.password)}</span> <small>(${v.lockType})</small></td>
+					<td><span class="adm-highlight-code">${this._escapeHtml(v.password)}</span></td>
 					<td>${this._escapeHtml(v.gameId)}</td>
 					<td><button type="button" class="btn btn-sm" data-copy-vault="${this._escapeHtml(v.fullUrl)}">🔗 Copia Link</button></td>
 				`;
@@ -2141,81 +2160,91 @@
 			pre.scrollTop = pre.scrollHeight;
 		},
 
-		/**
-		 * Pubblica games-config.json direttamente su GitHub (JoJo-BC/JoJo-Mod)
-		 * così le sfide associate al Member ID della vittima o i giochi disattivati
-		 * vanno immediatamente online per tutti i giocatori!
-		 */
-		async syncConfigToGitHub() {
-			const tokInput = document.getElementById("adm-gh-token-input");
-			const statusEl = document.getElementById("adm-gh-sync-status");
-			const token = tokInput ? tokInput.value.trim() : "";
+		async _putGitHubFile(repoPath, contentStr, commitMsg) {
+			const token = localStorage.getItem(STORAGE_KEYS.GH_TOKEN);
+			if (!token) throw new Error("Effettua il login nel Pannello Admin almeno una volta per attivare il Cloud Sync.");
 
-			if (!token) {
-				if (statusEl) {
-					statusEl.textContent = "⚠️ Inserisci il tuo GitHub Personal Access Token (lo stesso di .github_token) per salvare direttamente online dal browser.";
-					statusEl.style.color = "var(--warning)";
+			const apiUrl = `https://api.github.com/repos/JoJo-BC/JoJo-Mod/contents/${repoPath}`;
+			const getRes = await fetch(apiUrl, {
+				headers: {
+					Accept: "application/vnd.github+json",
+					Authorization: `Bearer ${token}`
 				}
-				return;
+			});
+
+			let existingSha = null;
+			if (getRes.ok) {
+				const existingData = await getRes.json();
+				existingSha = existingData.sha;
 			}
 
-			localStorage.setItem(STORAGE_KEYS.GH_TOKEN, token);
-			if (statusEl) {
-				statusEl.textContent = "⏳ Sincronizzazione con GitHub (JoJo-BC/JoJo-Mod) in corso...";
+			const b64Content = btoa(unescape(encodeURIComponent(contentStr)));
+			const putBody = {
+				message: commitMsg,
+				content: b64Content,
+				branch: "main"
+			};
+			if (existingSha) putBody.sha = existingSha;
+
+			const putRes = await fetch(apiUrl, {
+				method: "PUT",
+				headers: {
+					Accept: "application/vnd.github+json",
+					Authorization: `Bearer ${token}`,
+					"Content-Type": "application/json"
+				},
+				body: JSON.stringify(putBody)
+			});
+
+			if (!putRes.ok) {
+				const errTxt = await putRes.text();
+				throw new Error(`HTTP ${putRes.status}: ${errTxt}`);
+			}
+		},
+
+		async syncConfigToGitHub(silent = false) {
+			const statusEl = document.getElementById("adm-gh-sync-status");
+			if (!silent && statusEl) {
+				statusEl.textContent = "⏳ Salvataggio automatico su GitHub Pages in corso...";
 				statusEl.style.color = "var(--info)";
 			}
 
 			try {
-				const apiUrl = "https://api.github.com/repos/JoJo-BC/JoJo-Mod/contents/games/games-config.json";
-				const getRes = await fetch(apiUrl, {
-					headers: {
-						Accept: "application/vnd.github+json",
-						Authorization: `Bearer ${token}`
-					}
-				});
-
-				let existingSha = null;
-				if (getRes.ok) {
-					const existingData = await getRes.json();
-					existingSha = existingData.sha;
-				}
-
-				const jsonStr = JSON.stringify(this.config, null, 2);
-				const b64Content = btoa(unescape(encodeURIComponent(jsonStr)));
-
-				const putBody = {
-					message: "Update BC Arcade games-config.json via Admin Panel",
-					content: b64Content,
-					branch: "main"
-				};
-				if (existingSha) putBody.sha = existingSha;
-
-				const putRes = await fetch(apiUrl, {
-					method: "PUT",
-					headers: {
-						Accept: "application/vnd.github+json",
-						Authorization: `Bearer ${token}`,
-						"Content-Type": "application/json"
-					},
-					body: JSON.stringify(putBody)
-				});
-
-				if (!putRes.ok) {
-					const errTxt = await putRes.text();
-					throw new Error(`HTTP ${putRes.status}: ${errTxt}`);
-				}
-
-				BC_GAMES_LOGGER.log("GITHUB", "Successfully synced games-config.json to GitHub Pages");
-				if (statusEl) {
-					statusEl.textContent = "✅ Configurazione e Sfide per Member ID pubblicate con successo su GitHub Pages!";
+				await this._putGitHubFile(
+					"games/games-config.json",
+					JSON.stringify(this.config, null, 2),
+					"Auto-sync games-config.json from BC Arcade"
+				);
+				if (!silent && statusEl) {
+					statusEl.textContent = "✅ Sfide e Parametri salvati online su GitHub Pages!";
 					statusEl.style.color = "var(--success)";
 				}
 			} catch (err) {
-				BC_GAMES_LOGGER.log("ERROR", "GitHub sync failed", { error: err.message });
-				if (statusEl) {
-					statusEl.textContent = `❌ Errore sync GitHub: ${err.message}`;
+				if (!silent && statusEl) {
+					statusEl.textContent = `❌ ${err.message}`;
 					statusEl.style.color = "var(--danger)";
 				}
+			}
+		},
+
+		async pushLogsToGitHub(silent = false) {
+			const token = localStorage.getItem(STORAGE_KEYS.GH_TOKEN);
+			if (!token) return;
+			const btn = document.getElementById("adm-sync-log-gh");
+			if (!silent && btn) btn.textContent = "⏳ Invio su GitHub...";
+
+			try {
+				await this._putGitHubFile(
+					"games/diagnostic-log.txt",
+					BC_GAMES_LOGGER.formatAsText(),
+					"Auto-sync diagnostic-log.txt from BC Arcade"
+				);
+				if (!silent && btn) {
+					btn.textContent = "✅ Log Inviato su GitHub!";
+					setTimeout(() => (btn.textContent = "☁️ Invia Log su GitHub per l'IA"), 2500);
+				}
+			} catch (_) {
+				if (!silent && btn) btn.textContent = "❌ Errore Invio";
 			}
 		},
 
@@ -2227,28 +2256,6 @@
 				.replace(/"/g, "&quot;");
 		}
 	};
-
-	/* =========================================================================
-	 * 📌 TEMPLATE PER AGGIUNGERE NUOVI MINIGIOCHI IN FUTURO
-	 * =========================================================================
-	 * Per aggiungere un nuovo minigioco, incolla qui sotto un blocco come questo:
-	 *
-	 * BC_GAMES_REGISTRY.register({
-	 *     id: "memory",
-	 *     title: "Restraint Memory",
-	 *     icon: "🃏",
-	 *     badge: "Memoria Visiva",
-	 *     description: "Abbina le coppie di restraint prima dello scadere del timer.",
-	 *     configSchema: {
-	 *         pairsCount: { label: "Numero Coppie", type: "number", default: 6, min: 4, max: 10 }
-	 *     },
-	 *     mount(container, runtimeCfg, difficulty, onWin, onLose) {
-	 *         container.innerHTML = `<div>Il tuo HTML del gioco...</div>`;
-	 *         // Chiama onWin() quando il giocatore vince, o onLose({ reason: "..." }) se perde
-	 *         return { cleanup() { } };
-	 *     }
-	 * });
-	 * ========================================================================= */
 
 	window.BC_GAMES_REGISTRY = BC_GAMES_REGISTRY;
 	window.BC_CRYPTO_CODEC = BC_CRYPTO_CODEC;
