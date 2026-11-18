@@ -3,54 +3,36 @@
  * 🎮 BONDAGE CLUB ARCADE & LOCK RECOVERY PORTAL — CORE ENGINE (games-engine.js)
  * ============================================================================
  * Architettura modulare "Plug & Play" per minigiochi a tema Bondage Club,
- * recupero password/combinazioni lucchetti (CombinationPadlock, PasswordPadlock,
- * TimerPasswordPadlock), Pannello Admin protetto e Telemetria Cloud su GitHub.
- *
- * STRUTTURA DEI MODULI:
- * 1. BC_GAMES_LOGGER   : Log diagnostico locale + sync automatico su GitHub.
- * 2. BC_SOUND_FX       : Sintetizzatore audio WebAudio (zero file MP3 esterni).
- * 3. BC_CRYPTO_CODEC   : Cifratura URL (?c=...), Ticket e Vault Token Admin.
- * 4. BC_GAMES_REGISTRY : Registro centrale Plug & Play per aggiungere minigiochi.
- * 5. MINIGIOCHI INCLUSI:
- *    - "crack"    : Crack the Padlock (Mastermind / Wordle 4 cifre o 5 lettere)
- *    - "struggle" : Struggle & Escape (Riflessi barra di tensione + Vibrator Surge)
- *    - "gagspeak" : Gag Speak Hangman (Impiccato con traduzione Muffled BC)
- * 6. BC_APP_CONTROLLER : Gestione UI semplificata, Ricerca intelligente per ID
- *                        o Indizio, Creazione Sfida e Pannello Admin Protetto.
+ * supporto multi-lucchetto per stesso Player ID, Pannello Admin protetto
+ * e sincronizzazione automatica su GitHub Pages.
  * ============================================================================
  */
 
 (function () {
 	"use strict";
 
-	// Hash SHA-256 della Master Password Admin ("J0J08408")
+	// Hash SHA-256 della Master Password Admin
 	const DEFAULT_ADMIN_HASH = "b47da9cfa588ae5a94844c0c5fa58ec1fc7929c16b606715e4be8f4ecd68af35";
 
-	// Token GitHub cifrato con chiave derivata da SHA-256("JOJO_GH_VAULT::" + MasterPassword).
-	// Impossibile da decifrare senza conoscere la Master Password Admin (che non è nel codice)
-	// e invisibile agli scanner di token pubblici. Si sblocca in automatico al login Admin!
+	// Token GitHub cifrato con chiave derivata dalla Master Password Admin
 	const ENCRYPTED_GH_TOKEN_HEX =
 		"5b8e5d9f355e79cc714b4c1754297fbfbc051cd8c8bd8d9c4f68f4e415b57e9657b862af106640de6955674a372c4abc9a2276cda0bebda04843c0d04e8b6df37dbd509c2f0e6b8b62787072523d08a6b4077bd9ca918abe3040e8d532";
 
 	// Chiave simmetrica interna per offuscare i link ?c=...
-	const CIPHER_SECRET = "JoJoBC_LockArcade_2026_SecretKey!#99";
+	const CIPHER_SECRET = "BCArcade_LockRecovery_2026_SecretKey!#99";
 
-	// Chiavi localStorage
 	const STORAGE_KEYS = {
 		CONFIG: "BCArcade_Config_v1",
 		VAULT: "BCArcade_PasswordVault_v1",
 		LOGS: "BCArcade_DiagnosticLogs_v1",
 		ADMIN_SESSION: "BCArcade_AdminUnlocked_v1",
-		GH_TOKEN: "BCArcade_GitHubToken_v1"
+		GH_TOKEN: "BCArcade_GitHubToken_v1",
+		SOLVED_LOCKS: "BCArcade_SolvedSession_v1"
 	};
 
 	/* =========================================================================
 	 * 1. SISTEMA DI LOGGING & TELEMETRIA DIAGNOSTICA (BC_GAMES_LOGGER)
-	 * =========================================================================
-	 * Registra ogni evento in memoria, in localStorage e (quando il token GitHub
-	 * è attivo) sincronizza automaticamente il file `games/diagnostic-log.json`
-	 * su GitHub così l'assistente IA può leggerlo direttamente da remoto!
-	 */
+	 * ========================================================================= */
 	const BC_GAMES_LOGGER = {
 		maxEntries: 400,
 		entries: [],
@@ -64,7 +46,7 @@
 					if (Array.isArray(parsed)) this.entries = parsed.slice(-this.maxEntries);
 				}
 			} catch (_) {}
-			this.log("SYSTEM", "BC Arcade Engine v1.1 initialized", {
+			this.log("SYSTEM", "BC Arcade Engine v1.2 initialized", {
 				url: window.location.href
 			});
 		},
@@ -97,7 +79,6 @@
 				this.onUpdate();
 			}
 
-			// Pianifica un push silenzioso su GitHub (debounce 4s) se il token è sbloccato
 			this.scheduleCloudLogSync();
 			return entry;
 		},
@@ -131,7 +112,7 @@
 			try {
 				localStorage.removeItem(STORAGE_KEYS.LOGS);
 			} catch (_) {}
-			this.log("SYSTEM", "Diagnostic logs cleared by user.");
+			this.log("SYSTEM", "Diagnostic logs cleared.");
 		}
 	};
 
@@ -228,7 +209,6 @@
 			return this._fallbackSha256(str);
 		},
 
-		// Decifra il GitHub Token usando la Master Password inserita dall'Admin
 		async unlockGitHubTokenWithPassword(adminPassword) {
 			try {
 				const keyHex = await this.sha256Hex("JOJO_GH_VAULT::" + String(adminPassword || "").trim());
@@ -358,18 +338,13 @@
 				p: passStr,
 				l: lockType,
 				g: payload.gameId || "crack",
-				d: Number(payload.difficulty || 2)
+				d: Number(payload.difficulty || 2),
+				v: String(payload.victim || "").trim(),
+				n: String(payload.lockLabel || payload.note || "").trim(),
+				cid: String(payload.cid || ("L" + Date.now().toString(36).slice(-4).toUpperCase()))
 			};
-			if (payload.victim) clean.v = String(payload.victim).trim();
-			if (payload.note) clean.n = String(payload.note).trim();
-			if (payload.customConfig) clean.cfg = payload.customConfig;
 
-			let rawStr;
-			if (!clean.cfg) {
-				rawStr = `V1|${clean.p}|${clean.l}|${clean.g}|${clean.d}|${clean.v || ""}|${clean.n || ""}`;
-			} else {
-				rawStr = JSON.stringify(clean);
-			}
+			const rawStr = `V2|${clean.p}|${clean.l}|${clean.g}|${clean.d}|${clean.v}|${clean.n}|${clean.cid}`;
 
 			const salt1 = Math.floor(Math.random() * 250) + 1;
 			const salt2 = Math.floor(Math.random() * 250) + 1;
@@ -391,13 +366,14 @@
 			const ticket = "BC-" + token;
 
 			BC_GAMES_LOGGER.log("CRYPTO", "Encoded challenge", {
+				cid: clean.cid,
 				lockType: clean.l,
 				gameId: clean.g,
 				difficulty: clean.d,
 				victim: clean.v || "(any)",
-				note: clean.n || ""
+				lockLabel: clean.n || ""
 			});
-			return { token, ticket };
+			return { token, ticket, cid: clean.cid };
 		},
 
 		decodeChallenge(inputStr, silent = false) {
@@ -436,6 +412,19 @@
 				}
 
 				const decodedStr = new TextDecoder().decode(decBytes);
+				if (decodedStr.startsWith("V2|")) {
+					const parts = decodedStr.split("|");
+					return {
+						password: parts[1] || "",
+						lockType: parts[2] || "comb",
+						gameId: parts[3] || "crack",
+						difficulty: Number(parts[4] || 2),
+						victim: parts[5] || "",
+						lockLabel: parts[6] || "",
+						note: parts[6] || "",
+						cid: parts[7] || ""
+					};
+				}
 				if (decodedStr.startsWith("V1|")) {
 					const parts = decodedStr.split("|");
 					return {
@@ -444,6 +433,7 @@
 						gameId: parts[3] || "crack",
 						difficulty: Number(parts[4] || 2),
 						victim: parts[5] || "",
+						lockLabel: parts.slice(6).join("|") || "",
 						note: parts.slice(6).join("|") || ""
 					};
 				}
@@ -455,8 +445,9 @@
 					gameId: parsed.g || "crack",
 					difficulty: Number(parsed.d || 2),
 					victim: parsed.v || "",
+					lockLabel: parsed.n || "",
 					note: parsed.n || "",
-					customConfig: parsed.cfg || null
+					cid: parsed.cid || ""
 				};
 			} catch (err) {
 				if (!silent) {
@@ -494,7 +485,7 @@
 	};
 
 	/* =========================================================================
-	 * 5A. MINIGIOCO 1: CRACK THE PADLOCK (Mastermind / Wordle a tema BC)
+	 * 5A. MINIGIOCO 1: CRACK THE PADLOCK (Mastermind / Wordle)
 	 * ========================================================================= */
 	const CRACK_BC_WORDS = [
 		"LATEX", "CUFFS", "BOUND", "ROPEY", "LOCKS", "CHAINS",
@@ -506,13 +497,13 @@
 		id: "crack",
 		title: "Crack the Padlock",
 		icon: "🔢",
-		badge: "Combinazione",
-		description: "Indovina il codice del lucchetto: Verde = cifra al posto giusto, Giallo = cifra presente ma in un'altra casella.",
+		badge: "Codebreaker",
+		description: "Guess the hidden lock code: Green = right spot, Yellow = right digit/letter in another spot.",
 		configSchema: {
-			maxAttempts: { label: "Tentativi Massimi", type: "number", default: 6, min: 3, max: 12 },
-			codeLength: { label: "Numero Cifre (4 o 5)", type: "number", default: 4, min: 4, max: 5 },
-			defaultMode: { label: "Modalità (digits = Numeri, words = Parole)", type: "select", options: ["digits", "words"], default: "digits" },
-			showColorHints: { label: "Mostra Indizi Gialli", type: "boolean", default: true }
+			maxAttempts: { label: "Max Attempts", type: "number", default: 6, min: 3, max: 12 },
+			codeLength: { label: "Digits Count (4 or 5)", type: "number", default: 4, min: 4, max: 5 },
+			defaultMode: { label: "Mode (digits = Numbers, words = Words)", type: "select", options: ["digits", "words"], default: "digits" },
+			showColorHints: { label: "Show Yellow Hints", type: "boolean", default: true }
 		},
 
 		mount(container, runtimeCfg, difficulty, onWin, onLose) {
@@ -541,13 +532,13 @@
 			container.innerHTML = `
 				<div class="mg-header-bar">
 					<div>
-						<span class="mg-tag">🔒 ${mode === "words" ? "Parola 5 Lettere" : `Codice a ${len} Cifre`}</span>
-						<span class="mg-tag">Tentativi: <strong id="crack-att-cnt">0 / ${maxAttempts}</strong></span>
+						<span class="mg-tag">🔒 ${mode === "words" ? "5-Letter Word" : `${len}-Digit Code`}</span>
+						<span class="mg-tag">Attempts: <strong id="crack-att-cnt">0 / ${maxAttempts}</strong></span>
 					</div>
 					<div class="mg-legend">
-						<span class="leg-item"><i class="dot green"></i> Posto Giusto</span>
-						${runtimeCfg.showColorHints !== false ? `<span class="leg-item"><i class="dot yellow"></i> Posto Sbagliato</span>` : ""}
-						<span class="leg-item"><i class="dot gray"></i> Assente</span>
+						<span class="leg-item"><i class="dot green"></i> Exact Spot</span>
+						${runtimeCfg.showColorHints !== false ? `<span class="leg-item"><i class="dot yellow"></i> Wrong Spot</span>` : ""}
+						<span class="leg-item"><i class="dot gray"></i> Not in Code</span>
 					</div>
 				</div>
 				<div id="crack-board" class="crack-board"></div>
@@ -654,7 +645,7 @@
 					gameOver = true;
 					BC_SOUND_FX.errorBuzz();
 					BC_GAMES_LOGGER.log("GAME", "Crack the Padlock LOST", { attemptsUsed, secret });
-					setTimeout(() => onLose({ reason: `Tentativi esauriti! La combinazione di questa serratura era ${secret}.` }), 400);
+					setTimeout(() => onLose({ reason: `Out of attempts! The lock mechanism code was ${secret}.` }), 400);
 					return;
 				}
 
@@ -698,7 +689,7 @@
 				btn.type = "button";
 				btn.className = "kp-btn" + (k === "ENTER" ? " kp-enter" : k === "BACK" ? " kp-back" : "");
 				btn.setAttribute("data-key", k);
-				btn.textContent = k === "BACK" ? "⌫" : k === "ENTER" ? "PROVA 🔓" : k;
+				btn.textContent = k === "BACK" ? "⌫" : k === "ENTER" ? "TRY CODE 🔓" : k;
 				btn.addEventListener("click", () => handleInput(k));
 				keypadEl.appendChild(btn);
 			});
@@ -731,20 +722,20 @@
 	});
 
 	/* =========================================================================
-	 * 5B. MINIGIOCO 2: STRUGGLE & ESCAPE (Riflessi, Tensione & Vibrator Surge)
+	 * 5B. MINIGIOCO 2: STRUGGLE & ESCAPE (Reflexes, Tension & Vibrator Surge)
 	 * ========================================================================= */
 	BC_GAMES_REGISTRY.register({
 		id: "struggle",
 		title: "Struggle & Escape",
 		icon: "⛓️",
-		badge: "Riflessi",
-		description: "Premi SPAZIO o clicca quando l'indicatore bianco passa nella zona verde per sciogliere le cinghie, resistendo alle vibrazioni!",
+		badge: "Reflexes",
+		description: "Press SPACE or click when the white marker hits the green zone to loosen the straps while resisting vibration surges!",
 		configSchema: {
-			strapsCount: { label: "Cinghie da Sciogliere", type: "number", default: 3, min: 1, max: 6 },
-			baseSpeed: { label: "Velocità Cursore", type: "number", default: 1.35, min: 0.6, max: 3.0, step: 0.1 },
-			sweetSpotWidth: { label: "Ampiezza Zona Verde (%)", type: "number", default: 22, min: 10, max: 40 },
-			fatiguePenalty: { label: "Penalità Errore (%)", type: "number", default: 18, min: 5, max: 50 },
-			vibratorChance: { label: "Frequenza Vibrator Surge (0-1)", type: "number", default: 0.45, min: 0, max: 1, step: 0.05 }
+			strapsCount: { label: "Straps to Unbuckle", type: "number", default: 3, min: 1, max: 6 },
+			baseSpeed: { label: "Cursor Speed", type: "number", default: 1.35, min: 0.6, max: 3.0, step: 0.1 },
+			sweetSpotWidth: { label: "Green Zone Width (%)", type: "number", default: 22, min: 10, max: 40 },
+			fatiguePenalty: { label: "Miss Penalty (%)", type: "number", default: 18, min: 5, max: 50 },
+			vibratorChance: { label: "Vibrator Surge Chance (0-1)", type: "number", default: 0.45, min: 0, max: 1, step: 0.05 }
 		},
 
 		mount(container, runtimeCfg, difficulty, onWin, onLose) {
@@ -767,12 +758,12 @@
 			let gameOver = false;
 
 			const strapNames = [
-				"Cinghia Polsi (Leather Cuffs)",
-				"Cinghia Gomiti (Armbinder Strap)",
-				"Cinghia Vita & Cosce (Sturdy Leather Belt)",
-				"Cinghia Caviglie (Linked Ankle Cuffs)",
-				"Collare Posturale (Posture Collar)",
-				"Imbracatura Toracica (Latex Harness)"
+				"Wrist Strap (Leather Cuffs)",
+				"Elbow Strap (Armbinder Buckle)",
+				"Waist & Thigh Strap (Sturdy Leather Belt)",
+				"Ankle Strap (Linked Ankle Cuffs)",
+				"Neck Strap (Posture Collar)",
+				"Chest Strap (Latex Harness)"
 			];
 
 			BC_GAMES_LOGGER.log("GAME", "Started Struggle & Escape", { totalStraps, baseSpeed, spotWidth, difficulty });
@@ -781,11 +772,11 @@
 				<div id="strug-arena" class="strug-arena">
 					<div class="mg-header-bar">
 						<div>
-							<span class="mg-tag">⛓️ Cinghia: <strong id="strug-strap-idx">1 / ${totalStraps}</strong></span>
-							<span id="strug-vibe-badge" class="mg-tag vibe-off">💓 Vibratore: Spento</span>
+							<span class="mg-tag">⛓️ Strap: <strong id="strug-strap-idx">1 / ${totalStraps}</strong></span>
+							<span id="strug-vibe-badge" class="mg-tag vibe-off">💓 Vibrator: Off</span>
 						</div>
 						<div>
-							<span class="mg-tag">Fatica: <strong id="strug-fat-txt">0%</strong></span>
+							<span class="mg-tag">Fatigue: <strong id="strug-fat-txt">0%</strong></span>
 						</div>
 					</div>
 
@@ -801,17 +792,17 @@
 
 					<div class="strug-bars-grid">
 						<div class="strug-bar-box">
-							<div class="strug-bar-label"><span>Apertura Fibbia</span><span id="strug-prog-txt">0%</span></div>
+							<div class="strug-bar-label"><span>Buckle Loosened</span><span id="strug-prog-txt">0%</span></div>
 							<div class="strug-bar-bg"><div id="strug-prog-fill" class="strug-bar-fill fill-green" style="width:0%"></div></div>
 						</div>
 						<div class="strug-bar-box">
-							<div class="strug-bar-label"><span>Fatica (Non arrivare a 100%)</span><span id="strug-fat-bar-txt">0%</span></div>
+							<div class="strug-bar-label"><span>Muscle Fatigue (Max 100%)</span><span id="strug-fat-bar-txt">0%</span></div>
 							<div class="strug-bar-bg"><div id="strug-fat-fill" class="strug-bar-fill fill-red" style="width:0%"></div></div>
 						</div>
 					</div>
 
 					<button type="button" id="strug-hit-btn" class="btn btn-primary strug-hit-btn">
-						⚡ TIRA LA CINGHIA! (Spazio / Click)
+						⚡ PULL STRAP NOW! (Space / Click)
 					</button>
 				</div>
 			`;
@@ -835,7 +826,7 @@
 				for (let i = 0; i < totalStraps; i++) {
 					const b = document.createElement("div");
 					b.className = "buckle-pill" + (i < currentStrap ? " unlocked" : i === currentStrap ? " current" : "");
-					b.textContent = i < currentStrap ? `🔓 Fibbia ${i + 1}` : `🔒 Fibbia ${i + 1}`;
+					b.textContent = i < currentStrap ? `🔓 Buckle ${i + 1}` : `🔒 Buckle ${i + 1}`;
 					bucklesEl.appendChild(b);
 				}
 			}
@@ -861,14 +852,14 @@
 				if (gameOver) return;
 				if (Math.random() < vibeChance) {
 					vibeLevel = Math.floor(Math.random() * 3) + 1;
-					const labels = ["Spento", "Basso 💓", "Medio 💓💓", "MASSIMO 💓🔥"];
-					vibeBadgeEl.textContent = `💓 Vibratore: ${labels[vibeLevel]}`;
+					const labels = ["Off", "Low 💓", "Medium 💓💓", "MAXIMUM 💓🔥"];
+					vibeBadgeEl.textContent = `💓 Vibrator: ${labels[vibeLevel]}`;
 					vibeBadgeEl.className = `mg-tag vibe-lv${vibeLevel}`;
 					arenaEl.classList.toggle("vibe-shake", vibeLevel >= 2);
 					BC_SOUND_FX.vibePulse(vibeLevel);
 				} else {
 					vibeLevel = 0;
-					vibeBadgeEl.textContent = "💓 Vibratore: Spento";
+					vibeBadgeEl.textContent = "💓 Vibrator: Off";
 					vibeBadgeEl.className = "mg-tag vibe-off";
 					arenaEl.classList.remove("vibe-shake");
 				}
@@ -924,7 +915,7 @@
 						arenaEl.classList.remove("vibe-shake");
 						updateBars();
 						BC_GAMES_LOGGER.log("GAME", "Struggle & Escape LOST (Max Fatigue)", { currentStrap });
-						setTimeout(() => onLose({ reason: "Troppa fatica! Le cinghie si sono strette di nuovo." }), 350);
+						setTimeout(() => onLose({ reason: "Exhausted! The leather straps snapped back tight." }), 350);
 						return;
 					}
 				}
@@ -958,16 +949,16 @@
 	});
 
 	/* =========================================================================
-	 * 5C. MINIGIOCO 3: GAG SPEAK HANGMAN (Decodifica il Bavaglio BC)
+	 * 5C. MINIGIOCO 3: GAG SPEAK HANGMAN (Decode the Muffled Phrase)
 	 * ========================================================================= */
 	const GAG_STAGES = [
-		{ level: 0, name: "Voce Libera", icon: "🗣️", desc: "Nessun bavaglio applicato" },
-		{ level: 1, name: "Cloth Gag", icon: "🧣", desc: "Fazzoletto di stoffa annodato" },
-		{ level: 2, name: "Ball Gag Tight", icon: "🔴", desc: "Bavaglio a sfera rosso stretto" },
-		{ level: 3, name: "Harness Ball Gag", icon: "⛓️", desc: "Imbracatura cranica con fibbie" },
-		{ level: 4, name: "Duct Tape", icon: "🩹", desc: "Doppio giro di nastro adesivo" },
-		{ level: 5, name: "Muzzle Gag", icon: "😷", desc: "Museruola di cuoio rinforzata" },
-		{ level: 6, name: "Total Silence Hood!", icon: "🔒", desc: "Cappuccio in lattice sigillato!" }
+		{ level: 0, name: "Ungagged", icon: "🗣️", desc: "Free to speak clearly" },
+		{ level: 1, name: "Cloth Gag", icon: "🧣", desc: "Simple cloth tied across the mouth" },
+		{ level: 2, name: "Ball Gag Tight", icon: "🔴", desc: "Classic red ball gag buckled tight" },
+		{ level: 3, name: "Harness Ball Gag", icon: "⛓️", desc: "Multi-strap leather head harness" },
+		{ level: 4, name: "Duct Tape", icon: "🩹", desc: "Heavy layers of sticky tape" },
+		{ level: 5, name: "Muzzle Gag", icon: "😷", desc: "Reinforced leather muzzle" },
+		{ level: 6, name: "Total Silence Hood!", icon: "🔒", desc: "Completely sealed latex hood!" }
 	];
 
 	function toBondageClubGagSpeak(phrase) {
@@ -999,22 +990,22 @@
 		id: "gagspeak",
 		title: "Gag Speak Hangman",
 		icon: "🙊",
-		badge: "Parola Segreta",
-		description: "Indovina le lettere della frase a tema Bondage Club prima che il bavaglio venga stretto al massimo!",
+		badge: "Word Puzzle",
+		description: "Guess the letters of the Bondage Club phrase before the gag gets locked to maximum tightness!",
 		configSchema: {
-			maxErrors: { label: "Errori Massimi Consentiti", type: "number", default: 6, min: 3, max: 8 },
-			showCategoryHint: { label: "Mostra Categoria Indizio", type: "boolean", default: true },
-			showMuffledPreview: { label: "Mostra Fumetto Gag-Speak", type: "boolean", default: true }
+			maxErrors: { label: "Max Allowed Mistakes", type: "number", default: 6, min: 3, max: 8 },
+			showCategoryHint: { label: "Show Category Clue", type: "boolean", default: true },
+			showMuffledPreview: { label: "Show Muffled Gag-Speak Bubble", type: "boolean", default: true }
 		},
 
 		mount(container, runtimeCfg, difficulty, onWin, onLose, appConfig) {
 			const pool = (appConfig && Array.isArray(appConfig.customPhrases) && appConfig.customPhrases.length > 0)
 				? appConfig.customPhrases
 				: [
-					{ phrase: "THANK YOU MISS", category: "Etichetta & Disciplina BC" },
-					{ phrase: "LATEX ARMBINDER", category: "Restraint Braccia (ItemArms)" },
-					{ phrase: "COMBINATION PADLOCK", category: "Lucchetto a 4 Cifre (ItemMisc)" },
-					{ phrase: "STURDY LEATHER BELTS", category: "Cinghie di Cuoio" }
+					{ phrase: "THANK YOU MISS", category: "Club Etiquette & Discipline" },
+					{ phrase: "LATEX ARMBINDER", category: "Arm Restraint (ItemArms)" },
+					{ phrase: "COMBINATION PADLOCK", category: "4-Digit Padlock (ItemMisc)" },
+					{ phrase: "STURDY LEATHER BELTS", category: "Heavy Leather Straps" }
 				];
 
 			const entry = pool[Math.floor(Math.random() * pool.length)];
@@ -1034,16 +1025,16 @@
 			container.innerHTML = `
 				<div class="mg-header-bar">
 					<div>
-						<span class="mg-tag">🙊 Errori: <strong id="gag-err-cnt">0 / ${maxErrors}</strong></span>
-						${runtimeCfg.showCategoryHint !== false ? `<span class="mg-tag">💡 Indizio: <strong>${category}</strong></span>` : ""}
+						<span class="mg-tag">🙊 Mistakes: <strong id="gag-err-cnt">0 / ${maxErrors}</strong></span>
+						${runtimeCfg.showCategoryHint !== false ? `<span class="mg-tag">💡 Clue: <strong>${category}</strong></span>` : ""}
 					</div>
 				</div>
 
 				<div class="gag-status-card" id="gag-status-card">
 					<div class="gag-avatar-icon" id="gag-icon">🗣️</div>
 					<div class="gag-status-info">
-						<div class="gag-stage-name" id="gag-stage-name">Voce Libera</div>
-						<div class="gag-stage-desc" id="gag-stage-desc">Scegli le lettere sulla tastiera qui sotto!</div>
+						<div class="gag-stage-name" id="gag-stage-name">Ungagged</div>
+						<div class="gag-stage-desc" id="gag-stage-desc">Pick letters on the keyboard below!</div>
 						${runtimeCfg.showMuffledPreview !== false ? `<div class="gag-bubble">"${muffled}"</div>` : ""}
 					</div>
 				</div>
@@ -1064,7 +1055,7 @@
 				const stageIdx = Math.min(GAG_STAGES.length - 1, Math.round((errors / maxErrors) * (GAG_STAGES.length - 1)));
 				const st = GAG_STAGES[stageIdx];
 				iconEl.textContent = st.icon;
-				stageNameEl.textContent = `${st.name} (Errori: ${errors}/${maxErrors})`;
+				stageNameEl.textContent = `${st.name} (Mistakes: ${errors}/${maxErrors})`;
 				stageDescEl.textContent = st.desc;
 			}
 
@@ -1117,7 +1108,7 @@
 						for (const c of targetPhrase) guessed.add(c);
 						renderPhrase();
 						BC_GAMES_LOGGER.log("GAME", "Gag Speak Hangman LOST", { targetPhrase, errors });
-						setTimeout(() => onLose({ reason: `Troppi errori! La frase era "${targetPhrase}".` }), 450);
+						setTimeout(() => onLose({ reason: `Too many mistakes! The secret phrase was "${targetPhrase}".` }), 450);
 					}
 				}
 			}
@@ -1162,6 +1153,9 @@
 		config: null,
 		activeGameInstance: null,
 		activeChallenge: null,
+		currentMatchedList: [],
+		currentQueryId: "",
+		solvedMap: {}, // Memorizza i lucchetti già sbloccati nella sessione: { cid: password }
 		gauntletQueue: [],
 		gauntletIndex: 0,
 		isAdmin: false,
@@ -1174,6 +1168,8 @@
 				if (sessionStorage.getItem(STORAGE_KEYS.ADMIN_SESSION) === "true") {
 					this.isAdmin = true;
 				}
+				const savedSolved = sessionStorage.getItem(STORAGE_KEYS.SOLVED_LOCKS);
+				if (savedSolved) this.solvedMap = JSON.parse(savedSolved) || {};
 			} catch (_) {}
 
 			this.bindNavigation();
@@ -1182,7 +1178,6 @@
 			this.initLookupBox();
 			this.initAdminPanel();
 
-			// Controlla parametri URL (?c=... o ?id=...)
 			const params = new URLSearchParams(window.location.search);
 			const cParam = params.get("c");
 			const idParam = params.get("id");
@@ -1190,25 +1185,44 @@
 			if (cParam) {
 				this.launchChallengeFromToken(cParam, "URL ?c= parameter");
 			} else if (idParam) {
+				const inp = document.getElementById("victim-lookup-input");
+				if (inp) inp.value = idParam;
 				this.lookupChallengeByInput(idParam);
 			}
 		},
 
+		// Normalizza qualsiasi voce di victimChallenges in un Array di lucchetti
+		_normalizeChallengeList(entryOrArray, key) {
+			if (!entryOrArray) return [];
+			const arr = Array.isArray(entryOrArray) ? entryOrArray : [entryOrArray];
+			return arr
+				.filter((item) => item && item.ticket)
+				.map((item, idx) => ({
+					cid: item.cid || `L${idx + 1}`,
+					playerId: item.playerId || item.label || key,
+					lockLabel: item.lockLabel || item.note || `Lock #${idx + 1}`,
+					gameId: item.gameId || "crack",
+					difficulty: Number(item.difficulty || 2),
+					ticket: item.ticket,
+					createdAt: item.createdAt || new Date().toISOString()
+				}));
+		},
+
 		async loadConfig() {
 			const defaultCfg = {
-				version: "1.1.0",
+				version: "1.2.0",
 				games: {
 					crack: { enabled: true, maxAttempts: 6, codeLength: 4, defaultMode: "digits", showColorHints: true },
 					struggle: { enabled: true, strapsCount: 3, baseSpeed: 1.35, sweetSpotWidth: 22, fatiguePenalty: 18, vibratorChance: 0.45 },
 					gagspeak: { enabled: true, maxErrors: 6, showCategoryHint: true, showMuffledPreview: true }
 				},
 				customPhrases: [
-					{ phrase: "THANK YOU MISS", category: "Etichetta & Disciplina BC" },
-					{ phrase: "LATEX ARMBINDER", category: "Restraint Braccia (ItemArms)" },
-					{ phrase: "COMBINATION PADLOCK", category: "Lucchetto a 4 Cifre (ItemMisc)" },
-					{ phrase: "STURDY LEATHER BELTS", category: "Cinghie di Cuoio (Three Straps)" },
-					{ phrase: "BALL GAG TIGHT", category: "Bavaglio Classico (ItemMouth)" },
-					{ phrase: "VIBRATING EGG MAXIMUM", category: "Toy Controllato a Distanza" }
+					{ phrase: "THANK YOU MISS", category: "Club Etiquette & Discipline" },
+					{ phrase: "LATEX ARMBINDER", category: "Arm Restraint (ItemArms)" },
+					{ phrase: "COMBINATION PADLOCK", category: "4-Digit Padlock (ItemMisc)" },
+					{ phrase: "STURDY LEATHER BELTS", category: "Heavy Leather Straps" },
+					{ phrase: "BALL GAG TIGHT", category: "Classic Mouth Restraint" },
+					{ phrase: "VIBRATING EGG MAXIMUM", category: "Remote Controlled Toy" }
 				],
 				victimChallenges: {}
 			};
@@ -1233,33 +1247,30 @@
 				if (Array.isArray(localCfg.customPhrases) && localCfg.customPhrases.length > 0) {
 					this.config.customPhrases = localCfg.customPhrases;
 				}
-				this.config.victimChallenges = Object.assign(
-					{},
-					(remoteCfg && remoteCfg.victimChallenges) || {},
-					localCfg.victimChallenges || {}
-				);
 			}
 
-			// Includi anche qualsiasi sfida presente nella Cassaforte locale (retrocompatibilità)
-			const vault = this.getPasswordVault();
-			vault.forEach((v) => {
-				if (v && v.victim && v.ticket && v.victim !== "Ospite") {
-					const key = String(v.victim).trim().toLowerCase();
-					if (!this.config.victimChallenges[key]) {
-						this.config.victimChallenges[key] = {
-							ticket: v.ticket,
-							label: v.victim,
-							gameId: v.gameId || "crack",
-							difficulty: v.difficulty || 2,
-							createdAt: v.createdAt
-						};
-					}
+			// Unisce in modo pulito gli array di lucchetti remoti + locali per ogni Player ID
+			const mergedVictims = {};
+			const mergeSource = (srcMap) => {
+				if (!srcMap || typeof srcMap !== "object") return;
+				for (const [rawKey, val] of Object.entries(srcMap)) {
+					const k = String(rawKey).trim().toLowerCase();
+					const list = this._normalizeChallengeList(val, rawKey);
+					if (!mergedVictims[k]) mergedVictims[k] = [];
+					list.forEach((item) => {
+						if (!mergedVictims[k].some((existing) => existing.ticket === item.ticket || (existing.cid && existing.cid === item.cid))) {
+							mergedVictims[k].push(item);
+						}
+					});
 				}
-			});
+			};
+			mergeSource(remoteCfg && remoteCfg.victimChallenges);
+			mergeSource(localCfg && localCfg.victimChallenges);
+			this.config.victimChallenges = mergedVictims;
 
 			BC_GAMES_LOGGER.log("SYSTEM", "Configuration loaded", {
 				enabledGames: Object.keys(this.config.games).filter((k) => this.config.games[k]?.enabled !== false),
-				registeredVictims: Object.keys(this.config.victimChallenges || {}).length
+				registeredPlayers: Object.keys(this.config.victimChallenges || {}).length
 			});
 		},
 
@@ -1267,9 +1278,7 @@
 			try {
 				this.config.updatedAt = new Date().toISOString();
 				localStorage.setItem(STORAGE_KEYS.CONFIG, JSON.stringify(this.config));
-				BC_GAMES_LOGGER.log("SYSTEM", "Saved configuration to localStorage", {
-					registeredVictims: Object.keys(this.config.victimChallenges || {}).length
-				});
+				BC_GAMES_LOGGER.log("SYSTEM", "Saved configuration to localStorage");
 				if (autoSyncGitHub && localStorage.getItem(STORAGE_KEYS.GH_TOKEN)) {
 					this.syncConfigToGitHub(true);
 				}
@@ -1318,7 +1327,7 @@
 		},
 
 		/* ---------------------------------------------------------------------
-		 * RICERCA INTELLIGENTE SFIDA PER ID VITTIMA / INDIZIO / LINK / TICKET
+		 * RICERCA MULTI-LUCCHETTO PER PLAYER ID / HINT / LINK
 		 * --------------------------------------------------------------------- */
 		initLookupBox() {
 			const inputEl = document.getElementById("victim-lookup-input");
@@ -1338,93 +1347,177 @@
 			const val = String(rawInput || "").trim();
 			const valLow = val.toLowerCase();
 			const feedbackEl = document.getElementById("victim-lookup-feedback");
+			const multiBoxEl = document.getElementById("victim-locks-selector");
+
+			if (multiBoxEl) multiBoxEl.style.display = "none";
 
 			if (!val) {
 				if (feedbackEl) {
-					feedbackEl.textContent = "⚠️ Scrivi il tuo ID / Nome o il codice indizio che ti ha dato il tuo Dom.";
+					feedbackEl.textContent = "⚠️ Please enter your Player ID or Clue Code.";
 					feedbackEl.className = "lookup-feedback error";
 				}
 				return;
 			}
 
-			BC_GAMES_LOGGER.log("CHALLENGE", "Victim lookup requested", { query: val });
+			BC_GAMES_LOGGER.log("CHALLENGE", "Player lock lookup requested", { query: val });
 
-			// 1. Cerca per ID Vittima o Parola-Indizio nel dizionario victimChallenges (case-insensitive o sottostringa)
+			// 1. Cerca tutti i lucchetti associati a questo Player ID (o a questo Lock Hint)
 			const challengesMap = (this.config && this.config.victimChallenges) || {};
-			let matchedEntry = challengesMap[val] || challengesMap[valLow];
+			let matchedList = [];
 
-			if (!matchedEntry) {
-				for (const [k, entry] of Object.entries(challengesMap)) {
-					const kLow = k.toLowerCase();
-					const lblLow = String(entry.label || "").toLowerCase();
-					const noteLow = String(entry.note || "").toLowerCase();
-					if (kLow === valLow || lblLow === valLow || (noteLow && noteLow === valLow) || kLow.includes(valLow)) {
-						matchedEntry = entry;
-						break;
-					}
+			if (challengesMap[valLow]) {
+				matchedList = this._normalizeChallengeList(challengesMap[valLow], val);
+			} else {
+				for (const [k, listOrObj] of Object.entries(challengesMap)) {
+					const normList = this._normalizeChallengeList(listOrObj, k);
+					normList.forEach((item) => {
+						const pLow = String(item.playerId || "").toLowerCase();
+						const lLow = String(item.lockLabel || "").toLowerCase();
+						const cidLow = String(item.cid || "").toLowerCase();
+						if (k === valLow || pLow === valLow || lLow === valLow || cidLow === valLow) {
+							matchedList.push(item);
+						}
+					});
 				}
 			}
 
-			// 2. Cerca anche nella Cassaforte locale (per ID Vittima, per Nota/Indizio o per Password)
-			if (!matchedEntry) {
-				const vault = this.getPasswordVault();
-				const foundInVault = vault.find((v) => {
-					const vicLow = String(v.victim || "").toLowerCase();
-					const noteLow = String(v.note || "").toLowerCase();
-					const passLow = String(v.password || "").toLowerCase();
-					return vicLow === valLow || (noteLow && noteLow === valLow) || passLow === valLow;
-				});
-				if (foundInVault && foundInVault.ticket) {
-					matchedEntry = foundInVault;
-				}
-			}
+			if (matchedList.length > 0) {
+				this.currentMatchedList = matchedList;
+				this.currentQueryId = val;
 
-			if (matchedEntry && matchedEntry.ticket) {
-				BC_GAMES_LOGGER.log("CHALLENGE", "Matched challenge by ID/Hint", {
+				BC_GAMES_LOGGER.log("CHALLENGE", "Found active lock challenges for player", {
 					query: val,
-					label: matchedEntry.label || matchedEntry.victim
+					count: matchedList.length
 				});
-				if (feedbackEl) {
-					feedbackEl.textContent = `✅ Sfida trovata per "${matchedEntry.label || matchedEntry.victim || val}"! Vinci il gioco qui sotto per vedere la password:`;
-					feedbackEl.className = "lookup-feedback success";
+
+				// Mostra sempre l'elenco dei lucchetti trovati per questo ID (così sa sempre per quale lucchetto gioca!)
+				this.renderVictimLocksSelector(val, matchedList);
+
+				if (matchedList.length === 1) {
+					if (feedbackEl) {
+						feedbackEl.textContent = `✅ Found 1 active lock for "${val}" (${matchedList[0].lockLabel}). Beat the game below to reveal its code!`;
+						feedbackEl.className = "lookup-feedback success";
+					}
+					this.launchChallengeFromToken(matchedList[0].ticket, `Player ID (${val})`, matchedList[0]);
+				} else {
+					if (feedbackEl) {
+						feedbackEl.textContent = `🔐 Found ${matchedList.length} active locks for ID "${val}"! Select which lock you want to unlock below:`;
+						feedbackEl.className = "lookup-feedback success";
+					}
+					// Chiude eventuale gioco precedente finché il player non sceglie quale lucchetto affrontare
+					const stageWrap = document.getElementById("active-game-stage-wrap");
+					if (stageWrap) stageWrap.style.display = "none";
 				}
-				this.launchChallengeFromToken(matchedEntry.ticket, `ID/Hint Lookup (${val})`);
 				return;
 			}
 
-			// 3. Prova a decodificarlo come Link (?c=...) o Ticket cifrato (BC-...)
+			// 2. Prova a decodificarlo come Link Diretto (?c=...) o Ticket (BC-...)
 			const decoded = BC_CRYPTO_CODEC.decodeChallenge(val, true);
 			if (decoded) {
-				BC_GAMES_LOGGER.log("CHALLENGE", "Matched challenge by direct Ticket/URL", { query: val.slice(0, 25) });
+				BC_GAMES_LOGGER.log("CHALLENGE", "Loaded challenge from direct Ticket/Link");
 				if (feedbackEl) {
-					feedbackEl.textContent = "✅ Sfida caricata! Vinci il gioco qui sotto per vedere la password:";
+					feedbackEl.textContent = "✅ Direct challenge loaded! Beat the game below to reveal the code:";
 					feedbackEl.className = "lookup-feedback success";
 				}
 				this.startChallengeSession(decoded, val);
 				return;
 			}
 
-			BC_GAMES_LOGGER.log("WARN", "No challenge found for victim lookup query", { query: val });
+			BC_GAMES_LOGGER.log("WARN", "No lock challenge found for query", { query: val });
 			if (feedbackEl) {
-				feedbackEl.textContent = `❌ Nessuna sfida trovata con il codice "${val}". Se sei il Dom, vai su "🔐 Crea Sfida" e premi "✅ Attiva Sfida".`;
+				feedbackEl.textContent = `❌ No active lock found for "${val}". Check your Player ID or ask the lock creator to activate the challenge.`;
 				feedbackEl.className = "lookup-feedback error";
 			}
 		},
 
-		launchChallengeFromToken(tokenStr, sourceLabel = "Token") {
+		renderVictimLocksSelector(queryId, list) {
+			const multiBoxEl = document.getElementById("victim-locks-selector");
+			if (!multiBoxEl) return;
+			multiBoxEl.style.display = "block";
+
+			const diffNames = { 1: "Easy", 2: "Normal", 3: "Hard" };
+
+			let cardsHtml = "";
+			list.forEach((item, idx) => {
+				const gameDef = BC_GAMES_REGISTRY.get(item.gameId);
+				const gameTitle = item.gameId === "gauntlet"
+					? "🏆 Full Gauntlet (All Games)"
+					: gameDef
+					? `${gameDef.icon} ${gameDef.title}`
+					: item.gameId;
+				const timeStr = new Date(item.createdAt).toLocaleString([], {
+					month: "short",
+					day: "numeric",
+					hour: "2-digit",
+					minute: "2-digit"
+				});
+				const solvedCode = this.solvedMap[item.cid || item.ticket];
+
+				cardsHtml += `
+					<div class="vlock-card ${solvedCode ? "vlock-solved" : ""}">
+						<div class="vlock-info">
+							<div class="vlock-title">
+								<span class="badge">#${idx + 1}</span>
+								<strong>🔒 ${this._escapeHtml(item.lockLabel || `Lock #${idx + 1}`)}</strong>
+							</div>
+							<div class="vlock-meta">
+								<span>Game: <strong>${this._escapeHtml(gameTitle)}</strong> (${diffNames[item.difficulty] || "Normal"})</span>
+								<span>• Created: ${this._escapeHtml(timeStr)}</span>
+							</div>
+						</div>
+						<div class="vlock-action">
+							${
+								solvedCode
+									? `<span class="adm-highlight-code">🔓 Code: ${this._escapeHtml(solvedCode)}</span>`
+									: ""
+							}
+							<button type="button" class="btn btn-primary btn-sm" data-start-lock-idx="${idx}">
+								${solvedCode ? "🔄 Replay" : "▶ Play to Unlock"}
+							</button>
+						</div>
+					</div>
+				`;
+			});
+
+			multiBoxEl.innerHTML = `
+				<div class="vlock-header">
+					📋 Active Locks for Player ID <strong>${this._escapeHtml(queryId)}</strong> (${list.length}):
+				</div>
+				<div class="vlock-list">${cardsHtml}</div>
+			`;
+
+			multiBoxEl.querySelectorAll("[data-start-lock-idx]").forEach((btn) => {
+				btn.addEventListener("click", () => {
+					const idx = Number(btn.getAttribute("data-start-lock-idx"));
+					const chosen = list[idx];
+					if (chosen) {
+						this.launchChallengeFromToken(chosen.ticket, `Lock Selector #${idx + 1}`, chosen);
+					}
+				});
+			});
+		},
+
+		launchChallengeFromToken(tokenStr, sourceLabel = "Token", metaEntry = null) {
 			const decoded = BC_CRYPTO_CODEC.decodeChallenge(tokenStr);
 			if (!decoded) {
 				const feedbackEl = document.getElementById("victim-lookup-feedback");
 				if (feedbackEl) {
-					feedbackEl.textContent = "❌ Il link della sfida non è valido o è incompleto.";
+					feedbackEl.textContent = "❌ Invalid or incomplete challenge link.";
 					feedbackEl.className = "lookup-feedback error";
 				}
 				return;
 			}
-			BC_GAMES_LOGGER.log("CHALLENGE", `Loaded challenge from ${sourceLabel}`, {
+			if (metaEntry) {
+				decoded.lockLabel = metaEntry.lockLabel || decoded.lockLabel;
+				decoded.cid = metaEntry.cid || decoded.cid;
+				decoded.victim = metaEntry.playerId || decoded.victim;
+			}
+			BC_GAMES_LOGGER.log("CHALLENGE", `Started challenge from ${sourceLabel}`, {
+				cid: decoded.cid,
 				gameId: decoded.gameId,
 				difficulty: decoded.difficulty,
-				victim: decoded.victim || "(unspecified)"
+				victim: decoded.victim || "(unspecified)",
+				lockLabel: decoded.lockLabel || ""
 			});
 			this.startChallengeSession(decoded, tokenStr);
 		},
@@ -1439,7 +1532,7 @@
 
 			const enabledGames = this.getEnabledGames();
 			if (enabledGames.length === 0) {
-				gridEl.innerHTML = `<div class="empty-notice">Nessun minigioco attivo. Puoi attivarli dal Pannello Admin.</div>`;
+				gridEl.innerHTML = `<div class="empty-notice">No minigames are currently enabled.</div>`;
 				return;
 			}
 
@@ -1454,12 +1547,12 @@
 					<h3>${g.title}</h3>
 					<p>${g.description}</p>
 					<div class="gc-actions">
-						<select class="gc-diff-select" aria-label="Difficoltà">
-							<option value="1">🟢 Facile</option>
-							<option value="2" selected>🟡 Normale</option>
-							<option value="3">🔴 Difficile</option>
+						<select class="gc-diff-select" aria-label="Difficulty">
+							<option value="1">🟢 Easy</option>
+							<option value="2" selected>🟡 Normal</option>
+							<option value="3">🔴 Hard</option>
 						</select>
-						<button type="button" class="btn btn-primary gc-play-btn">▶ Gioca</button>
+						<button type="button" class="btn btn-primary gc-play-btn">▶ Play</button>
 					</div>
 				`;
 
@@ -1477,10 +1570,7 @@
 
 		populateGameSelectors() {
 			const enabled = this.getEnabledGames();
-			const selectors = [
-				document.getElementById("lm-game-select"),
-				document.getElementById("adm-vic-game")
-			];
+			const selectors = [document.getElementById("lm-game-select")];
 			selectors.forEach((sel) => {
 				if (!sel) return;
 				const currentVal = sel.value;
@@ -1493,7 +1583,7 @@
 				});
 				const optGauntlet = document.createElement("option");
 				optGauntlet.value = "gauntlet";
-				optGauntlet.textContent = `🏆 Tutti i ${enabled.length} giochi in fila (Gauntlet)`;
+				optGauntlet.textContent = `🏆 All ${enabled.length} Games in a Row (Gauntlet)`;
 				sel.appendChild(optGauntlet);
 
 				if (currentVal && Array.from(sel.options).some((o) => o.value === currentVal)) {
@@ -1547,21 +1637,20 @@
 			const gameDef = BC_GAMES_REGISTRY.get(currentGameId) || BC_GAMES_REGISTRY.get("crack");
 
 			const stepTag = this.gauntletQueue.length > 1
-				? ` (Gioco ${this.gauntletIndex + 1} di ${this.gauntletQueue.length})`
+				? ` (Stage ${this.gauntletIndex + 1} of ${this.gauntletQueue.length})`
 				: "";
 			stageTitle.textContent = `${gameDef.icon} ${gameDef.title}${stepTag}`;
 
 			if (this.activeChallenge) {
 				const ch = this.activeChallenge;
-				const victimTag = ch.victim ? ` per <strong>${this._escapeHtml(ch.victim)}</strong>` : "";
-				const noteTag = ch.note ? `<div class="ch-note">💬 Messaggio del Dom: <em>"${this._escapeHtml(ch.note)}"</em></div>` : "";
+				const playerTag = ch.victim ? `Player ID: <strong>${this._escapeHtml(ch.victim)}</strong>` : "";
+				const lockTag = ch.lockLabel ? `<span class="badge">🔒 Lock: ${this._escapeHtml(ch.lockLabel)}</span>` : "";
 				stageBanner.style.display = "block";
 				stageBanner.innerHTML = `
 					<div class="ch-banner-main">
-						🔐 <strong>SFIDA SBLOCCO LUCCHETTO</strong>${victimTag}
-						<span class="ch-hint">Vinci la partita per ottenere la password!</span>
+						🔐 <strong>LOCK CHALLENGE</strong> ${playerTag} ${lockTag}
+						<span class="ch-hint">Win this game to reveal the padlock code!</span>
 					</div>
-					${noteTag}
 				`;
 			} else {
 				stageBanner.style.display = "none";
@@ -1618,23 +1707,39 @@
 			stageResult.style.display = "flex";
 
 			if (this.activeChallenge) {
-				const secretCode = this.activeChallenge.password || "0000";
+				const ch = this.activeChallenge;
+				const secretCode = ch.password || "0000";
+				const lockLabel = ch.lockLabel || "Padlock";
+
+				// Salva lo stato sbloccato nella sessione corrente e aggiorna la lista multi-lucchetto
+				const solveKey = ch.cid || ch.rawTicket;
+				if (solveKey) {
+					this.solvedMap[solveKey] = secretCode;
+					try {
+						sessionStorage.setItem(STORAGE_KEYS.SOLVED_LOCKS, JSON.stringify(this.solvedMap));
+					} catch (_) {}
+				}
+				if (this.currentMatchedList && this.currentMatchedList.length > 0) {
+					this.renderVictimLocksSelector(this.currentQueryId, this.currentMatchedList);
+				}
+
 				BC_GAMES_LOGGER.log("CHALLENGE", "Challenge WON — Password revealed to player", {
-					victim: this.activeChallenge.victim || "(anonymous)",
+					victim: ch.victim || "(anonymous)",
+					lockLabel,
 					revealedPassword: secretCode
 				});
 
 				stageResult.innerHTML = `
 					<div class="res-box res-win">
 						<div class="res-icon">🔓✨</div>
-						<h3>Hai Vinto! Ecco il Codice del tuo Lucchetto:</h3>
+						<h3>Lock Unlocked: ${this._escapeHtml(lockLabel)}</h3>
 						<div class="revealed-code-box">
-							<div class="rc-label">Inserisci questo codice su Bondage Club</div>
+							<div class="rc-label">Padlock Code / Password for Bondage Club</div>
 							<div class="rc-value" id="revealed-secret-val">${this._escapeHtml(secretCode)}</div>
-							<button type="button" class="btn btn-primary" id="btn-copy-revealed">📋 Copia Codice</button>
+							<button type="button" class="btn btn-primary" id="btn-copy-revealed">📋 Copy Code</button>
 						</div>
 						<div class="res-actions">
-							<button type="button" class="btn" id="btn-replay-stage">🔄 Gioca di Nuovo</button>
+							<button type="button" class="btn" id="btn-replay-stage">🔄 Play Again</button>
 						</div>
 					</div>
 				`;
@@ -1643,8 +1748,8 @@
 				if (copyBtn) {
 					copyBtn.addEventListener("click", () => {
 						navigator.clipboard.writeText(secretCode).then(() => {
-							copyBtn.textContent = "✅ Codice Copiato!";
-							setTimeout(() => (copyBtn.textContent = "📋 Copia Codice"), 2000);
+							copyBtn.textContent = "✅ Code Copied!";
+							setTimeout(() => (copyBtn.textContent = "📋 Copy Code"), 2000);
 						});
 					});
 				}
@@ -1652,10 +1757,10 @@
 				stageResult.innerHTML = `
 					<div class="res-box res-win">
 						<div class="res-icon">🏆🎉</div>
-						<h3>Hai Vinto!</h3>
-						<p>Ottima partita in modalità allenamento.</p>
+						<h3>You Won!</h3>
+						<p>Great job in Free Play mode.</p>
 						<div class="res-actions">
-							<button type="button" class="btn btn-primary" id="btn-replay-stage">🔄 Gioca Ancora</button>
+							<button type="button" class="btn btn-primary" id="btn-replay-stage">🔄 Play Again</button>
 						</div>
 					</div>
 				`;
@@ -1679,14 +1784,14 @@
 			if (!stageResult) return;
 			stageResult.style.display = "flex";
 
-			const reason = (loseInfo && loseInfo.reason) || "Non sei riuscita a sbloccare il meccanismo!";
+			const reason = (loseInfo && loseInfo.reason) || "You failed to unlock the mechanism!";
 			stageResult.innerHTML = `
 				<div class="res-box res-lose">
 					<div class="res-icon">🔒💥</div>
-					<h3>Tentativo Fallito!</h3>
+					<h3>Unlock Attempt Failed!</h3>
 					<p>${this._escapeHtml(reason)}</p>
 					<div class="res-actions">
-						<button type="button" class="btn btn-primary" id="btn-retry-stage">🔄 Riprova Subito</button>
+						<button type="button" class="btn btn-primary" id="btn-retry-stage">🔄 Try Again</button>
 					</div>
 				</div>
 			`;
@@ -1700,16 +1805,16 @@
 		},
 
 		/* ---------------------------------------------------------------------
-		 * CREA SFIDA LUCCHETTO (FLUSSO SEMPLIFICATO & AUTOMATICO PER DOM)
+		 * CREATE LOCK CHALLENGE (MULTI-LOCK SUPPORT PER PLAYER ID)
 		 * --------------------------------------------------------------------- */
 		initLockmasterForm() {
 			const victimInputEl = document.getElementById("lm-victim-name");
+			const lockLabelInputEl = document.getElementById("lm-dom-note");
 			const codeInputEl = document.getElementById("lm-secret-code");
 			const rand4Btn = document.getElementById("lm-btn-rand-4");
 			const randWordBtn = document.getElementById("lm-btn-rand-word");
 			const gameSelectEl = document.getElementById("lm-game-select");
 			const diffSelectEl = document.getElementById("lm-diff-select");
-			const noteInputEl = document.getElementById("lm-dom-note");
 			const generateBtn = document.getElementById("lm-btn-generate");
 			const outputBox = document.getElementById("lm-output-box");
 
@@ -1735,64 +1840,62 @@
 				let victimKey = victimInputEl ? victimInputEl.value.trim() : "";
 				let password = String(codeInputEl.value || "").trim().toUpperCase();
 
-				// Se il Dom non ha scritto un ID/Indizio per la vittima, ne genera uno semplice a 6 cifre
 				if (!victimKey) {
 					victimKey = String(Math.floor(100000 + Math.random() * 900000));
 					if (victimInputEl) victimInputEl.value = victimKey;
 				}
 
-				// Se il Dom non ha scritto una password, genera un PIN a 4 cifre
 				if (!password) {
 					password = String(Math.floor(1000 + Math.random() * 9000));
 					codeInputEl.value = password;
 				}
 
+				const vKeyLow = victimKey.toLowerCase();
+				this.config.victimChallenges = this.config.victimChallenges || {};
+				const existingList = this._normalizeChallengeList(this.config.victimChallenges[vKeyLow], victimKey);
+
+				const nextNum = existingList.length + 1;
+				let lockLabel = lockLabelInputEl ? lockLabelInputEl.value.trim() : "";
+				if (!lockLabel) {
+					lockLabel = `Lock #${nextNum}`;
+				}
+
 				const lockType = /^\d{4}$/.test(password) ? "comb" : "pass";
-				const note = noteInputEl ? noteInputEl.value.trim() : "";
+				const cid = `L${Date.now().toString(36).slice(-4).toUpperCase()}`;
 
 				const payload = {
+					cid,
 					password,
 					lockType,
 					gameId: gameSelectEl.value || "crack",
 					difficulty: Number(diffSelectEl.value || 2),
 					victim: victimKey,
-					note
+					lockLabel
 				};
 
 				const { token, ticket } = BC_CRYPTO_CODEC.encodeChallenge(payload);
 				const baseUrl = window.location.origin + window.location.pathname;
 				const fullUrl = `${baseUrl}?c=${token}`;
 
-				// 1. REGISTRA SUBITO L'ID / INDIZIO DELLA VITTIMA così funziona subito nella barra di ricerca!
-				this.config.victimChallenges = this.config.victimChallenges || {};
-				this.config.victimChallenges[victimKey.toLowerCase()] = {
-					ticket,
-					label: victimKey,
-					note,
+				// Aggiunge il nuovo lucchetto alla lista del Player ID (senza sovrascrivere i precedenti!)
+				existingList.push({
+					cid,
+					playerId: victimKey,
+					lockLabel,
 					gameId: payload.gameId,
 					difficulty: payload.difficulty,
+					ticket,
 					createdAt: new Date().toISOString()
-				};
-
-				// Se c'è anche una parola nell'indizio/nota, indicizzala come chiave secondaria
-				if (note && note.length <= 25) {
-					this.config.victimChallenges[note.toLowerCase()] = {
-						ticket,
-						label: `${victimKey} (${note})`,
-						note,
-						gameId: payload.gameId,
-						difficulty: payload.difficulty,
-						createdAt: new Date().toISOString()
-					};
-				}
+				});
+				this.config.victimChallenges[vKeyLow] = existingList;
 
 				this.saveLocalConfig(true);
 
-				// 2. Salva nella Cassaforte Storico Lucchetti
 				this.addToPasswordVault({
+					cid,
 					createdAt: new Date().toISOString(),
 					victim: victimKey,
-					note,
+					lockLabel,
 					lockType: payload.lockType,
 					password: payload.password,
 					gameId: payload.gameId,
@@ -1802,17 +1905,20 @@
 				});
 
 				outputBox.style.display = "block";
-				document.getElementById("lm-out-victim-key").textContent = victimKey;
+				document.getElementById("lm-out-victim-key").textContent = `${victimKey} (${lockLabel})`;
 				document.getElementById("lm-out-password").textContent = payload.password;
 				document.getElementById("lm-out-url").value = fullUrl;
 
 				const testBtn = document.getElementById("lm-btn-test-now");
 				if (testBtn) {
 					testBtn.onclick = () => {
+						const inp = document.getElementById("victim-lookup-input");
+						if (inp) inp.value = victimKey;
 						this.lookupChallengeByInput(victimKey);
 					};
 				}
 
+				if (lockLabelInputEl) lockLabelInputEl.value = "";
 				this.renderDomActiveChallenges();
 				BC_SOUND_FX.unlockSuccess();
 			});
@@ -1822,8 +1928,8 @@
 				copyUrlBtn.addEventListener("click", () => {
 					const val = document.getElementById("lm-out-url").value;
 					navigator.clipboard.writeText(val).then(() => {
-						copyUrlBtn.textContent = "✅ Link Copiato!";
-						setTimeout(() => (copyUrlBtn.textContent = "📋 Copia Link Diretto"), 2000);
+						copyUrlBtn.textContent = "✅ Link Copied!";
+						setTimeout(() => (copyUrlBtn.textContent = "📋 Copy Direct Link"), 2000);
 					});
 				});
 			}
@@ -1835,15 +1941,22 @@
 			const tbody = document.getElementById("lm-active-list-body");
 			if (!tbody) return;
 			const map = (this.config && this.config.victimChallenges) || {};
-			const entries = Object.entries(map);
+			const allRows = [];
 
-			if (entries.length === 0) {
-				tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--muted);">Nessuna sfida creata finora. Compila i campi qui sopra e premi "✅ Attiva Sfida".</td></tr>`;
+			for (const [key, listOrObj] of Object.entries(map)) {
+				const list = this._normalizeChallengeList(listOrObj, key);
+				list.forEach((item) => {
+					allRows.push({ key, item });
+				});
+			}
+
+			if (allRows.length === 0) {
+				tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--muted);">No active lock challenges yet. Fill in the fields above and click "✅ Activate Challenge".</td></tr>`;
 				return;
 			}
 
 			tbody.innerHTML = "";
-			entries.forEach(([key, item]) => {
+			allRows.forEach(({ key, item }) => {
 				const decoded = BC_CRYPTO_CODEC.decodeChallenge(item.ticket, true);
 				const pass = decoded ? decoded.password : "???";
 				const token = item.ticket.replace(/^BC-/i, "");
@@ -1852,17 +1965,20 @@
 
 				const tr = document.createElement("tr");
 				tr.innerHTML = `
-					<td><strong>${this._escapeHtml(item.label || key)}</strong></td>
+					<td><strong>${this._escapeHtml(item.playerId || key)}</strong></td>
+					<td><span class="badge">🔒 ${this._escapeHtml(item.lockLabel)}</span></td>
 					<td><span class="adm-highlight-code">${this._escapeHtml(pass)}</span></td>
 					<td>${this._escapeHtml(item.gameId)}</td>
 					<td style="display:flex; gap:6px; flex-wrap:wrap;">
-						<button type="button" class="btn btn-primary btn-sm" data-play-key="${this._escapeHtml(key)}">▶ Prova</button>
+						<button type="button" class="btn btn-primary btn-sm" data-play-cid="${this._escapeHtml(item.cid)}">▶ Test</button>
 						<button type="button" class="btn btn-sm" data-copy-link="${this._escapeHtml(fullUrl)}">📋 Link</button>
-						<button type="button" class="btn btn-sm" data-del-key="${this._escapeHtml(key)}">🗑️</button>
+						<button type="button" class="btn btn-sm" data-del-cid="${this._escapeHtml(item.cid)}">🗑️</button>
 					</td>
 				`;
-				tr.querySelector("[data-play-key]").addEventListener("click", () => {
-					this.lookupChallengeByInput(key);
+				tr.querySelector("[data-play-cid]").addEventListener("click", () => {
+					const inp = document.getElementById("victim-lookup-input");
+					if (inp) inp.value = item.playerId || key;
+					this.lookupChallengeByInput(item.playerId || key);
 				});
 				const copyBtn = tr.querySelector("[data-copy-link]");
 				copyBtn.addEventListener("click", () => {
@@ -1871,8 +1987,14 @@
 						setTimeout(() => (copyBtn.textContent = "📋 Link"), 1500);
 					});
 				});
-				tr.querySelector("[data-del-key]").addEventListener("click", () => {
-					delete this.config.victimChallenges[key];
+				tr.querySelector("[data-del-cid]").addEventListener("click", () => {
+					const currentList = this._normalizeChallengeList(this.config.victimChallenges[key], key);
+					const filtered = currentList.filter((x) => x.cid !== item.cid);
+					if (filtered.length === 0) {
+						delete this.config.victimChallenges[key];
+					} else {
+						this.config.victimChallenges[key] = filtered;
+					}
 					this.saveLocalConfig(true);
 					this.renderDomActiveChallenges();
 				});
@@ -1899,7 +2021,7 @@
 		},
 
 		/* ---------------------------------------------------------------------
-		 * PANNELLO ADMIN PROTETTO (Password: J0J08408)
+		 * PROTECTED ADMIN PANEL
 		 * --------------------------------------------------------------------- */
 		initAdminPanel() {
 			const loginBtn = document.getElementById("adm-login-btn");
@@ -1918,7 +2040,6 @@
 							sessionStorage.setItem(STORAGE_KEYS.ADMIN_SESSION, "true");
 						} catch (_) {}
 
-						// Decifra automaticamente il GitHub Token in memoria usando la password inserita!
 						const unlockedToken = await BC_CRYPTO_CODEC.unlockGitHubTokenWithPassword(val);
 						if (unlockedToken) {
 							try {
@@ -1964,27 +2085,33 @@
 					const inp = document.getElementById("adm-decrypt-input").value.trim();
 					const resBox = document.getElementById("adm-decrypt-result");
 
-					// Cerca sia per ID/Indizio che per Link/Ticket
-					let decoded = BC_CRYPTO_CODEC.decodeChallenge(inp, true);
-					if (!decoded && this.config.victimChallenges) {
-						const byId = this.config.victimChallenges[inp.toLowerCase()];
-						if (byId && byId.ticket) decoded = BC_CRYPTO_CODEC.decodeChallenge(byId.ticket, true);
-					}
-
-					if (!decoded) {
+					const decodedSingle = BC_CRYPTO_CODEC.decodeChallenge(inp, true);
+					if (decodedSingle) {
 						resBox.style.display = "block";
-						resBox.innerHTML = `<span style="color:var(--danger)">❌ Nessuna password trovata per questo link o ID.</span>`;
+						resBox.innerHTML = `
+							<div><strong>🔑 PADLOCK CODE:</strong> <span class="adm-highlight-code">${this._escapeHtml(decodedSingle.password)}</span></div>
+							<div><strong>👤 Player ID:</strong> ${this._escapeHtml(decodedSingle.victim || "(Any)")} — <strong>Lock:</strong> ${this._escapeHtml(decodedSingle.lockLabel || "Default")}</div>
+						`;
 						return;
 					}
-					BC_GAMES_LOGGER.log("ADMIN", "Admin inspected challenge password", decoded);
+
+					const list = this._normalizeChallengeList(
+						this.config.victimChallenges && this.config.victimChallenges[inp.toLowerCase()],
+						inp
+					);
+					if (list.length > 0) {
+						resBox.style.display = "block";
+						resBox.innerHTML = list
+							.map((item) => {
+								const d = BC_CRYPTO_CODEC.decodeChallenge(item.ticket, true);
+								return `<div style="margin-bottom:6px;">🔒 <strong>${this._escapeHtml(item.lockLabel)}</strong> → Code: <span class="adm-highlight-code">${this._escapeHtml(d ? d.password : "???")}</span> (${this._escapeHtml(item.gameId)})</div>`;
+							})
+							.join("");
+						return;
+					}
+
 					resBox.style.display = "block";
-					resBox.innerHTML = `
-						<div class="adm-dec-grid">
-							<div><strong>🔑 CODICE / PASSWORD DEL LUCCHETTO:</strong> <span class="adm-highlight-code">${this._escapeHtml(decoded.password)}</span></div>
-							<div><strong>👤 Vittima / Indizio:</strong> ${this._escapeHtml(decoded.victim || "(Qualsiasi)")}</div>
-							<div><strong>🎮 Minigioco:</strong> ${this._escapeHtml(decoded.gameId)} (Difficoltà ${decoded.difficulty})</div>
-						</div>
-					`;
+					resBox.innerHTML = `<span style="color:var(--danger)">❌ No password found for this link or Player ID.</span>`;
 				});
 			}
 
@@ -1992,8 +2119,8 @@
 			if (copyLogBtn) {
 				copyLogBtn.addEventListener("click", () => {
 					navigator.clipboard.writeText(BC_GAMES_LOGGER.formatAsText()).then(() => {
-						copyLogBtn.textContent = "✅ Log Copiato!";
-						setTimeout(() => (copyLogBtn.textContent = "📋 Copia Log"), 2000);
+						copyLogBtn.textContent = "✅ Log Copied!";
+						setTimeout(() => (copyLogBtn.textContent = "📋 Copy Log"), 2000);
 					});
 				});
 			}
@@ -2086,7 +2213,7 @@
 						<div class="adm-game-title">${g.icon} <strong>${g.title}</strong> <span class="badge">${g.id}</span></div>
 						<label class="adm-switch">
 							<input type="checkbox" data-toggle-game="${g.id}" ${isEnabled ? "checked" : ""}>
-							<span>${isEnabled ? "🟢 Attivo" : "🔴 Disattivato"}</span>
+							<span>${isEnabled ? "🟢 Enabled" : "🔴 Disabled"}</span>
 						</label>
 					</div>
 					<div class="adm-params-grid">${fieldsHtml}</div>
@@ -2127,7 +2254,7 @@
 			if (!tbody) return;
 			const vault = this.getPasswordVault();
 			if (vault.length === 0) {
-				tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--muted);">Nessun lucchetto generato finora.</td></tr>`;
+				tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--muted);">No locks generated yet.</td></tr>`;
 				return;
 			}
 
@@ -2137,16 +2264,16 @@
 				const dateStr = new Date(v.createdAt).toLocaleString();
 				tr.innerHTML = `
 					<td>${this._escapeHtml(dateStr)}</td>
-					<td><strong>${this._escapeHtml(v.victim || "Ospite")}</strong></td>
+					<td><strong>${this._escapeHtml(v.victim || "Guest")}</strong> <span class="badge">${this._escapeHtml(v.lockLabel || "Lock")}</span></td>
 					<td><span class="adm-highlight-code">${this._escapeHtml(v.password)}</span></td>
 					<td>${this._escapeHtml(v.gameId)}</td>
-					<td><button type="button" class="btn btn-sm" data-copy-vault="${this._escapeHtml(v.fullUrl)}">🔗 Copia Link</button></td>
+					<td><button type="button" class="btn btn-sm" data-copy-vault="${this._escapeHtml(v.fullUrl)}">🔗 Copy Link</button></td>
 				`;
 				const btn = tr.querySelector("[data-copy-vault]");
 				btn.addEventListener("click", () => {
 					navigator.clipboard.writeText(v.fullUrl).then(() => {
-						btn.textContent = "✅ Copiato!";
-						setTimeout(() => (btn.textContent = "🔗 Copia Link"), 1500);
+						btn.textContent = "✅ Copied!";
+						setTimeout(() => (btn.textContent = "🔗 Copy Link"), 1500);
 					});
 				});
 				tbody.appendChild(tr);
@@ -2162,7 +2289,7 @@
 
 		async _putGitHubFile(repoPath, contentStr, commitMsg) {
 			const token = localStorage.getItem(STORAGE_KEYS.GH_TOKEN);
-			if (!token) throw new Error("Effettua il login nel Pannello Admin almeno una volta per attivare il Cloud Sync.");
+			if (!token) throw new Error("Log into the Admin Panel once to enable automatic Cloud Sync.");
 
 			const apiUrl = `https://api.github.com/repos/JoJo-BC/JoJo-Mod/contents/${repoPath}`;
 			const getRes = await fetch(apiUrl, {
@@ -2205,7 +2332,7 @@
 		async syncConfigToGitHub(silent = false) {
 			const statusEl = document.getElementById("adm-gh-sync-status");
 			if (!silent && statusEl) {
-				statusEl.textContent = "⏳ Salvataggio automatico su GitHub Pages in corso...";
+				statusEl.textContent = "⏳ Saving to GitHub Pages...";
 				statusEl.style.color = "var(--info)";
 			}
 
@@ -2216,7 +2343,7 @@
 					"Auto-sync games-config.json from BC Arcade"
 				);
 				if (!silent && statusEl) {
-					statusEl.textContent = "✅ Sfide e Parametri salvati online su GitHub Pages!";
+					statusEl.textContent = "✅ Challenges and settings synced to GitHub Pages!";
 					statusEl.style.color = "var(--success)";
 				}
 			} catch (err) {
@@ -2231,7 +2358,7 @@
 			const token = localStorage.getItem(STORAGE_KEYS.GH_TOKEN);
 			if (!token) return;
 			const btn = document.getElementById("adm-sync-log-gh");
-			if (!silent && btn) btn.textContent = "⏳ Invio su GitHub...";
+			if (!silent && btn) btn.textContent = "⏳ Uploading Log...";
 
 			try {
 				await this._putGitHubFile(
@@ -2240,11 +2367,11 @@
 					"Auto-sync diagnostic-log.txt from BC Arcade"
 				);
 				if (!silent && btn) {
-					btn.textContent = "✅ Log Inviato su GitHub!";
-					setTimeout(() => (btn.textContent = "☁️ Invia Log su GitHub per l'IA"), 2500);
+					btn.textContent = "✅ Log Synced to Cloud!";
+					setTimeout(() => (btn.textContent = "☁️ Sync Log to Cloud"), 2500);
 				}
 			} catch (_) {
-				if (!silent && btn) btn.textContent = "❌ Errore Invio";
+				if (!silent && btn) btn.textContent = "❌ Sync Failed";
 			}
 		},
 

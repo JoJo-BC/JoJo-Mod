@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -37,20 +37,9 @@
 		.top-bar {
 			display: flex;
 			align-items: center;
-			justify-content: space-between;
-			margin-bottom: 14px;
-			flex-wrap: wrap;
-			gap: 10px;
+			justify-content: flex-end;
+			margin-bottom: 12px;
 		}
-		.back-link {
-			color: var(--muted);
-			text-decoration: none;
-			font-size: 0.9rem;
-			display: inline-flex;
-			align-items: center;
-			gap: 6px;
-		}
-		.back-link:hover { color: var(--accent); }
 		.header {
 			background: linear-gradient(135deg, rgba(217, 67, 212, 0.14), rgba(19, 23, 34, 0.95));
 			border: 1px solid var(--border);
@@ -172,7 +161,7 @@
 			border-color: var(--accent);
 		}
 
-		/* Victim Lookup Box */
+		/* Victim Lookup Box & Multi-Lock Selector */
 		.lookup-box {
 			background: linear-gradient(90deg, rgba(19, 23, 34, 0.98), rgba(29, 22, 46, 0.92));
 			border: 2px solid rgba(217, 67, 212, 0.5);
@@ -195,6 +184,57 @@
 		}
 		.lookup-feedback.error { color: #f87171; }
 		.lookup-feedback.success { color: #34d399; }
+
+		.vlock-selector {
+			margin-top: 16px;
+			padding-top: 14px;
+			border-top: 1px solid var(--border);
+		}
+		.vlock-header {
+			font-size: 0.92rem;
+			color: #d5dcf2;
+			margin-bottom: 10px;
+		}
+		.vlock-list {
+			display: flex;
+			flex-direction: column;
+			gap: 10px;
+		}
+		.vlock-card {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 12px;
+			flex-wrap: wrap;
+			background: var(--card-sub);
+			border: 1px solid var(--border);
+			border-radius: 10px;
+			padding: 12px 16px;
+		}
+		.vlock-card.vlock-solved {
+			border-color: var(--success);
+			background: rgba(16, 185, 129, 0.08);
+		}
+		.vlock-title {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			font-size: 1rem;
+			color: #fff;
+			margin-bottom: 4px;
+		}
+		.vlock-meta {
+			font-size: 0.82rem;
+			color: var(--muted);
+			display: flex;
+			gap: 8px;
+			flex-wrap: wrap;
+		}
+		.vlock-action {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+		}
 
 		/* Arcade Cards Grid */
 		.games-grid {
@@ -279,18 +319,13 @@
 		.ch-banner-main {
 			display: flex;
 			align-items: center;
-			gap: 8px;
+			gap: 10px;
 			flex-wrap: wrap;
 		}
 		.ch-hint {
 			color: #f78ef3;
 			margin-left: auto;
 			font-size: 0.85rem;
-		}
-		.ch-note {
-			margin-top: 6px;
-			color: #d8dff5;
-			font-size: 0.86rem;
 		}
 		.mg-header-bar {
 			display: flex;
@@ -681,47 +716,49 @@
 	<div class="container">
 		<!-- Top Bar -->
 		<div class="top-bar">
-			<a class="back-link" href="../index.html">← Torna a JoJo-Mod Home</a>
 			<button type="button" id="btn-toggle-audio" class="btn btn-sm">🔊 Audio On</button>
 		</div>
 
 		<!-- Header -->
 		<header class="header">
-			<h1>🎮 BC Arcade &amp; Lock Recovery <span class="badge">v1.1</span></h1>
-			<p>Gioca ai minigiochi a tema Bondage Club o supera la prova per scoprire la combinazione del tuo lucchetto.</p>
+			<h1>🎮 BC Arcade &amp; Lock Recovery <span class="badge">v1.2</span></h1>
+			<p>Play Bondage Club minigames for fun or beat a challenge to reveal your padlock code.</p>
 			<div class="nav-tabs">
-				<button type="button" class="nav-tab-btn active" data-tab="arcade">🔓 Sblocca Lucchetto &amp; Giochi</button>
-				<button type="button" class="nav-tab-btn" data-tab="lockmaster">🔐 Crea Sfida (Per Dom)</button>
+				<button type="button" class="nav-tab-btn active" data-tab="arcade">🔓 Unlock Padlock &amp; Play</button>
+				<button type="button" class="nav-tab-btn" data-tab="lockmaster">🔐 Create Lock Challenge</button>
 				<button type="button" class="nav-tab-btn" data-tab="admin">🛡️ Admin</button>
 			</div>
 		</header>
 
 		<!-- =================================================================
-		     VISTA 1: VITTIMA (SBLOCCA LUCCHETTO) & SALA GIOCHI
+		     VIEW 1: UNLOCK PADLOCK & FREE PLAY ARCADE
 		     ================================================================= -->
 		<main id="view-arcade" class="view-section">
-			<!-- Box Semplice per la Vittima -->
+			<!-- Player Lookup Box -->
 			<section class="card lookup-box">
-				<h2>🔓 Devi Sbloccare il tuo Lucchetto?</h2>
+				<h2>🔓 Need to Unlock a Padlock?</h2>
 				<p style="margin:0; font-size:0.92rem; color:var(--muted);">
-					Inserisci il tuo <strong>ID Giocatore</strong> (o la <strong>Parola-Indizio</strong> che ti ha dato il tuo Dom) e vinci il minigioco per scoprire la password:
+					Enter your <strong>Player ID</strong> (or Clue Code) below to see your active locks and play to reveal the password:
 				</p>
 				<div class="lookup-row">
-					<input type="text" id="victim-lookup-input" placeholder="Scrivi qui il tuo ID o Indizio (es. 112233)...">
-					<button type="button" id="victim-lookup-btn" class="btn btn-primary">▶ Gioca per Sbloccare</button>
+					<input type="text" id="victim-lookup-input" placeholder="Enter your Player ID or Clue Code (e.g. 123456)...">
+					<button type="button" id="victim-lookup-btn" class="btn btn-primary">🔍 Find My Locks</button>
 				</div>
 				<div id="victim-lookup-feedback" class="lookup-feedback"></div>
+
+				<!-- Multi-Lock Selector (Shows all active locks for this Player ID) -->
+				<div id="victim-locks-selector" class="vlock-selector" style="display:none;"></div>
 			</section>
 
-			<!-- Area del Minigioco in Corso -->
+			<!-- Active Game Stage -->
 			<section id="active-game-stage-wrap" class="card stage-wrap" style="display:none;">
 				<div class="stage-header">
-					<h2 id="stage-game-title">Minigioco</h2>
+					<h2 id="stage-game-title">Minigame</h2>
 					<div style="display:flex; gap:8px;">
 						<button type="button" id="btn-admin-force-win" class="btn btn-sm" style="display:none; background:#b45309; border-color:#f59e0b;">
-							⚡ Admin Bypass (Mostra Password)
+							⚡ Admin Bypass (Reveal Code)
 						</button>
-						<button type="button" id="btn-close-stage" class="btn btn-sm">✖ Chiudi</button>
+						<button type="button" id="btn-close-stage" class="btn btn-sm">✖ Close</button>
 					</div>
 				</div>
 
@@ -730,98 +767,100 @@
 				<div id="stage-result-overlay" class="stage-result-overlay" style="display:none;"></div>
 			</section>
 
-			<!-- Minigiochi Liberi (Allenamento / Divertimento) -->
+			<!-- Free Play Arcade -->
 			<section class="card">
-				<h2>🕹️ Gioca per Divertimento (Allenamento Libero)</h2>
+				<h2>🕹️ Free Play Arcade</h2>
 				<div id="arcade-cards-grid" class="games-grid" style="margin-top:12px;"></div>
 			</section>
 		</main>
 
 		<!-- =================================================================
-		     VISTA 2: CREA SFIDA LUCCHETTO (PER DOM) — SEMPLIFICATA IN 3 PASSI
+		     VIEW 2: CREATE LOCK CHALLENGE (FOR KEYHOLDERS / DOMS)
 		     ================================================================= -->
 		<section id="view-lockmaster" class="view-section" style="display:none;">
 			<div class="card">
-				<h2>🔐 Crea una Sfida per un Lucchetto</h2>
+				<h2>🔐 Create a Lock Challenge</h2>
 				<p style="margin:0 0 16px 0; font-size:0.92rem; color:var(--muted);">
-					Compila i 3 campi qui sotto e premi <strong>"✅ Attiva Sfida"</strong>. La vittima dovrà vincere il minigioco scelto per vedere la password del lucchetto.
+					Set up a minigame challenge for a padlock. You can create multiple locks for the same Player ID — just specify which restraint each lock is on (e.g. <em>Armbinder</em>, <em>Collar</em>, <em>Ankle Cuffs</em>).
 				</p>
 
 				<div class="form-grid">
 					<div class="form-field">
-						<label for="lm-victim-name">1. ID della Vittima (o Parola-Indizio)</label>
-						<input type="text" id="lm-victim-name" placeholder="Es. 112233 oppure Alice">
-						<span class="field-hint">Cosa dovrà scrivere la vittima nella pagina iniziale per avviare la sua sfida.</span>
+						<label for="lm-victim-name">1. Target Player ID (or Clue Code)</label>
+						<input type="text" id="lm-victim-name" placeholder="e.g. 123456">
+						<span class="field-hint">The locked player will type this ID on the main screen to find their locks.</span>
 					</div>
 
 					<div class="form-field">
-						<label for="lm-secret-code">2. Password o Combinazione del Lucchetto</label>
+						<label for="lm-dom-note">2. Which Restraint / Lock Name?</label>
+						<input type="text" id="lm-dom-note" placeholder="e.g. Latex Armbinder, Collar, Lock #1">
+						<span class="field-hint">Helps the player know which padlock this code opens if they have multiple locks.</span>
+					</div>
+
+					<div class="form-field">
+						<label for="lm-secret-code">3. Padlock Code or Password</label>
 						<div class="input-with-btn">
-							<input type="text" id="lm-secret-code" placeholder="Es. 4829 o SUBBY44" maxlength="8">
-							<button type="button" id="lm-btn-rand-4" class="btn btn-sm" title="Inventa 4 cifre">🎲 4 Cifre</button>
-							<button type="button" id="lm-btn-rand-word" class="btn btn-sm" title="Inventa password">🎲 Parola</button>
+							<input type="text" id="lm-secret-code" placeholder="e.g. 4829 or LOCKED99" maxlength="8">
+							<button type="button" id="lm-btn-rand-4" class="btn btn-sm" title="Generate 4 digits">🎲 4-Digit</button>
+							<button type="button" id="lm-btn-rand-word" class="btn btn-sm" title="Generate password">🎲 Word</button>
 						</div>
-						<span class="field-hint">Il codice vero del lucchetto in Bondage Club (svelato alla vittima solo se vince).</span>
+						<span class="field-hint">The secret code used on the padlock in Bondage Club (revealed upon victory).</span>
 					</div>
 
 					<div class="form-field">
-						<label for="lm-game-select">3. Minigioco da Superare</label>
-						<select id="lm-game-select"></select>
-					</div>
-
-					<div class="form-field">
-						<label for="lm-diff-select">4. Difficoltà &amp; Messaggio (Opzionale)</label>
+						<label for="lm-game-select">4. Minigame &amp; Difficulty</label>
 						<div style="display:flex; gap:8px;">
-							<select id="lm-diff-select" style="width:130px;">
-								<option value="1">🟢 Facile</option>
-								<option value="2" selected>🟡 Normale</option>
-								<option value="3">🔴 Difficile</option>
+							<select id="lm-game-select" style="flex:1;"></select>
+							<select id="lm-diff-select" style="width:120px;">
+								<option value="1">🟢 Easy</option>
+								<option value="2" selected>🟡 Normal</option>
+								<option value="3">🔴 Hard</option>
 							</select>
-							<input type="text" id="lm-dom-note" placeholder="Messaggio per la vittima (opzionale)" style="flex:1;">
 						</div>
 					</div>
 				</div>
 
 				<div style="margin-top: 18px;">
 					<button type="button" id="lm-btn-generate" class="btn btn-primary" style="width:100%; padding:14px; font-size:1.05rem;">
-						✅ ATTIVA SFIDA &amp; CREA LINK
+						✅ ACTIVATE CHALLENGE &amp; CREATE LINK
 					</button>
 				</div>
 
-				<!-- Box di Conferma Chiaro -->
+				<!-- Confirmation Box -->
 				<div id="lm-output-box" class="output-panel" style="display:none;">
 					<div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
 						<h3 style="margin:0; color:#6ee7b7;">
-							🎉 Sfida Attivata! (Password Lucchetto: <span id="lm-out-password" class="adm-highlight-code"></span>)
+							🎉 Challenge Active! (Padlock Code: <span id="lm-out-password" class="adm-highlight-code"></span>)
 						</h3>
-						<button type="button" id="lm-btn-test-now" class="btn btn-primary btn-sm">▶ Prova Subito come Vittima</button>
+						<button type="button" id="lm-btn-test-now" class="btn btn-primary btn-sm">▶ Test as Player Now</button>
 					</div>
 
 					<p style="margin:0 0 10px 0; font-size:0.92rem;">
-						👉 <strong>Modo 1 (Codice/ID):</strong> Dì alla vittima di aprire il sito e scrivere <span id="lm-out-victim-key" class="adm-highlight-code"></span> nella casella di sblocco.
+						👉 <strong>Option 1 (By Player ID):</strong> Tell the player to enter their ID on the main page to unlock <span id="lm-out-victim-key" class="adm-highlight-code"></span>.
 					</p>
 
 					<div class="form-field">
-						<label style="font-size:0.9rem;">👉 Modo 2 (Link Diretto): Oppure mandale questo link in chat (se lo clicca, il gioco parte subito da solo!):</label>
+						<label style="font-size:0.9rem;">👉 Option 2 (Direct Link): Or send them this link in chat (starts the game immediately):</label>
 						<div class="input-with-btn">
 							<input type="text" id="lm-out-url" readonly>
-							<button type="button" id="lm-copy-url" class="btn btn-primary">📋 Copia Link Diretto</button>
+							<button type="button" id="lm-copy-url" class="btn btn-primary">📋 Copy Direct Link</button>
 						</div>
 					</div>
 				</div>
 			</div>
 
-			<!-- Tabella Sfide Attive -->
+			<!-- Active Challenges Table -->
 			<div class="card">
-				<h2>📋 Le Tue Sfide Attive</h2>
+				<h2>📋 Active Lock Challenges</h2>
 				<div style="overflow-x:auto;">
 					<table class="adm-table">
 						<thead>
 							<tr>
-								<th>ID Vittima / Indizio</th>
-								<th>Password Lucchetto</th>
-								<th>Minigioco</th>
-								<th>Azioni</th>
+								<th>Player ID</th>
+								<th>Restraint / Lock</th>
+								<th>Padlock Code</th>
+								<th>Minigame</th>
+								<th>Actions</th>
 							</tr>
 						</thead>
 						<tbody id="lm-active-list-body"></tbody>
@@ -831,61 +870,61 @@
 		</section>
 
 		<!-- =================================================================
-		     VISTA 3: PANNELLO ADMIN PROTETTO (JOJO)
+		     VIEW 3: PROTECTED ADMIN PANEL
 		     ================================================================= -->
 		<section id="view-admin" class="view-section" style="display:none;">
 			<div id="adm-login-gate" class="card" style="max-width:440px; margin:0 auto; text-align:center;">
-				<h2>🛡️ Accesso Admin (JoJo)</h2>
-				<p style="font-size:0.9rem; color:var(--muted);">Inserisci la tua Master Password per gestire i giochi e attivare la sincronizzazione automatica su GitHub:</p>
+				<h2>🛡️ Admin Control Panel</h2>
+				<p style="font-size:0.9rem; color:var(--muted);">Enter the Master Password to manage games, inspect codes, and enable automatic Cloud Sync:</p>
 				<div style="display:flex; gap:8px; margin-top:14px;">
 					<input type="password" id="adm-pass-input" placeholder="Master Password..." style="flex:1;">
-					<button type="button" id="adm-login-btn" class="btn btn-primary">🔓 Sblocca</button>
+					<button type="button" id="adm-login-btn" class="btn btn-primary">🔓 Unlock</button>
 				</div>
 				<div id="adm-login-error" style="display:none; color:var(--danger); font-size:0.85rem; margin-top:10px;">
-					❌ Password errata.
+					❌ Invalid password.
 				</div>
 			</div>
 
 			<div id="adm-dashboard-body" style="display:none;">
 				<div class="card" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
 					<div>
-						<h2 style="margin:0;">🎛️ JoJo Master Panel</h2>
-						<span style="font-size:0.85rem; color:#34d399;">☁️ Cloud Sync su GitHub attivo in automatico per sfide e log!</span>
+						<h2 style="margin:0;">🎛️ Admin Control Panel</h2>
+						<span style="font-size:0.85rem; color:#34d399;">☁️ Automatic Cloud Sync active for challenges and logs!</span>
 					</div>
-					<button type="button" id="adm-logout-btn" class="btn btn-sm">🔒 Esci</button>
+					<button type="button" id="adm-logout-btn" class="btn btn-sm">🔒 Lock Panel</button>
 				</div>
 
-				<!-- 1. Decifra Password -->
+				<!-- 1. Password Inspector -->
 				<div class="card">
-					<h2>🕵️ 1. Scopri Password di Qualsiasi Link o ID</h2>
+					<h2>🕵️ 1. Inspect Password of Any Link or Player ID</h2>
 					<div class="input-with-btn">
-						<input type="text" id="adm-decrypt-input" placeholder="Incolla Link (?c=...), Ticket (BC-...) o ID Vittima">
-						<button type="button" id="adm-btn-decrypt" class="btn btn-primary">🔍 Mostra Password</button>
+						<input type="text" id="adm-decrypt-input" placeholder="Paste Link (?c=...), Ticket (BC-...) or Player ID">
+						<button type="button" id="adm-btn-decrypt" class="btn btn-primary">🔍 Reveal Code</button>
 					</div>
 					<div id="adm-decrypt-result" class="output-panel" style="display:none; margin-top:12px;"></div>
 				</div>
 
-				<!-- 2. Attiva/Disattiva Giochi e Parametri -->
+				<!-- 2. Enable/Disable Games & Parameters -->
 				<div class="card">
-					<h2>⚙️ 2. Attiva / Disattiva Minigiochi &amp; Parametri</h2>
+					<h2>⚙️ 2. Enable / Disable Minigames &amp; Parameters</h2>
 					<div id="adm-games-config-list"></div>
 					<div style="margin-top:12px; display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-						<button type="button" id="adm-sync-github-btn" class="btn btn-primary btn-sm">☁️ Forza Salvataggio su GitHub Ora</button>
+						<button type="button" id="adm-sync-github-btn" class="btn btn-primary btn-sm">☁️ Force Cloud Save Now</button>
 						<span id="adm-gh-sync-status" style="font-size:0.85rem;"></span>
 					</div>
 				</div>
 
-				<!-- 3. Storico Lucchetti -->
+				<!-- 3. Lock History Vault -->
 				<div class="card">
-					<h2>🗄️ 3. Storico Lucchetti Creati</h2>
+					<h2>🗄️ 3. Generated Locks History</h2>
 					<div style="overflow-x:auto;">
 						<table class="adm-table">
 							<thead>
 								<tr>
-									<th>Data</th>
-									<th>ID Vittima / Indizio</th>
-									<th>Password</th>
-									<th>Gioco</th>
+									<th>Date</th>
+									<th>Player ID &amp; Lock</th>
+									<th>Code</th>
+									<th>Game</th>
 									<th>Link</th>
 								</tr>
 							</thead>
@@ -894,14 +933,14 @@
 					</div>
 				</div>
 
-				<!-- 4. Log Diagnostico (con invio diretto su GitHub per l'IA) -->
+				<!-- 4. Diagnostic Log -->
 				<div class="card">
-					<h2>📋 4. Log Diagnostico (Sincronizzato su GitHub)</h2>
+					<h2>📋 4. Diagnostic Log (Cloud Synced)</h2>
 					<pre id="adm-diagnostic-log-view" class="log-viewer"></pre>
 					<div style="display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;">
-						<button type="button" id="adm-sync-log-gh" class="btn btn-primary btn-sm">☁️ Invia Log su GitHub per l'IA</button>
-						<button type="button" id="adm-copy-log" class="btn btn-sm">📋 Copia Log</button>
-						<button type="button" id="adm-clear-log" class="btn btn-sm">🧹 Pulisci Log</button>
+						<button type="button" id="adm-sync-log-gh" class="btn btn-primary btn-sm">☁️ Sync Log to Cloud</button>
+						<button type="button" id="adm-copy-log" class="btn btn-sm">📋 Copy Log</button>
+						<button type="button" id="adm-clear-log" class="btn btn-sm">🧹 Clear Log</button>
 					</div>
 				</div>
 			</div>
