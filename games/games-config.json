@@ -1,0 +1,42 @@
+{
+  "version": "1.0.0",
+  "updatedAt": "2026-11-18T22:15:00.000Z",
+  "games": {
+    "crack": {
+      "enabled": true,
+      "maxAttempts": 6,
+      "codeLength": 4,
+      "defaultMode": "digits",
+      "showColorHints": true
+    },
+    "struggle": {
+      "enabled": true,
+      "strapsCount": 3,
+      "baseSpeed": 1.35,
+      "sweetSpotWidth": 22,
+      "fatiguePenalty": 18,
+      "vibratorChance": 0.45
+    },
+    "gagspeak": {
+      "enabled": true,
+      "maxErrors": 6,
+      "showCategoryHint": true,
+      "showMuffledPreview": true
+    }
+  },
+  "customPhrases": [
+    { "phrase": "THANK YOU MISS", "category": "Etichetta & Disciplina BC" },
+    { "phrase": "LATEX ARMBINDER", "category": "Restraint Braccia (ItemArms)" },
+    { "phrase": "COMBINATION PADLOCK", "category": "Lucchetto a 4 Cifre (ItemMisc)" },
+    { "phrase": "STURDY LEATHER BELTS", "category": "Cinghie di Cuoio (Three Straps)" },
+    { "phrase": "BALL GAG TIGHT", "category": "Bavaglio Classico (ItemMouth)" },
+    { "phrase": "VIBRATING EGG MAXIMUM", "category": "Toy Controllato a Distanza" },
+    { "phrase": "OWNER PADLOCK KEY", "category": "Massima Autorità del Club" },
+    { "phrase": "BALLET HEELS LOCKED", "category": "Postura Forzata (ItemBoots)" },
+    { "phrase": "PONY RACE HURDLE", "category": "Minigioco Arena 40x40" },
+    { "phrase": "GLOSSY BODYSTOCKING", "category": "Outfit Speciale JoJo-Mod" },
+    { "phrase": "HEAVY STEEL CHAINS", "category": "Vincolo Metallico Pesante" },
+    { "phrase": "HIGH SECURITY PADLOCK", "category": "Lucchetto a 8 Membri" }
+  ],
+  "victimChallenges": {}
+}

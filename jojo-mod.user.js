@@ -681,6 +681,11 @@
 			return "Icons/TightenLoosen.png";
 		}
 
+		// Salvaguardia crash Echo mod: intercetta HempRopeHarness che dà 404 in Echo mod per petti FlatMedium
+		if (canonicalSrc.includes("Assets/Female3DCG/Override/EchoV2/ItemTorso/HempRopeHarness")) {
+			return "Assets/Female3DCG/ItemTorso/HempRopeHarness.png";
+		}
+
 		// Fallback for custom asset without size suffix (e.g. GlossyPantyhoseBody_BaseColor.png -> _FlatMedium_BaseColor.png or avatar size)
 		if (
 			canonicalSrc.includes("GlossyPantyhoseBody_") &&
