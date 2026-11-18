@@ -1,6 +1,6 @@
 === BONDAGE CLUB ARCADE & LOCK RECOVERY — DIAGNOSTIC LOG ===
-Exported At: 2026-11-18T22:30:43.002Z
-Total Entries: 8
+Exported At: 2026-11-18T22:31:07.853Z
+Total Entries: 12
 ============================================================
 001. [2026-11-18T22:22:00.752Z] [SYSTEM] Registered minigame module: crack (Crack the Padlock)
 002. [2026-11-18T22:22:00.752Z] [SYSTEM] Registered minigame module: struggle (Struggle & Escape)
@@ -10,3 +10,7 @@ Total Entries: 8
 006. [2026-11-18T22:22:53.437Z] [CRYPTO] Encoded challenge | DATA: {"lockType":"comb","gameId":"crack","difficulty":2,"victim":"121212","note":""}
 007. [2026-11-18T22:22:53.438Z] [SYSTEM] Saved configuration to localStorage | DATA: {"registeredVictims":3}
 008. [2026-11-18T22:30:39.000Z] [ADMIN] Admin logged out
+009. [2026-11-18T22:31:03.851Z] [CHALLENGE] Victim lookup requested | DATA: {"query":"121212"}
+010. [2026-11-18T22:31:03.851Z] [CHALLENGE] Matched challenge by ID/Hint | DATA: {"query":"121212","label":"121212"}
+011. [2026-11-18T22:31:03.851Z] [CHALLENGE] Loaded challenge from ID/Hint Lookup (121212) | DATA: {"gameId":"crack","difficulty":2,"victim":"121212"}
+012. [2026-11-18T22:31:03.852Z] [GAME] Started Crack the Padlock | DATA: {"mode":"digits","len":4,"maxAttempts":6,"difficulty":2}
