@@ -1,6 +1,6 @@
 === BONDAGE CLUB ARCADE & LOCK RECOVERY — DIAGNOSTIC LOG ===
-Exported At: 2026-11-19T00:11:06.461Z
-Total Entries: 10
+Exported At: 2026-11-19T00:11:21.383Z
+Total Entries: 12
 ============================================================
 001. [2026-11-19T00:10:13.547Z] [SYSTEM] Registered minigame module: crack (Crack the Padlock)
 002. [2026-11-19T00:10:13.548Z] [SYSTEM] Registered minigame module: struggle (Struggle & Escape)
@@ -12,3 +12,5 @@ Total Entries: 10
 008. [2026-11-19T00:10:25.881Z] [WARN] Failed to decode challenge token | DATA: {"input":"BC-xGYuaQUy7vnb3duzpAoAMw9eXCgq1MePrKjyg","error":"Invalid checksum"}
 009. [2026-11-19T00:11:02.447Z] [CRYPTO] Encoded challenge | DATA: {"cid":"LO9TB","lockType":"comb","gameId":"crack","difficulty":2,"victim":"121212","lockLabel":"Lock #2"}
 010. [2026-11-19T00:11:02.448Z] [SYSTEM] Saved configuration to localStorage
+011. [2026-11-19T00:11:17.382Z] [CHALLENGE] Player lock lookup requested | DATA: {"query":"121212"}
+012. [2026-11-19T00:11:17.382Z] [CHALLENGE] Found active lock challenges for player | DATA: {"query":"121212","count":2}
