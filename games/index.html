@@ -461,6 +461,108 @@
 		.vibe-lv1 { color: #f9a8d4; }
 		.vibe-lv2 { color: #f472b6; font-weight: 700; }
 		.vibe-lv3 { color: #ff2cdf; font-weight: 800; }
+
+		/* Animated Bound Girl Stage */
+		.strug-girl-stage {
+			position: relative;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			background: radial-gradient(circle at 50% 60%, rgba(217, 67, 212, 0.14), rgba(7, 8, 13, 0.92));
+			border: 1px solid var(--border);
+			border-radius: 12px;
+			padding: 10px 12px 6px;
+			margin-bottom: 10px;
+			overflow: hidden;
+		}
+		.strug-girl-svg {
+			width: 145px;
+			height: 185px;
+			overflow: visible;
+		}
+		@keyframes girlSquirmLoop {
+			0%, 100% { transform: rotate(-1.6deg) translateY(0px); }
+			25% { transform: rotate(1.8deg) translateY(-2px) translateX(1.5px); }
+			50% { transform: rotate(-2.1deg) translateY(1px) translateX(-1.5px); }
+			75% { transform: rotate(1.4deg) translateY(-1.5px); }
+		}
+		@keyframes girlHeadStruggle {
+			0%, 100% { transform: rotate(2deg); }
+			50% { transform: rotate(-3.5deg) translateY(1px); }
+		}
+		@keyframes girlPullBurst {
+			0% { transform: scale(1) rotate(0deg); }
+			30% { transform: scale(1.07, 0.94) rotate(-4deg) translateY(-4px); }
+			65% { transform: scale(0.96, 1.04) rotate(3deg); }
+			100% { transform: scale(1) rotate(0deg); }
+		}
+		@keyframes girlFailJolt {
+			0%, 100% { transform: translateX(0); }
+			20%, 60% { transform: translateX(-6px) rotate(-2deg); }
+			40%, 80% { transform: translateX(6px) rotate(2deg); }
+		}
+		@keyframes girlVibeFast {
+			0%, 100% { transform: translate(0, 0) rotate(-1deg); }
+			25% { transform: translate(-2.5px, -1.5px) rotate(1.5deg); }
+			50% { transform: translate(2.5px, 1px) rotate(-1.5deg); }
+			75% { transform: translate(-1.5px, 2px) rotate(1deg); }
+		}
+		@keyframes beltSnapOff {
+			0% { opacity: 1; transform: scale(1); }
+			50% { opacity: 0.8; transform: scale(1.22, 0.85); }
+			100% { opacity: 0; transform: scale(1.35) translateY(12px); }
+		}
+		@keyframes vibeWavePulse {
+			0% { r: 10px; opacity: 0.85; }
+			100% { r: 36px; opacity: 0; }
+		}
+		.girl-body-group {
+			transform-origin: 100px 130px;
+			animation: girlSquirmLoop 1.55s ease-in-out infinite;
+		}
+		.girl-head-group {
+			transform-origin: 100px 64px;
+			animation: girlHeadStruggle 1.2s ease-in-out infinite;
+		}
+		.strug-girl-stage.pull-hit .girl-body-group {
+			animation: girlPullBurst 0.42s ease-out;
+		}
+		.strug-girl-stage.pull-miss .girl-body-group {
+			animation: girlFailJolt 0.38s ease-in-out;
+		}
+		.strug-girl-stage.vibe-active .girl-body-group {
+			animation: girlVibeFast 0.16s linear infinite;
+		}
+		.belt-unlocked {
+			animation: beltSnapOff 0.35s ease-out forwards;
+			pointer-events: none;
+		}
+		.vibe-ring {
+			fill: none;
+			stroke: #f05ceb;
+			stroke-width: 2.2;
+			display: none;
+		}
+		.strug-girl-stage.vibe-active .vibe-ring {
+			display: block;
+			animation: vibeWavePulse 0.8s ease-out infinite;
+		}
+		.strug-speech-pill {
+			position: absolute;
+			top: 10px;
+			right: 14px;
+			background: rgba(19, 23, 34, 0.92);
+			border: 1px solid rgba(217, 67, 212, 0.5);
+			color: #f78ef3;
+			font-size: 0.78rem;
+			font-weight: 700;
+			font-style: italic;
+			padding: 3px 10px;
+			border-radius: 999px;
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+			transition: all 0.2s ease;
+		}
 		.strug-strap-title {
 			text-align: center;
 			font-size: 1.05rem;
@@ -708,7 +810,7 @@
 	<div class="container">
 		<!-- Minimal Header -->
 		<header class="top-header">
-			<h1 class="brand-title">🎮 BC Lock Recovery <span class="badge">v1.7</span></h1>
+			<h1 class="brand-title">🎮 BC Lock Recovery <span class="badge">v1.8</span></h1>
 			<div class="top-actions">
 				<button type="button" id="btn-toggle-audio" class="btn btn-sm">🔊 Audio</button>
 				<button type="button" id="btn-toggle-admin" class="btn btn-sm" title="Admin Panel">🛡️ Admin</button>

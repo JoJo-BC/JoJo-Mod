@@ -832,6 +832,80 @@
 						</div>
 					</div>
 
+					<!-- Animated Bound Girl Struggling Stage -->
+					<div id="strug-girl-stage" class="strug-girl-stage">
+						<div id="strug-speech-pill" class="strug-speech-pill">"Mmph... nngh!"</div>
+						<svg class="strug-girl-svg" viewBox="0 0 200 230" xmlns="http://www.w3.org/2000/svg">
+							<!-- Soft Floor Shadow -->
+							<ellipse cx="100" cy="218" rx="42" ry="7" fill="rgba(0,0,0,0.45)" />
+
+							<g class="girl-body-group">
+								<!-- Back Hair -->
+								<path d="M70,48 C56,80 58,125 68,150 C85,142 115,142 132,150 C142,125 144,80 130,48 Z" fill="#2d1b4e" />
+
+								<!-- Legs (Kneeling / Bound Together) -->
+								<path d="M82,142 L85,210 C85,215 98,215 99,210 L100,152 Z" fill="#23273a" stroke="#3b4262" stroke-width="1.5" />
+								<path d="M118,142 L115,210 C115,215 102,215 101,210 L100,152 Z" fill="#1d2030" stroke="#3b4262" stroke-width="1.5" />
+
+								<!-- Torso & Bound Arms Behind Back -->
+								<path d="M74,84 C65,92 67,118 76,132 L82,144 L118,144 L124,132 C133,118 135,92 126,84 Z" fill="#282d42" stroke="#454e75" stroke-width="1.5" />
+								<!-- Glossy Highlight on Suit -->
+								<path d="M88,92 Q100,115 90,138" stroke="rgba(217,67,212,0.35)" stroke-width="3" fill="none" stroke-linecap="round" />
+
+								<!-- Posture Collar -->
+								<rect x="89" y="73" width="22" height="9" rx="3" fill="#11131c" stroke="#d943d4" stroke-width="1.5" />
+								<circle cx="100" cy="77.5" r="2.2" fill="#f59e0b" />
+
+								<!-- Vibrator Pulse Rings at Hips -->
+								<circle class="vibe-ring" cx="100" cy="142" r="12" />
+
+								<!-- LEATHER BELT 1: Chest & Upper Arms -->
+								<g id="svg-belt-0">
+									<rect x="68" y="96" width="64" height="12" rx="4" fill="#141722" stroke="#d943d4" stroke-width="1.8" />
+									<rect x="94" y="95" width="12" height="14" rx="2" fill="none" stroke="#e2e8f0" stroke-width="2.2" />
+								</g>
+
+								<!-- LEATHER BELT 2: Waist & Wrists -->
+								<g id="svg-belt-1">
+									<rect x="73" y="122" width="54" height="12" rx="4" fill="#141722" stroke="#d943d4" stroke-width="1.8" />
+									<rect x="94" y="121" width="12" height="14" rx="2" fill="none" stroke="#e2e8f0" stroke-width="2.2" />
+								</g>
+
+								<!-- LEATHER BELT 3: Thighs & Knees -->
+								<g id="svg-belt-2">
+									<rect x="78" y="168" width="44" height="12" rx="4" fill="#141722" stroke="#d943d4" stroke-width="1.8" />
+									<rect x="94" y="167" width="12" height="14" rx="2" fill="none" stroke="#e2e8f0" stroke-width="2.2" />
+								</g>
+
+								<!-- Head & Expression -->
+								<g class="girl-head-group">
+									<!-- Face Base -->
+									<circle cx="100" cy="48" r="24" fill="#ffe4d6" />
+									<!-- Blush Cheeks -->
+									<ellipse id="svg-girl-blush-l" cx="85" cy="53" rx="5.5" ry="3" fill="rgba(244,63,94,0.45)" />
+									<ellipse id="svg-girl-blush-r" cx="115" cy="53" rx="5.5" ry="3" fill="rgba(244,63,94,0.45)" />
+
+									<!-- Eyes (Wincing / Struggling "> <") -->
+									<g id="svg-eyes-struggle">
+										<path d="M84,43 L91,46 L84,49" fill="none" stroke="#2d1b4e" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" />
+										<path d="M116,43 L109,46 L116,49" fill="none" stroke="#2d1b4e" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" />
+									</g>
+
+									<!-- Red Ball Gag & Black Strap -->
+									<path d="M76,54 Q100,62 124,54" fill="none" stroke="#18181b" stroke-width="3.5" />
+									<circle cx="100" cy="58" r="7.5" fill="#dc2626" stroke="#7f1d1d" stroke-width="1.5" />
+									<circle cx="97.5" cy="55.5" r="2.2" fill="rgba(255,255,255,0.65)" />
+
+									<!-- Front Hair Bangs -->
+									<path d="M74,44 C75,22 125,22 126,44 C118,32 108,38 100,29 C92,38 82,32 74,44 Z" fill="#3b2366" />
+
+									<!-- Sweat Drop -->
+									<path id="svg-sweat-drop" d="M122,34 Q126,41 122,44 Q118,41 122,34 Z" fill="#38bdf8" />
+								</g>
+							</g>
+						</svg>
+					</div>
+
 					<div id="strug-strap-title" class="strug-strap-title">${strapNames[0]}</div>
 					<div class="strug-buckles-row" id="strug-buckles"></div>
 
@@ -860,6 +934,8 @@
 			`;
 
 			const arenaEl = container.querySelector("#strug-arena");
+			const girlStageEl = container.querySelector("#strug-girl-stage");
+			const speechPillEl = container.querySelector("#strug-speech-pill");
 			const zoneEl = container.querySelector("#strug-zone");
 			const cursorEl = container.querySelector("#strug-cursor");
 			const strapIdxEl = container.querySelector("#strug-strap-idx");
@@ -873,6 +949,15 @@
 			const vibeBadgeEl = container.querySelector("#strug-vibe-badge");
 			const hitBtn = container.querySelector("#strug-hit-btn");
 
+			function setGirlReaction(type, text) {
+				if (speechPillEl && text) speechPillEl.textContent = text;
+				if (!girlStageEl) return;
+				girlStageEl.classList.remove("pull-hit", "pull-miss");
+				void girlStageEl.offsetWidth;
+				if (type === "hit") girlStageEl.classList.add("pull-hit");
+				if (type === "miss") girlStageEl.classList.add("pull-miss");
+			}
+
 			function renderBuckles() {
 				bucklesEl.innerHTML = "";
 				for (let i = 0; i < totalStraps; i++) {
@@ -880,6 +965,13 @@
 					b.className = "buckle-pill" + (i < currentStrap ? " unlocked" : i === currentStrap ? " current" : "");
 					b.textContent = i < currentStrap ? `🔓 Buckle ${i + 1}` : `🔒 Buckle ${i + 1}`;
 					bucklesEl.appendChild(b);
+				}
+				// Aggiorna visivamente le cinghie sul corpo della ragazza SVG
+				for (let bIdx = 0; bIdx < 3; bIdx++) {
+					const beltEl = container.querySelector(`#svg-belt-${bIdx}`);
+					if (!beltEl) continue;
+					const mappedStrap = Math.floor((bIdx / 3) * totalStraps);
+					beltEl.classList.toggle("belt-unlocked", currentStrap > mappedStrap);
 				}
 			}
 
@@ -908,12 +1000,18 @@
 					vibeBadgeEl.textContent = `💓 Vibrator: ${labels[vibeLevel]}`;
 					vibeBadgeEl.className = `mg-tag vibe-lv${vibeLevel}`;
 					arenaEl.classList.toggle("vibe-shake", vibeLevel >= 2);
+					if (girlStageEl) girlStageEl.classList.add("vibe-active");
+					if (speechPillEl) {
+						speechPillEl.textContent = vibeLevel === 3 ? '"Mmph~!! 💓🔥"' : '"Nngh~ 💓"';
+					}
 					BC_SOUND_FX.vibePulse(vibeLevel);
 				} else {
 					vibeLevel = 0;
 					vibeBadgeEl.textContent = "💓 Vibrator: Off";
 					vibeBadgeEl.className = "mg-tag vibe-off";
 					arenaEl.classList.remove("vibe-shake");
+					if (girlStageEl) girlStageEl.classList.remove("vibe-active");
+					if (speechPillEl) speechPillEl.textContent = '"Mmph... nngh!"';
 				}
 			}, 2200);
 
@@ -940,16 +1038,20 @@
 				if (hit) {
 					strapProgress = Math.min(100, strapProgress + 34);
 					BC_SOUND_FX.strapLoosen();
+					setGirlReaction("hit", '"Nngh! It\'s loosening! ✨"');
 					randomizeSweetSpot();
 
 					if (strapProgress >= 100) {
 						currentStrap++;
 						strapProgress = 0;
 						fatigue = Math.max(0, fatigue - 12);
+						setGirlReaction("hit", `"Snap! Buckle ${currentStrap} open! 🔓"`);
 
 						if (currentStrap >= totalStraps) {
 							gameOver = true;
 							arenaEl.classList.remove("vibe-shake");
+							if (girlStageEl) girlStageEl.classList.remove("vibe-active");
+							setGirlReaction("hit", '"Mmph!! Free at last! 🎉"');
 							updateBars();
 							BC_SOUND_FX.unlockSuccess();
 							BC_GAMES_LOGGER.log("GAME", "Struggle & Escape WON", { totalStraps, fatigue });
@@ -960,6 +1062,7 @@
 				} else {
 					fatigue = Math.min(100, fatigue + penalty);
 					strapProgress = Math.max(0, strapProgress - 15);
+					setGirlReaction("miss", '"Mmph!! Too tight! 💦"');
 					BC_SOUND_FX.errorBuzz();
 
 					if (fatigue >= 100) {
