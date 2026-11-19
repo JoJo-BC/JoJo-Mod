@@ -832,75 +832,190 @@
 						</div>
 					</div>
 
-					<!-- Animated Bound Girl Struggling Stage -->
+					<!-- Animated Bound Damsel in Distress Stage -->
 					<div id="strug-girl-stage" class="strug-girl-stage">
 						<div id="strug-speech-pill" class="strug-speech-pill">"Mmph... nngh!"</div>
-						<svg class="strug-girl-svg" viewBox="0 0 200 230" xmlns="http://www.w3.org/2000/svg">
-							<!-- Soft Floor Shadow -->
-							<ellipse cx="100" cy="218" rx="42" ry="7" fill="rgba(0,0,0,0.45)" />
+						<svg class="strug-girl-svg" viewBox="0 0 240 320" xmlns="http://www.w3.org/2000/svg">
+							<defs>
+								<linearGradient id="skinGrad" x1="0" y1="0" x2="1" y2="0">
+									<stop offset="0%" stop-color="#f2c6b6" />
+									<stop offset="50%" stop-color="#ffe1d4" />
+									<stop offset="100%" stop-color="#eab5a3" />
+								</linearGradient>
+								<linearGradient id="corsetGrad" x1="0" y1="0" x2="1" y2="0">
+									<stop offset="0%" stop-color="#120c1c" />
+									<stop offset="45%" stop-color="#2d1a47" />
+									<stop offset="55%" stop-color="#3c225e" />
+									<stop offset="100%" stop-color="#100a19" />
+								</linearGradient>
+								<linearGradient id="stockingGrad" x1="0" y1="0" x2="1" y2="0">
+									<stop offset="0%" stop-color="rgba(15, 12, 24, 0.88)" />
+									<stop offset="50%" stop-color="rgba(42, 32, 58, 0.62)" />
+									<stop offset="100%" stop-color="rgba(12, 10, 20, 0.9)" />
+								</linearGradient>
+								<linearGradient id="hairGrad" x1="0" y1="0" x2="0" y2="1">
+									<stop offset="0%" stop-color="#4c2882" />
+									<stop offset="55%" stop-color="#2b1452" />
+									<stop offset="100%" stop-color="#170a2e" />
+								</linearGradient>
+								<linearGradient id="leatherBeltGrad" x1="0" y1="0" x2="0" y2="1">
+									<stop offset="0%" stop-color="#2b3048" />
+									<stop offset="50%" stop-color="#111420" />
+									<stop offset="100%" stop-color="#080a10" />
+								</linearGradient>
+							</defs>
+
+							<!-- Floor Shadow -->
+							<ellipse cx="120" cy="306" rx="52" ry="8" fill="rgba(0,0,0,0.55)" />
 
 							<g class="girl-body-group">
-								<!-- Back Hair -->
-								<path d="M70,48 C56,80 58,125 68,150 C85,142 115,142 132,150 C142,125 144,80 130,48 Z" fill="#2d1b4e" />
+								<!-- Long Flowing Back Hair -->
+								<path d="M84,48 C58,82 54,148 66,200 C78,186 86,195 96,204 C112,194 128,194 144,204 C154,195 162,186 174,200 C186,148 182,82 156,48 Z" fill="url(#hairGrad)" />
+								<path d="M72,95 C64,135 66,170 74,196" stroke="rgba(217,67,212,0.28)" stroke-width="2.5" fill="none" stroke-linecap="round" />
+								<path d="M168,95 C176,135 174,170 166,196" stroke="rgba(217,67,212,0.28)" stroke-width="2.5" fill="none" stroke-linecap="round" />
 
-								<!-- Legs (Kneeling / Bound Together) -->
-								<path d="M82,142 L85,210 C85,215 98,215 99,210 L100,152 Z" fill="#23273a" stroke="#3b4262" stroke-width="1.5" />
-								<path d="M118,142 L115,210 C115,215 102,215 101,210 L100,152 Z" fill="#1d2030" stroke="#3b4262" stroke-width="1.5" />
+								<!-- LOWER BODY: Hips, Garter Thighs, Sheer Stockings & High Heels -->
+								<g class="girl-legs-group">
+									<!-- Bare Upper Thighs & Hips (Skin Base) -->
+									<path d="M90,170 C81,188 83,216 90,242 L95,292 C96,298 112,298 114,292 L118,242 L120,188 L122,242 L126,292 C128,298 144,298 145,292 L150,242 C157,216 159,188 150,170 Z" fill="url(#skinGrad)" stroke="#d49b89" stroke-width="1" />
 
-								<!-- Torso & Bound Arms Behind Back -->
-								<path d="M74,84 C65,92 67,118 76,132 L82,144 L118,144 L124,132 C133,118 135,92 126,84 Z" fill="#282d42" stroke="#454e75" stroke-width="1.5" />
-								<!-- Glossy Highlight on Suit -->
-								<path d="M88,92 Q100,115 90,138" stroke="rgba(217,67,212,0.35)" stroke-width="3" fill="none" stroke-linecap="round" />
+									<!-- Sheer Black Thigh-High Stockings (Left & Right Legs) -->
+									<path d="M84.5,204 C84,220 87,235 90,245 L95,294 C96,299 112,299 114,294 L118,244 L119,206 Q102,212 84.5,204 Z" fill="url(#stockingGrad)" />
+									<path d="M121,206 L122,244 L126,294 C128,299 144,299 145,294 L150,245 C153,235 156,220 155.5,204 Q138,212 121,206 Z" fill="url(#stockingGrad)" />
 
-								<!-- Posture Collar -->
-								<rect x="89" y="73" width="22" height="9" rx="3" fill="#11131c" stroke="#d943d4" stroke-width="1.5" />
-								<circle cx="100" cy="77.5" r="2.2" fill="#f59e0b" />
+									<!-- Sheer Nylon Specular Leg Highlights -->
+									<path d="M96,216 Q98,250 101,284" stroke="rgba(255,255,255,0.22)" stroke-width="3.5" fill="none" stroke-linecap="round" />
+									<path d="M144,216 Q142,250 139,284" stroke="rgba(255,255,255,0.22)" stroke-width="3.5" fill="none" stroke-linecap="round" />
 
-								<!-- Vibrator Pulse Rings at Hips -->
-								<circle class="vibe-ring" cx="100" cy="142" r="12" />
+									<!-- Lace Stocking Tops (Thigh Bands) -->
+									<path d="M84,200 Q102,208 119,202 L119,210 Q102,216 84.5,208 Z" fill="#120d1d" stroke="#d943d4" stroke-width="1" />
+									<path d="M121,202 Q138,208 156,200 L155.5,208 Q138,216 121,210 Z" fill="#120d1d" stroke="#d943d4" stroke-width="1" />
 
-								<!-- LEATHER BELT 1: Chest & Upper Arms -->
-								<g id="svg-belt-0">
-									<rect x="68" y="96" width="64" height="12" rx="4" fill="#141722" stroke="#d943d4" stroke-width="1.8" />
-									<rect x="94" y="95" width="12" height="14" rx="2" fill="none" stroke="#e2e8f0" stroke-width="2.2" />
+									<!-- Garter Straps & Silver Clips -->
+									<line x1="96" y1="176" x2="98" y2="203" stroke="#181224" stroke-width="2.4" />
+									<line x1="112" y1="180" x2="111" y2="204" stroke="#181224" stroke-width="2.2" />
+									<line x1="128" y1="180" x2="129" y2="204" stroke="#181224" stroke-width="2.2" />
+									<line x1="144" y1="176" x2="142" y2="203" stroke="#181224" stroke-width="2.4" />
+									<rect x="96" y="200" width="4" height="5" rx="1" fill="#e2e8f0" />
+									<rect x="109" y="201" width="4" height="5" rx="1" fill="#e2e8f0" />
+									<rect x="127" y="201" width="4" height="5" rx="1" fill="#e2e8f0" />
+									<rect x="140" y="200" width="4" height="5" rx="1" fill="#e2e8f0" />
+
+									<!-- Glossy High-Heeled Ankle-Strap Pumps -->
+									<path d="M94,284 L114,284 L113,300 C108,305 97,305 94,298 Z" fill="#12091c" stroke="#d943d4" stroke-width="1.2" />
+									<path d="M126,284 L146,284 L146,298 C143,305 132,305 127,300 Z" fill="#12091c" stroke="#d943d4" stroke-width="1.2" />
+									<line x1="95" y1="286" x2="113" y2="286" stroke="#f05ceb" stroke-width="2" />
+									<line x1="127" y1="286" x2="145" y2="286" stroke="#f05ceb" stroke-width="2" />
+
+									<!-- LEATHER BELT 3: Thigh & Knee Bondage Strap -->
+									<g id="svg-belt-2">
+										<rect x="83" y="226" width="74" height="15" rx="4" fill="url(#leatherBeltGrad)" stroke="#d943d4" stroke-width="1.8" />
+										<circle cx="93" cy="233.5" r="1.8" fill="#cbd5e1" />
+										<circle cx="147" cy="233.5" r="1.8" fill="#cbd5e1" />
+										<rect x="112" y="224.5" width="16" height="18" rx="3" fill="none" stroke="#f8fafc" stroke-width="2.4" />
+										<line x1="120" y1="225" x2="120" y2="242" stroke="#f59e0b" stroke-width="2" />
+									</g>
 								</g>
 
-								<!-- LEATHER BELT 2: Waist & Wrists -->
-								<g id="svg-belt-1">
-									<rect x="73" y="122" width="54" height="12" rx="4" fill="#141722" stroke="#d943d4" stroke-width="1.8" />
-									<rect x="94" y="121" width="12" height="14" rx="2" fill="none" stroke="#e2e8f0" stroke-width="2.2" />
-								</g>
+								<!-- UPPER TORSO: Bound Shoulders, Bust, Bustier Corset & Garter Belt -->
+								<g class="girl-torso-group">
+									<!-- Neck, Collarbones & Shoulders Pulled Back (BackElbowTouch Pose) -->
+									<path d="M111,76 L111,94 L84,99 C75,103 73,124 81,138 L92,145 L148,145 L159,138 C167,124 165,103 156,99 L129,94 L129,76 Z" fill="url(#skinGrad)" stroke="#d49b89" stroke-width="1" />
 
-								<!-- LEATHER BELT 3: Thighs & Knees -->
-								<g id="svg-belt-2">
-									<rect x="78" y="168" width="44" height="12" rx="4" fill="#141722" stroke="#d943d4" stroke-width="1.8" />
-									<rect x="94" y="167" width="12" height="14" rx="2" fill="none" stroke="#e2e8f0" stroke-width="2.2" />
-								</g>
+									<!-- Collarbones & Cleavage Shading -->
+									<path d="M96,101 Q108,105 116,102" stroke="#d49b89" stroke-width="1.3" fill="none" stroke-linecap="round" />
+									<path d="M144,101 Q132,105 124,102" stroke="#d49b89" stroke-width="1.3" fill="none" stroke-linecap="round" />
+									<path d="M120,113 L120,127" stroke="#c58573" stroke-width="1.8" stroke-linecap="round" />
 
-								<!-- Head & Expression -->
-								<g class="girl-head-group">
-									<!-- Face Base -->
-									<circle cx="100" cy="48" r="24" fill="#ffe4d6" />
-									<!-- Blush Cheeks -->
-									<ellipse id="svg-girl-blush-l" cx="85" cy="53" rx="5.5" ry="3" fill="rgba(244,63,94,0.45)" />
-									<ellipse id="svg-girl-blush-r" cx="115" cy="53" rx="5.5" ry="3" fill="rgba(244,63,94,0.45)" />
+									<!-- Curvy Bust & Corset Bodysuit (Hourglass Figure) -->
+									<path d="M89,115 C95,106 114,108 120,118 C126,108 145,106 151,115 C154,129 145,143 144,154 C146,162 152,168 153,173 Q136,178 120,185 Q104,178 87,173 C88,168 94,162 96,154 C95,143 86,129 89,115 Z" fill="url(#corsetGrad)" stroke="#d943d4" stroke-width="1.5" />
 
-									<!-- Eyes (Wincing / Struggling "> <") -->
-									<g id="svg-eyes-struggle">
-										<path d="M84,43 L91,46 L84,49" fill="none" stroke="#2d1b4e" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" />
-										<path d="M116,43 L109,46 L116,49" fill="none" stroke="#2d1b4e" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" />
+									<!-- Bust Highlights & Corset Boning / Ribbon Lacing -->
+									<path d="M95,118 C92,126 96,133 106,135" stroke="rgba(240,92,235,0.4)" stroke-width="2.5" fill="none" stroke-linecap="round" />
+									<path d="M145,118 C148,126 144,133 134,135" stroke="rgba(240,92,235,0.4)" stroke-width="2.5" fill="none" stroke-linecap="round" />
+									<line x1="106" y1="136" x2="108" y2="173" stroke="rgba(217,67,212,0.38)" stroke-width="1.3" />
+									<line x1="134" y1="136" x2="132" y2="173" stroke="rgba(217,67,212,0.38)" stroke-width="1.3" />
+									<!-- Crisscross Ribbon Lacing -->
+									<path d="M115,126 L125,134 M125,126 L115,134 M115,138 L125,146 M125,138 L115,146 M116,150 L124,158 M124,150 L116,158" stroke="#f05ceb" stroke-width="1.4" stroke-linecap="round" />
+
+									<!-- Leather Posture Collar with Gold Ring -->
+									<rect x="108" y="83" width="24" height="10" rx="3" fill="#12131f" stroke="#d943d4" stroke-width="1.5" />
+									<circle cx="120" cy="88" r="2.8" fill="none" stroke="#f59e0b" stroke-width="1.8" />
+
+									<!-- Vibrator Pulse Rings at Pelvis -->
+									<circle class="vibe-ring" cx="120" cy="178" r="14" />
+
+									<!-- LEATHER BELT 1: Upper Chest & Bound Arms Strap -->
+									<g id="svg-belt-0">
+										<rect x="75" y="119" width="90" height="15" rx="4.5" fill="url(#leatherBeltGrad)" stroke="#d943d4" stroke-width="1.8" />
+										<circle cx="85" cy="126.5" r="1.8" fill="#cbd5e1" />
+										<circle cx="155" cy="126.5" r="1.8" fill="#cbd5e1" />
+										<rect x="112" y="117.5" width="16" height="18" rx="3" fill="none" stroke="#f8fafc" stroke-width="2.4" />
+										<line x1="120" y1="118" x2="120" y2="135" stroke="#f59e0b" stroke-width="2" />
 									</g>
 
-									<!-- Red Ball Gag & Black Strap -->
-									<path d="M76,54 Q100,62 124,54" fill="none" stroke="#18181b" stroke-width="3.5" />
-									<circle cx="100" cy="58" r="7.5" fill="#dc2626" stroke="#7f1d1d" stroke-width="1.5" />
-									<circle cx="97.5" cy="55.5" r="2.2" fill="rgba(255,255,255,0.65)" />
+									<!-- LEATHER BELT 2: Corset Waist & Elbows Strap -->
+									<g id="svg-belt-1">
+										<rect x="88" y="148" width="64" height="15" rx="4.5" fill="url(#leatherBeltGrad)" stroke="#d943d4" stroke-width="1.8" />
+										<circle cx="97" cy="155.5" r="1.8" fill="#cbd5e1" />
+										<circle cx="143" cy="155.5" r="1.8" fill="#cbd5e1" />
+										<rect x="112" y="146.5" width="16" height="18" rx="3" fill="none" stroke="#f8fafc" stroke-width="2.4" />
+										<line x1="120" y1="147" x2="120" y2="164" stroke="#f59e0b" stroke-width="2" />
+									</g>
+								</g>
 
-									<!-- Front Hair Bangs -->
-									<path d="M74,44 C75,22 125,22 126,44 C118,32 108,38 100,29 C92,38 82,32 74,44 Z" fill="#3b2366" />
+								<!-- HEAD, EXPRESSIVE ANIME FACE, BALL GAG & HAIR -->
+								<g class="girl-head-group">
+									<!-- Delicate Anime Face Contour -->
+									<path d="M93,48 C93,30 147,30 147,48 C147,65 135,79 120,82 C105,79 93,65 93,48 Z" fill="url(#skinGrad)" stroke="#d49b89" stroke-width="1" />
 
-									<!-- Sweat Drop -->
-									<path id="svg-sweat-drop" d="M122,34 Q126,41 122,44 Q118,41 122,34 Z" fill="#38bdf8" />
+									<!-- Rosy Blushing Cheeks -->
+									<ellipse id="svg-girl-blush-l" cx="103" cy="60" rx="6.5" ry="3.5" fill="rgba(244,63,94,0.52)" />
+									<ellipse id="svg-girl-blush-r" cx="137" cy="60" rx="6.5" ry="3.5" fill="rgba(244,63,94,0.52)" />
+
+									<!-- Expressive Anime Eyes (Open Pleading Damsel Eyes by default) -->
+									<g id="svg-eyes-open">
+										<!-- Eyebrows (Worried / Pleading tilt) -->
+										<path d="M98,43 Q105,40 112,44" fill="none" stroke="#2b1452" stroke-width="1.8" stroke-linecap="round" />
+										<path d="M142,43 Q135,40 128,44" fill="none" stroke="#2b1452" stroke-width="1.8" stroke-linecap="round" />
+										<!-- Eye Whites & Lashes -->
+										<ellipse cx="105" cy="51" rx="6" ry="5.2" fill="#ffffff" />
+										<ellipse cx="135" cy="51" rx="6" ry="5.2" fill="#ffffff" />
+										<!-- Violet Irises & Pupils -->
+										<circle cx="105" cy="51.5" r="4.2" fill="#9333ea" />
+										<circle cx="135" cy="51.5" r="4.2" fill="#9333ea" />
+										<circle cx="105" cy="52" r="2.2" fill="#1e1b4b" />
+										<circle cx="135" cy="52" r="2.2" fill="#1e1b4b" />
+										<!-- Eye Shine Highlights -->
+										<circle cx="103.2" cy="49.5" r="1.6" fill="#ffffff" />
+										<circle cx="133.2" cy="49.5" r="1.6" fill="#ffffff" />
+										<circle cx="106.8" cy="53.2" r="0.9" fill="#ffffff" />
+										<circle cx="136.8" cy="53.2" r="0.9" fill="#ffffff" />
+										<!-- Upper Eyelashes -->
+										<path d="M98,49 Q105,44 112,49" fill="none" stroke="#170a2e" stroke-width="2.4" stroke-linecap="round" />
+										<path d="M128,49 Q135,44 142,49" fill="none" stroke="#170a2e" stroke-width="2.4" stroke-linecap="round" />
+									</g>
+
+									<!-- Wincing Eyes ("> <" shown during hard pull or miss) -->
+									<g id="svg-eyes-wince" style="display:none;">
+										<path d="M99,47 L110,51 L99,55" fill="none" stroke="#2b1452" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+										<path d="M141,47 L130,51 L141,55" fill="none" stroke="#2b1452" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+									</g>
+
+									<!-- Glossy Red Ball Gag & Leather Head Harness -->
+									<path d="M94,61 Q120,72 146,61" fill="none" stroke="#14141f" stroke-width="4" />
+									<circle cx="120" cy="67" r="8.5" fill="#e11d48" stroke="#881337" stroke-width="1.6" />
+									<ellipse cx="117" cy="64" rx="2.8" ry="1.8" fill="rgba(255,255,255,0.75)" />
+
+									<!-- Side Hair Framing locks & Front Bangs -->
+									<path d="M92,42 C87,62 88,88 95,108 C98,90 96,65 97,48 Z" fill="url(#hairGrad)" />
+									<path d="M148,42 C153,62 152,88 145,108 C142,90 144,65 143,48 Z" fill="url(#hairGrad)" />
+									<path d="M91,46 C92,20 148,20 149,46 C140,33 130,42 120,30 C110,42 100,33 91,46 Z" fill="url(#hairGrad)" />
+									<!-- Hair Gloss Highlight -->
+									<path d="M101,32 Q120,25 139,32" stroke="rgba(240,92,235,0.45)" stroke-width="2.2" fill="none" stroke-linecap="round" />
+
+									<!-- Teardrop / Sweat Drop -->
+									<path id="svg-sweat-drop" d="M144,39 Q148,47 144,50 Q140,47 144,39 Z" fill="#38bdf8" />
 								</g>
 							</g>
 						</svg>
@@ -956,6 +1071,19 @@
 				void girlStageEl.offsetWidth;
 				if (type === "hit") girlStageEl.classList.add("pull-hit");
 				if (type === "miss") girlStageEl.classList.add("pull-miss");
+
+				const eyesOpen = container.querySelector("#svg-eyes-open");
+				const eyesWince = container.querySelector("#svg-eyes-wince");
+				if (eyesOpen && eyesWince) {
+					eyesOpen.style.display = "none";
+					eyesWince.style.display = "block";
+					setTimeout(() => {
+						if (!gameOver) {
+							eyesOpen.style.display = "block";
+							eyesWince.style.display = "none";
+						}
+					}, 450);
+				}
 			}
 
 			function renderBuckles() {

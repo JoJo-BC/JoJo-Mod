@@ -462,39 +462,49 @@
 		.vibe-lv2 { color: #f472b6; font-weight: 700; }
 		.vibe-lv3 { color: #ff2cdf; font-weight: 800; }
 
-		/* Animated Bound Girl Stage */
+		/* Animated Bound Damsel Stage */
 		.strug-girl-stage {
 			position: relative;
 			display: flex;
 			flex-direction: column;
 			align-items: center;
 			justify-content: center;
-			background: radial-gradient(circle at 50% 60%, rgba(217, 67, 212, 0.14), rgba(7, 8, 13, 0.92));
-			border: 1px solid var(--border);
-			border-radius: 12px;
+			background: radial-gradient(circle at 50% 52%, rgba(217, 67, 212, 0.2), rgba(7, 8, 13, 0.96));
+			border: 1px solid rgba(217, 67, 212, 0.35);
+			border-radius: 14px;
 			padding: 10px 12px 6px;
-			margin-bottom: 10px;
+			margin-bottom: 12px;
 			overflow: hidden;
+			box-shadow: inset 0 0 28px rgba(0, 0, 0, 0.6);
 		}
 		.strug-girl-svg {
-			width: 145px;
-			height: 185px;
+			width: 185px;
+			height: 255px;
 			overflow: visible;
+			filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.65));
 		}
 		@keyframes girlSquirmLoop {
-			0%, 100% { transform: rotate(-1.6deg) translateY(0px); }
-			25% { transform: rotate(1.8deg) translateY(-2px) translateX(1.5px); }
-			50% { transform: rotate(-2.1deg) translateY(1px) translateX(-1.5px); }
-			75% { transform: rotate(1.4deg) translateY(-1.5px); }
+			0%, 100% { transform: rotate(-1.4deg) translateY(0px); }
+			25% { transform: rotate(1.7deg) translateY(-2.5px) translateX(1.5px); }
+			50% { transform: rotate(-1.8deg) translateY(1px) translateX(-1.5px); }
+			75% { transform: rotate(1.3deg) translateY(-1.5px); }
+		}
+		@keyframes girlTorsoTwist {
+			0%, 100% { transform: scaleX(1) translateY(0); }
+			50% { transform: scaleX(0.97) translateY(-2px); }
+		}
+		@keyframes girlLegsShift {
+			0%, 100% { transform: rotate(0.8deg); }
+			50% { transform: rotate(-1.2deg) translateX(1px); }
 		}
 		@keyframes girlHeadStruggle {
-			0%, 100% { transform: rotate(2deg); }
-			50% { transform: rotate(-3.5deg) translateY(1px); }
+			0%, 100% { transform: rotate(2.5deg) translateY(0); }
+			50% { transform: rotate(-3.5deg) translateY(1.5px); }
 		}
 		@keyframes girlPullBurst {
 			0% { transform: scale(1) rotate(0deg); }
-			30% { transform: scale(1.07, 0.94) rotate(-4deg) translateY(-4px); }
-			65% { transform: scale(0.96, 1.04) rotate(3deg); }
+			30% { transform: scale(1.06, 0.95) rotate(-3.5deg) translateY(-5px); }
+			65% { transform: scale(0.97, 1.03) rotate(2.5deg); }
 			100% { transform: scale(1) rotate(0deg); }
 		}
 		@keyframes girlFailJolt {
@@ -510,20 +520,28 @@
 		}
 		@keyframes beltSnapOff {
 			0% { opacity: 1; transform: scale(1); }
-			50% { opacity: 0.8; transform: scale(1.22, 0.85); }
-			100% { opacity: 0; transform: scale(1.35) translateY(12px); }
+			50% { opacity: 0.85; transform: scale(1.2, 0.85); }
+			100% { opacity: 0; transform: scale(1.35) translateY(14px); }
 		}
 		@keyframes vibeWavePulse {
-			0% { r: 10px; opacity: 0.85; }
-			100% { r: 36px; opacity: 0; }
+			0% { r: 12px; opacity: 0.9; }
+			100% { r: 44px; opacity: 0; }
 		}
 		.girl-body-group {
-			transform-origin: 100px 130px;
-			animation: girlSquirmLoop 1.55s ease-in-out infinite;
+			transform-origin: 120px 160px;
+			animation: girlSquirmLoop 1.6s ease-in-out infinite;
+		}
+		.girl-torso-group {
+			transform-origin: 120px 140px;
+			animation: girlTorsoTwist 1.1s ease-in-out infinite;
+		}
+		.girl-legs-group {
+			transform-origin: 120px 175px;
+			animation: girlLegsShift 1.4s ease-in-out infinite;
 		}
 		.girl-head-group {
-			transform-origin: 100px 64px;
-			animation: girlHeadStruggle 1.2s ease-in-out infinite;
+			transform-origin: 120px 80px;
+			animation: girlHeadStruggle 1.25s ease-in-out infinite;
 		}
 		.strug-girl-stage.pull-hit .girl-body-group {
 			animation: girlPullBurst 0.42s ease-out;
@@ -532,35 +550,35 @@
 			animation: girlFailJolt 0.38s ease-in-out;
 		}
 		.strug-girl-stage.vibe-active .girl-body-group {
-			animation: girlVibeFast 0.16s linear infinite;
+			animation: girlVibeFast 0.14s linear infinite;
 		}
 		.belt-unlocked {
-			animation: beltSnapOff 0.35s ease-out forwards;
+			animation: beltSnapOff 0.38s ease-out forwards;
 			pointer-events: none;
 		}
 		.vibe-ring {
 			fill: none;
 			stroke: #f05ceb;
-			stroke-width: 2.2;
+			stroke-width: 2.5;
 			display: none;
 		}
 		.strug-girl-stage.vibe-active .vibe-ring {
 			display: block;
-			animation: vibeWavePulse 0.8s ease-out infinite;
+			animation: vibeWavePulse 0.75s ease-out infinite;
 		}
 		.strug-speech-pill {
 			position: absolute;
 			top: 10px;
 			right: 14px;
-			background: rgba(19, 23, 34, 0.92);
-			border: 1px solid rgba(217, 67, 212, 0.5);
+			background: rgba(19, 23, 34, 0.94);
+			border: 1px solid rgba(217, 67, 212, 0.55);
 			color: #f78ef3;
-			font-size: 0.78rem;
+			font-size: 0.8rem;
 			font-weight: 700;
 			font-style: italic;
-			padding: 3px 10px;
+			padding: 4px 12px;
 			border-radius: 999px;
-			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
 			transition: all 0.2s ease;
 		}
 		.strug-strap-title {
@@ -810,7 +828,7 @@
 	<div class="container">
 		<!-- Minimal Header -->
 		<header class="top-header">
-			<h1 class="brand-title">🎮 BC Lock Recovery <span class="badge">v1.8</span></h1>
+			<h1 class="brand-title">🎮 BC Lock Recovery <span class="badge">v1.9</span></h1>
 			<div class="top-actions">
 				<button type="button" id="btn-toggle-audio" class="btn btn-sm">🔊 Audio</button>
 				<button type="button" id="btn-toggle-admin" class="btn btn-sm" title="Admin Panel">🛡️ Admin</button>
