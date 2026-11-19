@@ -1,9 +1,10 @@
 === BONDAGE CLUB ARCADE & LOCK RECOVERY — DIAGNOSTIC LOG ===
-Exported At: 2026-11-19T20:52:09.705Z
-Total Entries: 5
+Exported At: 2026-11-19T20:52:18.341Z
+Total Entries: 6
 ============================================================
 001. [2026-11-19T20:52:05.556Z] [SYSTEM] Registered minigame module: crack (Crack the Padlock)
 002. [2026-11-19T20:52:05.557Z] [SYSTEM] Registered minigame module: struggle (Struggle & Escape)
 003. [2026-11-19T20:52:05.557Z] [SYSTEM] Registered minigame module: gagspeak (Gag Speak Hangman)
 004. [2026-11-19T20:52:05.558Z] [SYSTEM] BC Arcade Engine v1.4 initialized | DATA: {"url":"https://jojo-bc.github.io/JoJo-Mod/games/"}
 005. [2026-11-19T20:52:05.691Z] [SYSTEM] Configuration loaded | DATA: {"enabledGames":["crack","struggle","gagspeak"],"registeredPlayers":0}
+006. [2026-11-19T20:52:14.334Z] [GAME] Started Struggle & Escape | DATA: {"totalStraps":3,"baseSpeed":1.35,"spotWidth":22,"difficulty":2}
