@@ -1,6 +1,5 @@
 {
   "version": "1.2.0",
-  "updatedAt": "2026-11-18T23:45:00.000Z",
   "games": {
     "crack": {
       "enabled": true,
@@ -25,18 +24,98 @@
     }
   },
   "customPhrases": [
-    { "phrase": "THANK YOU MISS", "category": "Club Etiquette & Discipline" },
-    { "phrase": "LATEX ARMBINDER", "category": "Arm Restraint (ItemArms)" },
-    { "phrase": "COMBINATION PADLOCK", "category": "4-Digit Padlock (ItemMisc)" },
-    { "phrase": "STURDY LEATHER BELTS", "category": "Heavy Leather Straps" },
-    { "phrase": "BALL GAG TIGHT", "category": "Classic Mouth Restraint" },
-    { "phrase": "VIBRATING EGG MAXIMUM", "category": "Remote Controlled Toy" },
-    { "phrase": "OWNER PADLOCK KEY", "category": "Highest Club Authority" },
-    { "phrase": "BALLET HEELS LOCKED", "category": "Forced Posture Boots" },
-    { "phrase": "PONY RACE HURDLE", "category": "Arena Minigame" },
-    { "phrase": "HEAVY STEEL CHAINS", "category": "Metallic Bondage" },
-    { "phrase": "HIGH SECURITY PADLOCK", "category": "Multi-Member Lock" },
-    { "phrase": "POSTURE COLLAR TIGHT", "category": "Neck Restraint" }
+    {
+      "phrase": "THANK YOU MISS",
+      "category": "Etichetta & Disciplina BC"
+    },
+    {
+      "phrase": "LATEX ARMBINDER",
+      "category": "Restraint Braccia (ItemArms)"
+    },
+    {
+      "phrase": "COMBINATION PADLOCK",
+      "category": "Lucchetto a 4 Cifre (ItemMisc)"
+    },
+    {
+      "phrase": "STURDY LEATHER BELTS",
+      "category": "Cinghie di Cuoio (Three Straps)"
+    },
+    {
+      "phrase": "BALL GAG TIGHT",
+      "category": "Bavaglio Classico (ItemMouth)"
+    },
+    {
+      "phrase": "VIBRATING EGG MAXIMUM",
+      "category": "Toy Controllato a Distanza"
+    },
+    {
+      "phrase": "OWNER PADLOCK KEY",
+      "category": "Massima Autorità del Club"
+    },
+    {
+      "phrase": "BALLET HEELS LOCKED",
+      "category": "Postura Forzata (ItemBoots)"
+    },
+    {
+      "phrase": "PONY RACE HURDLE",
+      "category": "Minigioco Arena 40x40"
+    },
+    {
+      "phrase": "GLOSSY BODYSTOCKING",
+      "category": "Outfit Speciale JoJo-Mod"
+    },
+    {
+      "phrase": "HEAVY STEEL CHAINS",
+      "category": "Vincolo Metallico Pesante"
+    },
+    {
+      "phrase": "HIGH SECURITY PADLOCK",
+      "category": "Lucchetto a 8 Membri"
+    }
   ],
-  "victimChallenges": {}
+  "victimChallenges": {
+    "112233": [
+      {
+        "cid": "L1",
+        "playerId": "112233",
+        "lockLabel": "Lock #1",
+        "gameId": "crack",
+        "difficulty": 2,
+        "ticket": "BC-xGYuaQUy7vnb3duzpAoAMw9eXCgq1MePrKjygXF5W2oXT1h6h4uouPnypVFM",
+        "createdAt": "2026-11-18T21:36:56.197Z"
+      }
+    ],
+    "121212": [
+      {
+        "cid": "L1",
+        "playerId": "121212",
+        "lockLabel": "Lock #1",
+        "gameId": "crack",
+        "difficulty": 2,
+        "ticket": "BC-Ehewrdul82J9el9AaGqtjLzkioO4zVErcE8iDA_eiw",
+        "createdAt": "2026-11-18T22:22:53.438Z"
+      },
+      {
+        "cid": "LO9TB",
+        "playerId": "121212",
+        "lockLabel": "Lock #2",
+        "gameId": "crack",
+        "difficulty": 2,
+        "ticket": "BC-464yF3QrBAElBZCA5fKWm84xMTM7WQN_GfbH--GsxMH_BS9gGTkrCvqXoqs",
+        "createdAt": "2026-11-19T00:11:02.448Z"
+      }
+    ],
+    "asdasd": [
+      {
+        "cid": "L1",
+        "playerId": "121212 (asdasd)",
+        "lockLabel": "asdasd",
+        "gameId": "struggle",
+        "difficulty": 2,
+        "ticket": "BC-Pb3B1rccU1lvAAcrKtm2vPnK0sU8PiUxXypkKd_I-dHQraFGLxcgQA",
+        "createdAt": "2026-11-18T22:21:32.471Z"
+      }
+    ]
+  },
+  "updatedAt": "2026-11-19T00:11:02.448Z"
 }
