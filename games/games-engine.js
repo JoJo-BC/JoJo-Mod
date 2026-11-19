@@ -883,21 +883,38 @@
 			const vibeBadgeEl = container.querySelector("#strug-vibe-badge");
 			const hitBtn = container.querySelector("#strug-hit-btn");
 
-			const damselImg = new Image();
-			let damselLoaded = false;
-			damselImg.onload = () => {
-				damselLoaded = true;
+			const frameImages = {
+				idle: new Image(),
+				pull: new Image(),
+				blush: new Image(),
+				win: new Image(),
+				lose: new Image()
 			};
-			damselImg.src = "damsel.jpg";
+			let loadedFrames = 0;
+			const onFrameLoaded = () => { loadedFrames++; };
+			frameImages.idle.onload = onFrameLoaded;
+			frameImages.pull.onload = onFrameLoaded;
+			frameImages.blush.onload = onFrameLoaded;
+			frameImages.win.onload = onFrameLoaded;
+			frameImages.lose.onload = onFrameLoaded;
+
+			frameImages.idle.src = "frame_idle.jpg";
+			frameImages.pull.src = "frame_pull.jpg";
+			frameImages.blush.src = "frame_blush.jpg";
+			frameImages.win.src = "frame_win.jpg";
+			frameImages.lose.src = "frame_lose.jpg";
 
 			let pullImpulse = 0;
 			let failImpulse = 0;
+			let pullDurationTimer = 0;
+			let gameOutcomeState = null;
+			let lastStepTime = performance.now();
 			const sparks = [];
 
 			const strapAnchors = [
-				{ x: 278, y: 215, label: "Arms" },
-				{ x: 205, y: 272, label: "Waist" },
-				{ x: 262, y: 332, label: "Collant Thighs" }
+				{ x: 125, y: 220, label: "Arms" },
+				{ x: 210, y: 285, label: "Waist" },
+				{ x: 290, y: 345, label: "Legs" }
 			];
 
 			function spawnBuckleSparks(anchorIdx, colorStr) {
@@ -920,9 +937,11 @@
 				if (speechPillEl && text) speechPillEl.textContent = text;
 				if (type === "hit") {
 					pullImpulse = 1.0;
+					pullDurationTimer = 520;
 					spawnBuckleSparks(currentStrap, "#34d399");
 				} else if (type === "miss") {
 					failImpulse = 1.0;
+					pullDurationTimer = 340;
 					spawnBuckleSparks(currentStrap, "#f87171");
 				}
 			}
@@ -934,131 +953,118 @@
 				const t = timeMs * 0.001;
 
 				girlCtx.clearRect(0, 0, W, H);
-				pullImpulse *= 0.9;
-				failImpulse *= 0.88;
+				pullImpulse *= 0.88;
+				failImpulse *= 0.86;
 
-				if (!damselLoaded) {
+				let activeImg = frameImages.idle;
+				if (gameOutcomeState === "win") {
+					activeImg = frameImages.win;
+				} else if (gameOutcomeState === "lose") {
+					activeImg = frameImages.lose;
+				} else if (pullDurationTimer > 0 || pullImpulse > 0.22) {
+					activeImg = frameImages.pull;
+				} else if (vibeLevel > 0) {
+					activeImg = frameImages.blush;
+				}
+
+				if (!activeImg || !activeImg.complete || activeImg.naturalWidth === 0) {
 					girlCtx.fillStyle = "#131722";
 					girlCtx.fillRect(0, 0, W, H);
 					girlCtx.fillStyle = "#d943d4";
 					girlCtx.font = "600 14px sans-serif";
 					girlCtx.textAlign = "center";
-					girlCtx.fillText("Loading Damsel Stage...", W / 2, H / 2);
+					girlCtx.fillText("Loading Animation Frames...", W / 2, H / 2);
 					return;
 				}
 
-				const sx = 112;
-				const sy = 0;
-				const sw = 800;
-				const sh = 1024;
-				const numSlices = 48;
-				const dstSliceH = H / numSlices;
-				const srcSliceH = sh / numSlices;
-				const vibeTremor = vibeLevel > 0 ? Math.sin(t * 48) * (vibeLevel * 1.8) : 0;
+				// Crisp frame render with gentle natural physics
+				girlCtx.save();
+				let offsetY = Math.sin(t * 2.8) * 2.2;
+				let offsetX = 0;
+				let rotRad = 0;
+				let scale = 1.0;
 
-				for (let i = 0; i < numSlices; i++) {
-					const v = i / numSlices;
-					let dx = 0;
-					let dw = 0;
-
-					if (v < 0.34) {
-						const headFactor = Math.sin((v / 0.34) * Math.PI);
-						dx = Math.sin(t * 2.7) * 4.2 * headFactor + pullImpulse * 11 * headFactor - failImpulse * Math.sin(t * 35) * 8 * headFactor;
-					} else if (v < 0.68) {
-						const torsoFactor = Math.sin(((v - 0.34) / 0.34) * Math.PI);
-						const breathe = Math.sin(t * 3.2) * 5.5 * torsoFactor;
-						dx = Math.sin(t * 2.7 + 0.7) * 5.5 * torsoFactor - pullImpulse * 14 * torsoFactor + failImpulse * Math.sin(t * 40) * 9 * torsoFactor + vibeTremor * 0.6;
-						dw = breathe + pullImpulse * 10 * torsoFactor;
-					} else {
-						const legFactor = Math.sin(((v - 0.68) / 0.32) * Math.PI);
-						dx = -Math.sin(t * 2.7) * 4.8 * legFactor + pullImpulse * 7 * legFactor + vibeTremor * 1.4;
-						dw = Math.sin(t * 5.4) * 3.0 * legFactor;
-					}
-
-					girlCtx.drawImage(
-						damselImg,
-						sx,
-						sy + i * srcSliceH,
-						sw,
-						srcSliceH + 1.5,
-						dx - dw * 0.5,
-						i * dstSliceH,
-						W + dw,
-						dstSliceH + 1.2
-					);
+				if (vibeLevel > 0 && !gameOutcomeState) {
+					const vibeShake = vibeLevel * 1.8;
+					offsetX += Math.sin(t * 54) * vibeShake;
+					offsetY += Math.cos(t * 48) * (vibeShake * 0.7);
 				}
 
-				const headDx = Math.sin(t * 2.7) * 3.5 + pullImpulse * 8;
-				const blushAlpha = Math.min(0.65, 0.18 + (fatigue / 100) * 0.25 + vibeLevel * 0.11);
-				girlCtx.save();
-				const drawBlush = (cx, cy) => {
-					const grad = girlCtx.createRadialGradient(cx, cy, 2, cx, cy, 18);
-					grad.addColorStop(0, `rgba(244, 63, 110, ${blushAlpha})`);
-					grad.addColorStop(1, "rgba(244, 63, 110, 0)");
-					girlCtx.fillStyle = grad;
-					girlCtx.beginPath();
-					girlCtx.arc(cx, cy, 18, 0, Math.PI * 2);
-					girlCtx.fill();
-				};
-				drawBlush(154 + headDx, 106);
-				drawBlush(216 + headDx, 102);
+				if (pullImpulse > 0.04 && !gameOutcomeState) {
+					offsetX += Math.sin(t * 28) * (pullImpulse * 4.2);
+					scale += pullImpulse * 0.02;
+				}
+
+				if (failImpulse > 0.04 && !gameOutcomeState) {
+					rotRad = Math.sin(t * 36) * 0.035 * failImpulse;
+				}
+
+				girlCtx.translate(W / 2 + offsetX, H / 2 + offsetY);
+				if (rotRad !== 0) girlCtx.rotate(rotRad);
+				if (scale !== 1.0) girlCtx.scale(scale, scale);
+				girlCtx.drawImage(activeImg, -W / 2, -H / 2, W, H);
 				girlCtx.restore();
 
-				if (vibeLevel > 0) {
-					const pulseR = 14 + ((t * 45) % 38);
-					const pulseAlpha = Math.max(0, 0.85 - pulseR / 52);
+				// Ambient vibration pulses
+				if (vibeLevel > 0 && !gameOutcomeState) {
+					const pulseR = 18 + ((t * 46) % 48);
+					const pulseAlpha = Math.max(0, 0.72 - pulseR / 64);
 					girlCtx.save();
 					girlCtx.strokeStyle = `rgba(240, 92, 235, ${pulseAlpha})`;
-					girlCtx.lineWidth = 2.6;
+					girlCtx.lineWidth = 2.4;
 					girlCtx.beginPath();
-					girlCtx.arc(218 + vibeTremor, 305, pulseR, 0, Math.PI * 2);
+					girlCtx.arc(W / 2 + offsetX, H * 0.65, pulseR, 0, Math.PI * 2);
 					girlCtx.stroke();
 					girlCtx.restore();
 				}
 
-				for (let bIdx = 0; bIdx < 3; bIdx++) {
-					const pt = strapAnchors[bIdx];
-					const mappedStrap = Math.floor((bIdx / 3) * totalStraps);
-					const isUnlocked = currentStrap > mappedStrap;
-					const isCurrent = currentStrap === mappedStrap;
-					const bx = pt.x + (isCurrent ? Math.sin(t * 6) * 2.5 - pullImpulse * 6 : 0);
-					const by = pt.y;
+				// Buckle status badges (Arms, Waist, Thighs)
+				if (!gameOutcomeState) {
+					for (let bIdx = 0; bIdx < 3; bIdx++) {
+						const pt = strapAnchors[bIdx];
+						const mappedStrap = Math.floor((bIdx / 3) * totalStraps);
+						const isUnlocked = currentStrap > mappedStrap;
+						const isCurrent = currentStrap === mappedStrap;
+						const bx = pt.x + (isCurrent ? Math.sin(t * 6) * 2.5 - pullImpulse * 5 : 0);
+						const by = pt.y + offsetY;
 
-					girlCtx.save();
-					girlCtx.beginPath();
-					girlCtx.arc(bx, by, isCurrent ? 16 : 12, 0, Math.PI * 2);
-					girlCtx.fillStyle = isUnlocked
-						? "rgba(16, 185, 129, 0.88)"
-						: isCurrent
-						? "rgba(19, 23, 34, 0.88)"
-						: "rgba(19, 23, 34, 0.65)";
-					girlCtx.fill();
-					girlCtx.lineWidth = 2;
-					girlCtx.strokeStyle = isUnlocked ? "#34d399" : isCurrent ? "#f05ceb" : "#64748b";
-					girlCtx.stroke();
-
-					if (isCurrent && strapProgress > 0) {
+						girlCtx.save();
 						girlCtx.beginPath();
-						girlCtx.arc(
-							bx,
-							by,
-							16,
-							-Math.PI / 2,
-							-Math.PI / 2 + (Math.PI * 2 * strapProgress) / 100
-						);
-						girlCtx.lineWidth = 3.5;
-						girlCtx.strokeStyle = "#34d399";
+						girlCtx.arc(bx, by, isCurrent ? 15 : 11, 0, Math.PI * 2);
+						girlCtx.fillStyle = isUnlocked
+							? "rgba(16, 185, 129, 0.90)"
+							: isCurrent
+							? "rgba(19, 23, 34, 0.90)"
+							: "rgba(19, 23, 34, 0.68)";
+						girlCtx.fill();
+						girlCtx.lineWidth = 2;
+						girlCtx.strokeStyle = isUnlocked ? "#34d399" : isCurrent ? "#f05ceb" : "#64748b";
 						girlCtx.stroke();
-					}
 
-					girlCtx.fillStyle = "#ffffff";
-					girlCtx.font = isCurrent ? "700 12px sans-serif" : "600 10px sans-serif";
-					girlCtx.textAlign = "center";
-					girlCtx.textBaseline = "middle";
-					girlCtx.fillText(isUnlocked ? "🔓" : "🔒", bx, by);
-					girlCtx.restore();
+						if (isCurrent && strapProgress > 0) {
+							girlCtx.beginPath();
+							girlCtx.arc(
+								bx,
+								by,
+								15,
+								-Math.PI / 2,
+								-Math.PI / 2 + (Math.PI * 2 * strapProgress) / 100
+							);
+							girlCtx.lineWidth = 3.5;
+							girlCtx.strokeStyle = "#34d399";
+							girlCtx.stroke();
+						}
+
+						girlCtx.fillStyle = "#ffffff";
+						girlCtx.font = isCurrent ? "700 12px sans-serif" : "600 10px sans-serif";
+						girlCtx.textAlign = "center";
+						girlCtx.textBaseline = "middle";
+						girlCtx.fillText(isUnlocked ? "🔓" : "🔒", bx, by);
+						girlCtx.restore();
+					}
 				}
 
+				// Particle sparks
 				for (let s = sparks.length - 1; s >= 0; s--) {
 					const sp = sparks[s];
 					sp.x += sp.vx;
@@ -1129,20 +1135,33 @@
 			}, 2200);
 
 			function step(nowMs) {
-				if (gameOver) return;
-				const vibeJitter = vibeLevel === 3 ? 1.45 : vibeLevel === 2 ? 1.2 : 1.0;
-				const strapFactor = 1 + currentStrap * 0.14;
-				cursorPos += cursorDir * baseSpeed * vibeJitter * strapFactor;
-				if (cursorPos >= 98) {
-					cursorPos = 98;
-					cursorDir = -1;
-				} else if (cursorPos <= 2) {
-					cursorPos = 2;
-					cursorDir = 1;
+				const currentMs = nowMs || performance.now();
+				const deltaMs = Math.min(60, currentMs - lastStepTime);
+				lastStepTime = currentMs;
+
+				if (pullDurationTimer > 0) {
+					pullDurationTimer -= deltaMs;
 				}
-				cursorEl.style.left = `${cursorPos}%`;
-				renderDamselCanvas(nowMs || performance.now());
-				animId = requestAnimationFrame(step);
+
+				if (!gameOver) {
+					const vibeJitter = vibeLevel === 3 ? 1.45 : vibeLevel === 2 ? 1.2 : 1.0;
+					const strapFactor = 1 + currentStrap * 0.14;
+					cursorPos += cursorDir * baseSpeed * vibeJitter * strapFactor;
+					if (cursorPos >= 98) {
+						cursorPos = 98;
+						cursorDir = -1;
+					} else if (cursorPos <= 2) {
+						cursorPos = 2;
+						cursorDir = 1;
+					}
+					cursorEl.style.left = `${cursorPos}%`;
+				}
+
+				renderDamselCanvas(currentMs);
+
+				if (!gameOver || pullDurationTimer > 0) {
+					animId = requestAnimationFrame(step);
+				}
 			}
 
 			function triggerPull() {
@@ -1163,13 +1182,15 @@
 
 						if (currentStrap >= totalStraps) {
 							gameOver = true;
+							gameOutcomeState = "win";
 							arenaEl.classList.remove("vibe-shake");
 							if (girlStageEl) girlStageEl.classList.remove("vibe-active");
 							setGirlReaction("hit", '"Mmph!! Free at last! 🎉"');
 							updateBars();
 							BC_SOUND_FX.unlockSuccess();
 							BC_GAMES_LOGGER.log("GAME", "Struggle & Escape WON", { totalStraps, fatigue });
-							setTimeout(() => onWin({ totalStraps, fatigue }), 350);
+							renderDamselCanvas(performance.now());
+							setTimeout(() => onWin({ totalStraps, fatigue }), 1400);
 							return;
 						}
 					}
@@ -1181,10 +1202,14 @@
 
 					if (fatigue >= 100) {
 						gameOver = true;
+						gameOutcomeState = "lose";
 						arenaEl.classList.remove("vibe-shake");
+						if (girlStageEl) girlStageEl.classList.remove("vibe-active");
+						setGirlReaction("miss", '"Exhausted... couldn\'t break free 💫"');
 						updateBars();
 						BC_GAMES_LOGGER.log("GAME", "Struggle & Escape LOST (Max Fatigue)", { currentStrap });
-						setTimeout(() => onLose({ reason: "Exhausted! The leather straps snapped back tight." }), 350);
+						renderDamselCanvas(performance.now());
+						setTimeout(() => onLose({ reason: "Exhausted! The leather straps snapped back tight." }), 1400);
 						return;
 					}
 				}
