@@ -1251,12 +1251,41 @@
 				.map((item, idx) => ({
 					cid: item.cid || `LK_${key}_${idx + 1}`,
 					playerId: item.playerId || item.label || key,
-					lockLabel: item.lockLabel || item.note || "Padlock",
+					lockLabel: item.lockLabel || item.note || `Lock #${idx + 1}`,
 					gameId: item.gameId || "crack",
 					difficulty: Number(item.difficulty || 2),
 					ticket: item.ticket,
 					createdAt: item.createdAt || new Date().toISOString()
 				}));
+		},
+
+		// Rimuove automaticamente i lucchetti non riscossi dopo 7 giorni (7 * 24 * 60 * 60 * 1000 ms)
+		purgeExpiredChallenges() {
+			const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+			const now = Date.now();
+			const map = (this.config && this.config.victimChallenges) || {};
+			let removedCount = 0;
+
+			for (const [key, listOrObj] of Object.entries(map)) {
+				const list = this._normalizeChallengeList(listOrObj, key);
+				const valid = list.filter((item) => {
+					const createdTs = new Date(item.createdAt).getTime();
+					if (!createdTs || isNaN(createdTs)) return true;
+					const expired = now - createdTs > SEVEN_DAYS_MS;
+					if (expired) removedCount++;
+					return !expired;
+				});
+				if (valid.length === 0) {
+					delete map[key];
+				} else {
+					map[key] = valid;
+				}
+			}
+
+			if (removedCount > 0) {
+				BC_GAMES_LOGGER.log("SYSTEM", `Auto-purged ${removedCount} expired lock(s) older than 7 days`);
+				this.saveLocalConfig(true);
+			}
 		},
 
 		async loadConfig() {
@@ -1313,6 +1342,7 @@
 				if (list.length > 0) cleanVictims[k] = list;
 			}
 			this.config.victimChallenges = cleanVictims;
+			this.purgeExpiredChallenges();
 
 			BC_GAMES_LOGGER.log("SYSTEM", "Configuration loaded", {
 				enabledGames: Object.keys(this.config.games).filter((k) => this.config.games[k]?.enabled !== false),
@@ -1420,6 +1450,7 @@
 			}
 
 			BC_GAMES_LOGGER.log("CHALLENGE", "Player lock lookup requested", { query: val });
+			this.purgeExpiredChallenges();
 
 			const challengesMap = (this.config && this.config.victimChallenges) || {};
 			let matchedList = [];
@@ -1431,9 +1462,8 @@
 					const normList = this._normalizeChallengeList(listOrObj, k);
 					normList.forEach((item) => {
 						const pLow = String(item.playerId || "").toLowerCase();
-						const lLow = String(item.lockLabel || "").toLowerCase();
 						const cidLow = String(item.cid || "").toLowerCase();
-						if (k === valLow || pLow === valLow || lLow === valLow || cidLow === valLow) {
+						if (k === valLow || pLow === valLow || cidLow === valLow) {
 							matchedList.push(item);
 						}
 					});
@@ -1441,19 +1471,29 @@
 			}
 
 			if (matchedList.length > 0) {
-				const latestLock = matchedList[matchedList.length - 1];
-				this.currentMatchedList = [latestLock];
+				this.currentMatchedList = matchedList;
 				this.currentQueryId = val;
 
-				BC_GAMES_LOGGER.log("CHALLENGE", "Found active lock challenge for player", {
-					query: val
+				BC_GAMES_LOGGER.log("CHALLENGE", "Found active lock challenges for player", {
+					query: val,
+					count: matchedList.length
 				});
 
-				if (feedbackEl) {
-					feedbackEl.textContent = `✅ Lock challenge loaded for "${val}"! Beat the game below to reveal the padlock code:`;
-					feedbackEl.className = "lookup-feedback success";
+				if (matchedList.length === 1) {
+					if (feedbackEl) {
+						feedbackEl.textContent = `✅ Found 1 pending lock for "${val}"! Beat the game below to reveal and claim the code:`;
+						feedbackEl.className = "lookup-feedback success";
+					}
+					this.launchChallengeFromToken(matchedList[0].ticket, `Player ID (${val})`, matchedList[0]);
+				} else {
+					this.renderVictimLocksSelector(val, matchedList);
+					if (feedbackEl) {
+						feedbackEl.textContent = `🔐 Found ${matchedList.length} pending locks for "${val}"! Choose which one to unlock (each lock is removed once solved):`;
+						feedbackEl.className = "lookup-feedback success";
+					}
+					const stageWrap = document.getElementById("active-game-stage-wrap");
+					if (stageWrap) stageWrap.style.display = "none";
 				}
-				this.launchChallengeFromToken(latestLock.ticket, `Player ID (${val})`, latestLock);
 				return;
 			}
 
@@ -1759,30 +1799,60 @@
 				const secretCode = ch.password || "0000";
 				const lockLabel = ch.lockLabel || "Padlock";
 
-				if (ch.rawTicket) {
-					this.solvedMap[ch.rawTicket] = secretCode;
-					try {
-						sessionStorage.setItem(STORAGE_KEYS.SOLVED_LOCKS, JSON.stringify(this.solvedMap));
-					} catch (_) {}
+				// AUTO-DELETE UNA VOLTA RISOLTO IL GIOCO:
+				// Rimuove il lucchetto appena sbloccato dalla memoria attiva!
+				const vKeyLow = String(ch.victim || this.currentQueryId || "").trim().toLowerCase();
+				let remainingForPlayer = [];
+				if (this.config && this.config.victimChallenges) {
+					for (const [k, listOrObj] of Object.entries(this.config.victimChallenges)) {
+						const list = this._normalizeChallengeList(listOrObj, k);
+						const filtered = list.filter(
+							(item) => item.cid !== ch.cid && item.ticket !== ch.rawTicket
+						);
+						if (filtered.length === 0) {
+							delete this.config.victimChallenges[k];
+						} else {
+							this.config.victimChallenges[k] = filtered;
+						}
+						if (k === vKeyLow) {
+							remainingForPlayer = filtered;
+						}
+					}
+					this.saveLocalConfig(true);
+					this.renderDomActiveChallenges();
 				}
 
-				BC_GAMES_LOGGER.log("CHALLENGE", "Challenge WON — Password revealed to player", {
+				const multiBoxEl = document.getElementById("victim-locks-selector");
+				if (remainingForPlayer.length > 0) {
+					this.currentMatchedList = remainingForPlayer;
+					this.renderVictimLocksSelector(ch.victim || this.currentQueryId, remainingForPlayer);
+				} else if (multiBoxEl) {
+					multiBoxEl.style.display = "none";
+				}
+
+				BC_GAMES_LOGGER.log("CHALLENGE", "Challenge WON — Password revealed & lock removed from memory", {
 					victim: ch.victim || "(anonymous)",
-					lockLabel,
-					revealedPassword: secretCode
+					cid: ch.cid,
+					revealedPassword: secretCode,
+					remainingLocks: remainingForPlayer.length
 				});
+
+				const nextLockBtnHtml =
+					remainingForPlayer.length > 0
+						? `<button type="button" class="btn btn-primary" id="btn-next-pending-lock">🔓 Unlock Next Pending Lock (${remainingForPlayer.length} left)</button>`
+						: "";
 
 				stageResult.innerHTML = `
 					<div class="res-box res-win">
 						<div class="res-icon">🔓✨</div>
-						<h3>Unlocked: ${this._escapeHtml(lockLabel)}</h3>
+						<h3>Padlock Unlocked!</h3>
 						<div class="revealed-code-box">
-							<div class="rc-label">Padlock Code for Bondage Club</div>
+							<div class="rc-label">Padlock Code for Bondage Club (Save it now — removed from pending list)</div>
 							<div class="rc-value" id="revealed-secret-val">${this._escapeHtml(secretCode)}</div>
 							<button type="button" class="btn btn-primary" id="btn-copy-revealed">📋 Copy Code</button>
 						</div>
 						<div class="res-actions">
-							<button type="button" class="btn" id="btn-replay-stage">🔄 Play Again</button>
+							${nextLockBtnHtml}
 						</div>
 					</div>
 				`;
@@ -1794,6 +1864,14 @@
 							copyBtn.textContent = "✅ Code Copied!";
 							setTimeout(() => (copyBtn.textContent = "📋 Copy Code"), 2000);
 						});
+					});
+				}
+
+				const nextLockBtn = stageResult.querySelector("#btn-next-pending-lock");
+				if (nextLockBtn && remainingForPlayer.length > 0) {
+					nextLockBtn.addEventListener("click", () => {
+						const nextItem = remainingForPlayer[0];
+						this.launchChallengeFromToken(nextItem.ticket, "Next Pending Lock", nextItem);
 					});
 				}
 			} else {
@@ -1877,13 +1955,13 @@
 				if (codeInputEl) codeInputEl.value = "";
 
 				const vKeyLow = victimKey.toLowerCase();
+				this.purgeExpiredChallenges();
 				this.config.victimChallenges = this.config.victimChallenges || {};
-				let existingList = this._normalizeChallengeList(this.config.victimChallenges[vKeyLow], victimKey);
+				const existingList = this._normalizeChallengeList(this.config.victimChallenges[vKeyLow], victimKey);
 
-				let lockLabel = lockLabelInputEl ? lockLabelInputEl.value.trim() : "";
-				if (!lockLabel) {
-					lockLabel = "Padlock";
-				}
+				const lockNumber = existingList.length + 1;
+				const timeTag = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+				const lockLabel = `Lock #${lockNumber} (${timeTag})`;
 
 				const lockType = /^\d{4}$/.test(password) ? "comb" : "pass";
 				const cid = "LK_" + Date.now().toString(36).toUpperCase() + "_" + Math.random().toString(36).slice(2, 5).toUpperCase();
@@ -1912,22 +1990,9 @@
 					createdAt: new Date().toISOString()
 				};
 
-				// REGOLA ANTI-CONFUSIONE IN MEMORIA:
-				// Se esiste già un lucchetto con lo stesso nome restraint (es. "Padlock" o "Collar")
-				// per questo stesso Player ID, lo SOSTITUISCE col nuovo codice anziché accumulare duplicati!
-				const sameLabelIdx = existingList.findIndex(
-					(x) => String(x.lockLabel || "Padlock").toLowerCase() === lockLabel.toLowerCase()
-				);
-				if (sameLabelIdx !== -1) {
-					const oldTicket = existingList[sameLabelIdx].ticket;
-					if (oldTicket && this.solvedMap[oldTicket]) {
-						delete this.solvedMap[oldTicket];
-					}
-					existingList[sameLabelIdx] = newEntry;
-				} else {
-					existingList.push(newEntry);
-				}
-
+				// Accoda il nuovo lucchetto per questo ID (verrà rimosso automaticamente
+				// non appena il giocatore vince il minigioco oppure dopo 7 giorni)
+				existingList.push(newEntry);
 				this.config.victimChallenges[vKeyLow] = existingList;
 				this.saveLocalConfig(true);
 
