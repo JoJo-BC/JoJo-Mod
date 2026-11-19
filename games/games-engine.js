@@ -883,26 +883,151 @@
 			const vibeBadgeEl = container.querySelector("#strug-vibe-badge");
 			const hitBtn = container.querySelector("#strug-hit-btn");
 
-			const frameImages = {
-				idle: new Image(),
-				pull: new Image(),
-				blush: new Image(),
-				win: new Image(),
-				lose: new Image()
+			const baseDamselImg = new Image();
+			let framesReady = false;
+			const spriteFrames = {
+				idle: document.createElement("canvas"),
+				pull1: document.createElement("canvas"),
+				pull2: document.createElement("canvas"),
+				blush: document.createElement("canvas"),
+				lose: document.createElement("canvas"),
+				win: new Image()
 			};
-			let loadedFrames = 0;
-			const onFrameLoaded = () => { loadedFrames++; };
-			frameImages.idle.onload = onFrameLoaded;
-			frameImages.pull.onload = onFrameLoaded;
-			frameImages.blush.onload = onFrameLoaded;
-			frameImages.win.onload = onFrameLoaded;
-			frameImages.lose.onload = onFrameLoaded;
+			spriteFrames.win.src = "frame_win.jpg";
 
-			frameImages.idle.src = "frame_idle.jpg";
-			frameImages.pull.src = "frame_pull.jpg";
-			frameImages.blush.src = "frame_blush.jpg";
-			frameImages.win.src = "frame_win.jpg";
-			frameImages.lose.src = "frame_lose.jpg";
+			function buildSpriteFrames() {
+				const W = 420;
+				const H = 420;
+				const sx = 112, sy = 0, sw = 800, sh = 1024;
+
+				// 1. FRAME IDLE (Base crisp character with lingerie and pantyhose, arms bound)
+				const cIdle = spriteFrames.idle;
+				cIdle.width = W; cIdle.height = H;
+				const ctxIdle = cIdle.getContext("2d");
+				ctxIdle.drawImage(baseDamselImg, sx, sy, sw, sh, 0, 0, W, H);
+
+				// 2. FRAME PULL 1 (Squirm Left: Torso torsion, shoulders straining, arms stay bound)
+				const cP1 = spriteFrames.pull1;
+				cP1.width = W; cP1.height = H;
+				const ctxP1 = cP1.getContext("2d");
+				// Lower legs grounded
+				ctxP1.save();
+				ctxP1.beginPath();
+				ctxP1.rect(0, 260, W, 160);
+				ctxP1.clip();
+				ctxP1.drawImage(baseDamselImg, sx, sy, sw, sh, 0, 0, W, H);
+				ctxP1.restore();
+				// Torso & head strained left
+				ctxP1.save();
+				ctxP1.beginPath();
+				ctxP1.rect(0, 0, W, 265);
+				ctxP1.clip();
+				ctxP1.translate(210, 260);
+				ctxP1.rotate(-0.065);
+				ctxP1.translate(-210, -260);
+				ctxP1.drawImage(baseDamselImg, sx, sy, sw, sh, -3, -2, W + 6, H);
+				// Tension glint on left arm buckle
+				ctxP1.fillStyle = "rgba(255, 255, 255, 0.85)";
+				ctxP1.beginPath();
+				ctxP1.arc(142, 218, 3.5, 0, Math.PI * 2);
+				ctxP1.fill();
+				ctxP1.restore();
+
+				// 3. FRAME PULL 2 (Squirm Right & Arch: Opposite torsion, chest strained forward)
+				const cP2 = spriteFrames.pull2;
+				cP2.width = W; cP2.height = H;
+				const ctxP2 = cP2.getContext("2d");
+				// Lower legs grounded
+				ctxP2.save();
+				ctxP2.beginPath();
+				ctxP2.rect(0, 260, W, 160);
+				ctxP2.clip();
+				ctxP2.drawImage(baseDamselImg, sx, sy, sw, sh, 0, 0, W, H);
+				ctxP2.restore();
+				// Torso & head arched right
+				ctxP2.save();
+				ctxP2.beginPath();
+				ctxP2.rect(0, 0, W, 265);
+				ctxP2.clip();
+				ctxP2.translate(210, 260);
+				ctxP2.rotate(0.068);
+				ctxP2.scale(1.02, 0.99);
+				ctxP2.translate(-210, -260);
+				ctxP2.drawImage(baseDamselImg, sx, sy, sw, sh, 2, -4, W + 4, H);
+				// Tension glint on right waist buckle
+				ctxP2.fillStyle = "rgba(255, 255, 255, 0.85)";
+				ctxP2.beginPath();
+				ctxP2.arc(278, 222, 3.5, 0, Math.PI * 2);
+				ctxP2.fill();
+				ctxP2.restore();
+
+				// 4. FRAME BLUSH (Rosy flushed cheeks & tremor reaction)
+				const cBlush = spriteFrames.blush;
+				cBlush.width = W; cBlush.height = H;
+				const ctxBlush = cBlush.getContext("2d");
+				ctxBlush.drawImage(baseDamselImg, sx, sy, sw, sh, 0, 0, W, H);
+				const drawBlushSpot = (cx, cy) => {
+					const grad = ctxBlush.createRadialGradient(cx, cy, 2, cx, cy, 18);
+					grad.addColorStop(0, "rgba(244, 63, 110, 0.55)");
+					grad.addColorStop(1, "rgba(244, 63, 110, 0)");
+					ctxBlush.fillStyle = grad;
+					ctxBlush.beginPath();
+					ctxBlush.arc(cx, cy, 18, 0, Math.PI * 2);
+					ctxBlush.fill();
+				};
+				drawBlushSpot(158, 112);
+				drawBlushSpot(216, 110);
+				ctxBlush.strokeStyle = "rgba(235, 70, 115, 0.65)";
+				ctxBlush.lineWidth = 1.4;
+				ctxBlush.beginPath();
+				ctxBlush.moveTo(152, 114); ctxBlush.lineTo(158, 108);
+				ctxBlush.moveTo(159, 115); ctxBlush.lineTo(165, 109);
+				ctxBlush.moveTo(212, 112); ctxBlush.lineTo(218, 106);
+				ctxBlush.moveTo(219, 113); ctxBlush.lineTo(225, 107);
+				ctxBlush.stroke();
+
+				// 5. FRAME LOSE / RESA (Slumped posture, exhausted spent gaze)
+				const cLose = spriteFrames.lose;
+				cLose.width = W; cLose.height = H;
+				const ctxLose = cLose.getContext("2d");
+				ctxLose.save();
+				ctxLose.translate(0, 12);
+				ctxLose.drawImage(baseDamselImg, sx, sy, sw, sh, 0, 0, W, H);
+				// Weary brow shadow
+				const browGrad = ctxLose.createLinearGradient(0, 70, 0, 115);
+				browGrad.addColorStop(0, "rgba(18, 12, 28, 0.45)");
+				browGrad.addColorStop(1, "rgba(18, 12, 28, 0)");
+				ctxLose.fillStyle = browGrad;
+				ctxLose.fillRect(140, 75, 100, 40);
+				// Half-closed, tired weary eyelids (sguardo sfinito)
+				ctxLose.fillStyle = "rgba(238, 204, 186, 0.88)";
+				ctxLose.beginPath();
+				ctxLose.ellipse(170, 99, 11, 4.5, -0.05, 0, Math.PI * 2);
+				ctxLose.ellipse(208, 98, 11, 4.5, 0.05, 0, Math.PI * 2);
+				ctxLose.fill();
+				ctxLose.strokeStyle = "rgba(70, 45, 55, 0.75)";
+				ctxLose.lineWidth = 1.2;
+				ctxLose.beginPath();
+				ctxLose.moveTo(160, 100); ctxLose.lineTo(181, 100);
+				ctxLose.moveTo(198, 99); ctxLose.lineTo(219, 99);
+				ctxLose.stroke();
+				// Small exhaustion sigh puff
+				ctxLose.strokeStyle = "rgba(255, 255, 255, 0.55)";
+				ctxLose.fillStyle = "rgba(255, 255, 255, 0.18)";
+				ctxLose.lineWidth = 1.2;
+				ctxLose.beginPath();
+				ctxLose.ellipse(168, 142, 7, 4, -0.2, 0, Math.PI * 2);
+				ctxLose.fill();
+				ctxLose.stroke();
+				ctxLose.restore();
+
+				framesReady = true;
+			}
+
+			baseDamselImg.onload = () => {
+				buildSpriteFrames();
+			};
+			baseDamselImg.src = "damsel.jpg";
 
 			let pullImpulse = 0;
 			let failImpulse = 0;
@@ -937,11 +1062,11 @@
 				if (speechPillEl && text) speechPillEl.textContent = text;
 				if (type === "hit") {
 					pullImpulse = 1.0;
-					pullDurationTimer = 520;
+					pullDurationTimer = 620;
 					spawnBuckleSparks(currentStrap, "#34d399");
 				} else if (type === "miss") {
 					failImpulse = 1.0;
-					pullDurationTimer = 340;
+					pullDurationTimer = 380;
 					spawnBuckleSparks(currentStrap, "#f87171");
 				}
 			}
@@ -956,28 +1081,31 @@
 				pullImpulse *= 0.88;
 				failImpulse *= 0.86;
 
-				let activeImg = frameImages.idle;
-				if (gameOutcomeState === "win") {
-					activeImg = frameImages.win;
-				} else if (gameOutcomeState === "lose") {
-					activeImg = frameImages.lose;
-				} else if (pullDurationTimer > 0 || pullImpulse > 0.22) {
-					activeImg = frameImages.pull;
-				} else if (vibeLevel > 0) {
-					activeImg = frameImages.blush;
-				}
-
-				if (!activeImg || !activeImg.complete || activeImg.naturalWidth === 0) {
+				if (!framesReady) {
 					girlCtx.fillStyle = "#131722";
 					girlCtx.fillRect(0, 0, W, H);
 					girlCtx.fillStyle = "#d943d4";
 					girlCtx.font = "600 14px sans-serif";
 					girlCtx.textAlign = "center";
-					girlCtx.fillText("Loading Animation Frames...", W / 2, H / 2);
+					girlCtx.fillText("Loading Animation Stage...", W / 2, H / 2);
 					return;
 				}
 
-				// Crisp frame render with gentle natural physics
+				// Select active frame: handles squirming multi-frame struggle
+				let activeCanvas = spriteFrames.idle;
+				if (gameOutcomeState === "win") {
+					activeCanvas = (spriteFrames.win && spriteFrames.win.complete) ? spriteFrames.win : spriteFrames.idle;
+				} else if (gameOutcomeState === "lose") {
+					activeCanvas = spriteFrames.lose;
+				} else if (pullDurationTimer > 0 || pullImpulse > 0.20) {
+					// Alternates between the 2 squirm frames (PULL 1 and PULL 2)
+					const squirmCycle = Math.floor(pullDurationTimer / 125) % 2;
+					activeCanvas = squirmCycle === 0 ? spriteFrames.pull1 : spriteFrames.pull2;
+				} else if (vibeLevel > 0) {
+					activeCanvas = spriteFrames.blush;
+				}
+
+				// Render selected frame
 				girlCtx.save();
 				let offsetY = Math.sin(t * 2.8) * 2.2;
 				let offsetX = 0;
@@ -1002,7 +1130,7 @@
 				girlCtx.translate(W / 2 + offsetX, H / 2 + offsetY);
 				if (rotRad !== 0) girlCtx.rotate(rotRad);
 				if (scale !== 1.0) girlCtx.scale(scale, scale);
-				girlCtx.drawImage(activeImg, -W / 2, -H / 2, W, H);
+				girlCtx.drawImage(activeCanvas, -W / 2, -H / 2, W, H);
 				girlCtx.restore();
 
 				// Ambient vibration pulses
