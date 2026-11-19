@@ -215,7 +215,7 @@
 		/* 2. Create Lock Rows (Responsive, zero overflow) */
 		.create-row-top {
 			display: grid;
-			grid-template-columns: 1.2fr 1fr 1.1fr;
+			grid-template-columns: 1.2fr 1fr;
 			gap: 8px;
 			margin-bottom: 8px;
 		}
@@ -708,7 +708,7 @@
 	<div class="container">
 		<!-- Minimal Header -->
 		<header class="top-header">
-			<h1 class="brand-title">🎮 BC Lock Recovery <span class="badge">v1.4</span></h1>
+			<h1 class="brand-title">🎮 BC Lock Recovery <span class="badge">v1.5</span></h1>
 			<div class="top-actions">
 				<button type="button" id="btn-toggle-audio" class="btn btn-sm">🔊 Audio</button>
 				<button type="button" id="btn-toggle-admin" class="btn btn-sm" title="Admin Panel">🛡️ Admin</button>
@@ -755,8 +755,7 @@
 			</p>
 			<div class="create-row-top">
 				<input type="text" id="lm-victim-name" placeholder="Player ID or Hint (e.g. 123456)">
-				<input type="text" id="lm-secret-code" placeholder="Code (optional — auto)" maxlength="8">
-				<input type="text" id="lm-dom-note" placeholder="Restraint (optional, e.g. Collar)">
+				<input type="text" id="lm-secret-code" placeholder="Code (optional — auto if empty)" maxlength="8">
 			</div>
 			<div class="create-row-bottom">
 				<select id="lm-game-select" aria-label="Minigame"></select>
@@ -830,8 +829,7 @@
 						<table class="adm-table">
 							<thead>
 								<tr>
-									<th>Player ID</th>
-									<th>Lock</th>
+									<th>Player ID / Hint</th>
 									<th>Code</th>
 									<th>Game</th>
 									<th>Actions</th>

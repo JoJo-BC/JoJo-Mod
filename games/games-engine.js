@@ -1441,30 +1441,19 @@
 			}
 
 			if (matchedList.length > 0) {
-				this.currentMatchedList = matchedList;
+				const latestLock = matchedList[matchedList.length - 1];
+				this.currentMatchedList = [latestLock];
 				this.currentQueryId = val;
 
-				BC_GAMES_LOGGER.log("CHALLENGE", "Found active lock challenges for player", {
-					query: val,
-					count: matchedList.length
+				BC_GAMES_LOGGER.log("CHALLENGE", "Found active lock challenge for player", {
+					query: val
 				});
 
-				this.renderVictimLocksSelector(val, matchedList);
-
-				if (matchedList.length === 1) {
-					if (feedbackEl) {
-						feedbackEl.textContent = `✅ Found 1 active lock for "${val}" (${matchedList[0].lockLabel}). Beat the game below to reveal its code!`;
-						feedbackEl.className = "lookup-feedback success";
-					}
-					this.launchChallengeFromToken(matchedList[0].ticket, `Player ID (${val})`, matchedList[0]);
-				} else {
-					if (feedbackEl) {
-						feedbackEl.textContent = `🔐 Found ${matchedList.length} active locks for "${val}"! Select which lock you want to unlock:`;
-						feedbackEl.className = "lookup-feedback success";
-					}
-					const stageWrap = document.getElementById("active-game-stage-wrap");
-					if (stageWrap) stageWrap.style.display = "none";
+				if (feedbackEl) {
+					feedbackEl.textContent = `✅ Lock challenge loaded for "${val}"! Beat the game below to reveal the padlock code:`;
+					feedbackEl.className = "lookup-feedback success";
 				}
+				this.launchChallengeFromToken(latestLock.ticket, `Player ID (${val})`, latestLock);
 				return;
 			}
 
@@ -1776,9 +1765,6 @@
 						sessionStorage.setItem(STORAGE_KEYS.SOLVED_LOCKS, JSON.stringify(this.solvedMap));
 					} catch (_) {}
 				}
-				if (this.currentMatchedList && this.currentMatchedList.length > 0) {
-					this.renderVictimLocksSelector(this.currentQueryId, this.currentMatchedList);
-				}
 
 				BC_GAMES_LOGGER.log("CHALLENGE", "Challenge WON — Password revealed to player", {
 					victim: ch.victim || "(anonymous)",
@@ -2006,7 +1992,7 @@
 			}
 
 			if (allRows.length === 0) {
-				tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--muted);">No active lock challenges in memory.</td></tr>`;
+				tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--muted);">No active lock challenges in memory.</td></tr>`;
 				return;
 			}
 
@@ -2021,7 +2007,6 @@
 				const tr = document.createElement("tr");
 				tr.innerHTML = `
 					<td><strong>${this._escapeHtml(item.playerId || key)}</strong></td>
-					<td><span class="badge">🔒 ${this._escapeHtml(item.lockLabel)}</span></td>
 					<td><span class="adm-highlight-code">${this._escapeHtml(pass)}</span></td>
 					<td>${this._escapeHtml(item.gameId)}</td>
 					<td style="display:flex; gap:6px; flex-wrap:wrap;">
