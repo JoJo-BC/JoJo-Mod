@@ -1,5 +1,6 @@
 {
   "version": "1.2.0",
+  "updatedAt": "2026-11-18T23:45:00.000Z",
   "games": {
     "crack": {
       "enabled": true,
@@ -24,67 +25,18 @@
     }
   },
   "customPhrases": [
-    {
-      "phrase": "THANK YOU MISS",
-      "category": "Club Etiquette & Discipline"
-    },
-    {
-      "phrase": "LATEX ARMBINDER",
-      "category": "Arm Restraint (ItemArms)"
-    },
-    {
-      "phrase": "COMBINATION PADLOCK",
-      "category": "4-Digit Padlock (ItemMisc)"
-    },
-    {
-      "phrase": "STURDY LEATHER BELTS",
-      "category": "Heavy Leather Straps"
-    },
-    {
-      "phrase": "BALL GAG TIGHT",
-      "category": "Classic Mouth Restraint"
-    },
-    {
-      "phrase": "VIBRATING EGG MAXIMUM",
-      "category": "Remote Controlled Toy"
-    },
-    {
-      "phrase": "OWNER PADLOCK KEY",
-      "category": "Highest Club Authority"
-    },
-    {
-      "phrase": "BALLET HEELS LOCKED",
-      "category": "Forced Posture Boots"
-    },
-    {
-      "phrase": "PONY RACE HURDLE",
-      "category": "Arena Minigame"
-    },
-    {
-      "phrase": "HEAVY STEEL CHAINS",
-      "category": "Metallic Bondage"
-    },
-    {
-      "phrase": "HIGH SECURITY PADLOCK",
-      "category": "Multi-Member Lock"
-    },
-    {
-      "phrase": "POSTURE COLLAR TIGHT",
-      "category": "Neck Restraint"
-    }
+    { "phrase": "THANK YOU MISS", "category": "Club Etiquette & Discipline" },
+    { "phrase": "LATEX ARMBINDER", "category": "Arm Restraint (ItemArms)" },
+    { "phrase": "COMBINATION PADLOCK", "category": "4-Digit Padlock (ItemMisc)" },
+    { "phrase": "STURDY LEATHER BELTS", "category": "Heavy Leather Straps" },
+    { "phrase": "BALL GAG TIGHT", "category": "Classic Mouth Restraint" },
+    { "phrase": "VIBRATING EGG MAXIMUM", "category": "Remote Controlled Toy" },
+    { "phrase": "OWNER PADLOCK KEY", "category": "Highest Club Authority" },
+    { "phrase": "BALLET HEELS LOCKED", "category": "Forced Posture Boots" },
+    { "phrase": "PONY RACE HURDLE", "category": "Arena Minigame" },
+    { "phrase": "HEAVY STEEL CHAINS", "category": "Metallic Bondage" },
+    { "phrase": "HIGH SECURITY PADLOCK", "category": "Multi-Member Lock" },
+    { "phrase": "POSTURE COLLAR TIGHT", "category": "Neck Restraint" }
   ],
-  "victimChallenges": {
-    "prova": [
-      {
-        "cid": "LK_MWNKIBR4_Q5X",
-        "playerId": "prova",
-        "lockLabel": "Lock #1 (14:10)",
-        "gameId": "struggle",
-        "difficulty": 2,
-        "ticket": "BC-0Jqmr8nbj7KdWwIiJlhxd6_S5_GW4Nb6FFw0OnZqfsLM0ePn_4moWFpgaSUpLtLQjZ3t5tzKNSg9TC9YBo73nw",
-        "createdAt": "2026-11-19T13:10:14.273Z"
-      }
-    ]
-  },
-  "updatedAt": "2026-11-19T13:10:14.273Z"
+  "victimChallenges": {}
 }
