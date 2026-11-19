@@ -1,9 +1,24 @@
 === BONDAGE CLUB ARCADE & LOCK RECOVERY — DIAGNOSTIC LOG ===
-Exported At: 2026-11-19T00:49:18.555Z
-Total Entries: 5
+Exported At: 2026-11-19T13:09:06.278Z
+Total Entries: 20
 ============================================================
-001. [2026-11-19T00:49:14.407Z] [SYSTEM] Registered minigame module: crack (Crack the Padlock)
-002. [2026-11-19T00:49:14.408Z] [SYSTEM] Registered minigame module: struggle (Struggle & Escape)
-003. [2026-11-19T00:49:14.408Z] [SYSTEM] Registered minigame module: gagspeak (Gag Speak Hangman)
-004. [2026-11-19T00:49:14.409Z] [SYSTEM] BC Arcade Engine v1.4 initialized | DATA: {"url":"https://jojo-bc.github.io/JoJo-Mod/games/index.html"}
-005. [2026-11-19T00:49:14.548Z] [SYSTEM] Configuration loaded | DATA: {"enabledGames":["crack","struggle","gagspeak"],"registeredPlayers":0}
+001. [2026-11-19T13:07:05.977Z] [SYSTEM] Registered minigame module: crack (Crack the Padlock)
+002. [2026-11-19T13:07:05.978Z] [SYSTEM] Registered minigame module: struggle (Struggle & Escape)
+003. [2026-11-19T13:07:05.978Z] [SYSTEM] Registered minigame module: gagspeak (Gag Speak Hangman)
+004. [2026-11-19T13:07:05.980Z] [SYSTEM] BC Arcade Engine v1.4 initialized | DATA: {"url":"https://jojo-bc.github.io/JoJo-Mod/games/"}
+005. [2026-11-19T13:07:06.126Z] [SYSTEM] Configuration loaded | DATA: {"enabledGames":["crack","struggle","gagspeak"],"registeredPlayers":0}
+006. [2026-11-19T13:07:17.541Z] [CHALLENGE] Player lock lookup requested | DATA: {"query":"112233"}
+007. [2026-11-19T13:07:17.542Z] [WARN] No lock challenge found for query | DATA: {"query":"112233"}
+008. [2026-11-19T13:07:24.194Z] [CHALLENGE] Player lock lookup requested | DATA: {"query":"121212"}
+009. [2026-11-19T13:07:24.194Z] [WARN] No lock challenge found for query | DATA: {"query":"121212"}
+010. [2026-11-19T13:07:31.786Z] [CHALLENGE] Player lock lookup requested | DATA: {"query":"212121"}
+011. [2026-11-19T13:07:31.786Z] [WARN] No lock challenge found for query | DATA: {"query":"212121"}
+012. [2026-11-19T13:07:41.003Z] [CRYPTO] Encoded challenge | DATA: {"cid":"LK_MWNKF1HN_DGW","lockType":"pass","gameId":"struggle","difficulty":2,"victim":"797202","lockLabel":"Lock #1 (14:07)","passwordLen":6}
+013. [2026-11-19T13:07:41.004Z] [SYSTEM] Saved configuration to localStorage
+014. [2026-11-19T13:07:47.611Z] [CHALLENGE] Player lock lookup requested | DATA: {"query":"797202"}
+015. [2026-11-19T13:07:47.611Z] [CHALLENGE] Found active lock challenges for player | DATA: {"query":"797202","count":1}
+016. [2026-11-19T13:07:47.612Z] [CHALLENGE] Started challenge from Player ID (797202) | DATA: {"cid":"LK_MWNKF1HN_DGW","gameId":"struggle","difficulty":2,"victim":"797202","lockLabel":"Lock #1 (14:07)"}
+017. [2026-11-19T13:07:47.613Z] [GAME] Started Struggle & Escape | DATA: {"totalStraps":3,"baseSpeed":1.35,"spotWidth":22,"difficulty":2}
+018. [2026-11-19T13:08:56.411Z] [CRYPTO] Encoded challenge | DATA: {"cid":"LK_MWNKGNOA_FIQ","lockType":"comb","gameId":"struggle","difficulty":2,"victim":"121212","lockLabel":"Lock #1 (14:08)","passwordLen":4}
+019. [2026-11-19T13:08:56.411Z] [SYSTEM] Saved configuration to localStorage
+020. [2026-11-19T13:09:06.277Z] [ADMIN] Admin authenticated & Cloud GitHub Sync unlocked automatically
