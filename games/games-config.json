@@ -73,6 +73,18 @@
       "category": "Neck Restraint"
     }
   ],
-  "victimChallenges": {},
-  "updatedAt": "2026-11-19T13:09:41.268Z"
+  "victimChallenges": {
+    "prova": [
+      {
+        "cid": "LK_MWNKIBR4_Q5X",
+        "playerId": "prova",
+        "lockLabel": "Lock #1 (14:10)",
+        "gameId": "struggle",
+        "difficulty": 2,
+        "ticket": "BC-0Jqmr8nbj7KdWwIiJlhxd6_S5_GW4Nb6FFw0OnZqfsLM0ePn_4moWFpgaSUpLtLQjZ3t5tzKNSg9TC9YBo73nw",
+        "createdAt": "2026-11-19T13:10:14.273Z"
+      }
+    ]
+  },
+  "updatedAt": "2026-11-19T13:10:14.273Z"
 }
