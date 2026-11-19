@@ -1,16 +1,9 @@
 === BONDAGE CLUB ARCADE & LOCK RECOVERY — DIAGNOSTIC LOG ===
-Exported At: 2026-11-19T00:11:21.383Z
-Total Entries: 12
+Exported At: 2026-11-19T00:15:13.246Z
+Total Entries: 5
 ============================================================
-001. [2026-11-19T00:10:13.547Z] [SYSTEM] Registered minigame module: crack (Crack the Padlock)
-002. [2026-11-19T00:10:13.548Z] [SYSTEM] Registered minigame module: struggle (Struggle & Escape)
-003. [2026-11-19T00:10:13.548Z] [SYSTEM] Registered minigame module: gagspeak (Gag Speak Hangman)
-004. [2026-11-19T00:10:13.548Z] [SYSTEM] BC Arcade Engine v1.2 initialized | DATA: {"url":"https://jojo-bc.github.io/JoJo-Mod/games/index.html"}
-005. [2026-11-19T00:10:13.672Z] [SYSTEM] Configuration loaded | DATA: {"enabledGames":["crack","struggle","gagspeak"],"registeredPlayers":3}
-006. [2026-11-19T00:10:25.880Z] [CHALLENGE] Player lock lookup requested | DATA: {"query":"112233"}
-007. [2026-11-19T00:10:25.880Z] [CHALLENGE] Found active lock challenges for player | DATA: {"query":"112233","count":1}
-008. [2026-11-19T00:10:25.881Z] [WARN] Failed to decode challenge token | DATA: {"input":"BC-xGYuaQUy7vnb3duzpAoAMw9eXCgq1MePrKjyg","error":"Invalid checksum"}
-009. [2026-11-19T00:11:02.447Z] [CRYPTO] Encoded challenge | DATA: {"cid":"LO9TB","lockType":"comb","gameId":"crack","difficulty":2,"victim":"121212","lockLabel":"Lock #2"}
-010. [2026-11-19T00:11:02.448Z] [SYSTEM] Saved configuration to localStorage
-011. [2026-11-19T00:11:17.382Z] [CHALLENGE] Player lock lookup requested | DATA: {"query":"121212"}
-012. [2026-11-19T00:11:17.382Z] [CHALLENGE] Found active lock challenges for player | DATA: {"query":"121212","count":2}
+001. [2026-11-19T00:15:09.103Z] [SYSTEM] Registered minigame module: crack (Crack the Padlock)
+002. [2026-11-19T00:15:09.104Z] [SYSTEM] Registered minigame module: struggle (Struggle & Escape)
+003. [2026-11-19T00:15:09.104Z] [SYSTEM] Registered minigame module: gagspeak (Gag Speak Hangman)
+004. [2026-11-19T00:15:09.105Z] [SYSTEM] BC Arcade Engine v1.2 initialized | DATA: {"url":"https://jojo-bc.github.io/JoJo-Mod/games/index.html"}
+005. [2026-11-19T00:15:09.240Z] [SYSTEM] Configuration loaded | DATA: {"enabledGames":["crack","struggle","gagspeak"],"registeredPlayers":3}
