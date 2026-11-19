@@ -477,11 +477,15 @@
 			overflow: hidden;
 			box-shadow: inset 0 0 28px rgba(0, 0, 0, 0.6);
 		}
-		.strug-girl-svg {
-			width: 185px;
-			height: 255px;
-			overflow: visible;
-			filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.65));
+		.strug-girl-canvas {
+			width: 100%;
+			max-width: 340px;
+			height: auto;
+			aspect-ratio: 1 / 1;
+			border-radius: 12px;
+			border: 1px solid rgba(217, 67, 212, 0.45);
+			box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
+			display: block;
 		}
 		@keyframes girlSquirmLoop {
 			0%, 100% { transform: rotate(-1.4deg) translateY(0px); }
@@ -828,7 +832,7 @@
 	<div class="container">
 		<!-- Minimal Header -->
 		<header class="top-header">
-			<h1 class="brand-title">🎮 BC Lock Recovery <span class="badge">v1.9</span></h1>
+			<h1 class="brand-title">🎮 BC Lock Recovery <span class="badge">v2.0</span></h1>
 			<div class="top-actions">
 				<button type="button" id="btn-toggle-audio" class="btn btn-sm">🔊 Audio</button>
 				<button type="button" id="btn-toggle-admin" class="btn btn-sm" title="Admin Panel">🛡️ Admin</button>
