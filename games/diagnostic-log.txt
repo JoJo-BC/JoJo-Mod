@@ -1,6 +1,6 @@
 === BONDAGE CLUB ARCADE & LOCK RECOVERY — DIAGNOSTIC LOG ===
-Exported At: 2026-11-19T00:15:43.159Z
-Total Entries: 8
+Exported At: 2026-11-19T00:15:54.387Z
+Total Entries: 9
 ============================================================
 001. [2026-11-19T00:15:09.103Z] [SYSTEM] Registered minigame module: crack (Crack the Padlock)
 002. [2026-11-19T00:15:09.104Z] [SYSTEM] Registered minigame module: struggle (Struggle & Escape)
@@ -10,3 +10,4 @@ Total Entries: 8
 006. [2026-11-19T00:15:17.918Z] [GAME] Started Struggle & Escape | DATA: {"totalStraps":3,"baseSpeed":1.35,"spotWidth":22,"difficulty":2}
 007. [2026-11-19T00:15:32.724Z] [GAME] Struggle & Escape WON | DATA: {"totalStraps":3,"fatigue":48}
 008. [2026-11-19T00:15:39.155Z] [GAME] Started Struggle & Escape | DATA: {"totalStraps":3,"baseSpeed":1.35,"spotWidth":22,"difficulty":2}
+009. [2026-11-19T00:15:50.373Z] [GAME] Struggle & Escape WON | DATA: {"totalStraps":3,"fatigue":0}
