@@ -888,6 +888,11 @@
 			damselImg.onload = () => { damselLoaded = true; };
 			damselImg.src = "damsel.jpg";
 
+			const loseImg = new Image();
+			let loseLoaded = false;
+			loseImg.onload = () => { loseLoaded = true; };
+			loseImg.src = "frame_lose.jpg";
+
 			const winImg = new Image();
 			let winLoaded = false;
 			winImg.onload = () => { winLoaded = true; };
@@ -945,6 +950,28 @@
 				pullImpulse *= 0.88;
 				failImpulse *= 0.86;
 
+				const sx = 112, sy = 0, sw = 800, sh = 1024;
+
+				// VICTORY: Authentic dedicated victory illustration (zero masks/layers)
+				if (gameOutcomeState === "win") {
+					if (winLoaded) {
+						girlCtx.drawImage(winImg, 0, 0, W, H);
+					} else if (damselLoaded) {
+						girlCtx.drawImage(damselImg, sx, sy, sw, sh, 0, 0, W, H);
+					}
+					return;
+				}
+
+				// DEFEAT: Authentic dedicated defeat illustration (zero masks/layers)
+				if (gameOutcomeState === "lose") {
+					if (loseLoaded) {
+						girlCtx.drawImage(loseImg, 0, 0, W, H);
+					} else if (damselLoaded) {
+						girlCtx.drawImage(damselImg, sx, sy, sw, sh, 0, 0, W, H);
+					}
+					return;
+				}
+
 				if (!damselLoaded) {
 					girlCtx.fillStyle = "#131722";
 					girlCtx.fillRect(0, 0, W, H);
@@ -955,113 +982,47 @@
 					return;
 				}
 
-				// If won, display the victorious relieved image
-				if (gameOutcomeState === "win" && winLoaded) {
-					girlCtx.drawImage(winImg, 0, 0, W, H);
-					return;
-				}
-
-				const sx = 112, sy = 0, sw = 800, sh = 1024;
-
-				// Subtle, tightly constrained physical struggle motion (non estremo)
+				// GAMEPLAY: The "via di mezzo" - visible, authentic physical struggle against tight straps
 				girlCtx.save();
 				let offsetX = 0;
-				let offsetY = Math.sin(t * 2.8) * 1.5; // gentle breathing
+				let offsetY = Math.sin(t * 2.6) * 3.6; // smooth, clearly visible breathing (3.6px)
 				let scaleY = 1.0;
+				let rotRad = 0;
 
-				const isLosing = (gameOutcomeState === "lose");
-
-				if (isLosing) {
-					// Defeat posture: figure slumps down 14px into the restraints
-					offsetY = 14;
-				} else {
-					// Controlled struggle when pulling (subtle heave & tight muscle tension tremor)
-					if (pullDurationTimer > 0) {
-						const strainRatio = pullDurationTimer / 550;
-						offsetY -= 3.2 * strainRatio; // tensed shoulders & chest heave up slightly
-						scaleY += 0.012 * strainRatio;
-						offsetX += Math.sin(t * 68) * (strainRatio * 1.4); // micro-tremor of muscles straining against leather
-					}
-
-					// Vibrator tremor
-					if (vibeLevel > 0) {
-						const vibeTremor = vibeLevel * 1.4;
-						offsetX += Math.sin(t * 54) * vibeTremor;
-						offsetY += Math.cos(t * 48) * (vibeTremor * 0.6);
-					}
-
-					// Miss jolt
-					if (failImpulse > 0.08) {
-						offsetX += Math.sin(t * 40) * (failImpulse * 2.2);
-					}
+				// Controlled struggle when pulling (distinct heave & side-to-side strain against leather)
+				if (pullDurationTimer > 0) {
+					const strainRatio = pullDurationTimer / 550;
+					// Upward heave against the bindings (7.5px)
+					offsetY -= 7.5 * Math.sin(strainRatio * Math.PI);
+					// Dynamic straining struggle side to side (5.5px)
+					offsetX += Math.sin(t * 28) * (5.5 * strainRatio);
+					// Tensed chest & shoulders
+					scaleY += 0.024 * strainRatio;
+					// Subtle torsion tilt
+					rotRad = Math.sin(t * 18) * 0.03 * strainRatio;
 				}
 
-				// Draw the genuine bound character
-				girlCtx.translate(offsetX, offsetY);
+				// Vibrator tremor
+				if (vibeLevel > 0) {
+					const vibeTremor = vibeLevel * 2.2;
+					offsetX += Math.sin(t * 54) * vibeTremor;
+					offsetY += Math.cos(t * 48) * (vibeTremor * 0.7);
+				}
+
+				// Miss jolt
+				if (failImpulse > 0.06) {
+					offsetX += Math.sin(t * 40) * (failImpulse * 5.0);
+					offsetY += failImpulse * 4.5;
+				}
+
+				girlCtx.translate(W / 2 + offsetX, H / 2 + offsetY);
+				if (rotRad !== 0) girlCtx.rotate(rotRad);
 				if (scaleY !== 1.0) girlCtx.scale(1.0, scaleY);
-				girlCtx.drawImage(damselImg, sx, sy, sw, sh, 0, 0, W, H);
-
-				// SCONFITTA / RESA (Defeat state: exhaustion shadow + half-closed weary eyelids + sigh)
-				if (isLosing) {
-					// 1. Shadow of fatigue over brow
-					const browGrad = girlCtx.createLinearGradient(0, 80, 0, 130);
-					browGrad.addColorStop(0, "rgba(12, 8, 22, 0.52)");
-					browGrad.addColorStop(1, "rgba(12, 8, 22, 0)");
-					girlCtx.fillStyle = browGrad;
-					girlCtx.fillRect(145, 80, 95, 50);
-
-					// 2. Tired, half-closed weary eyelids (sguardo sfinito di resa)
-					girlCtx.fillStyle = "rgba(235, 202, 186, 0.92)";
-					girlCtx.beginPath();
-					girlCtx.ellipse(168, 107, 10.5, 4.8, -0.05, 0, Math.PI * 2);
-					girlCtx.ellipse(206, 106, 10.5, 4.8, 0.05, 0, Math.PI * 2);
-					girlCtx.fill();
-					girlCtx.strokeStyle = "rgba(65, 45, 55, 0.80)";
-					girlCtx.lineWidth = 1.3;
-					girlCtx.beginPath();
-					girlCtx.moveTo(157, 108); girlCtx.lineTo(178, 108);
-					girlCtx.moveTo(195, 107); girlCtx.lineTo(216, 107);
-					girlCtx.stroke();
-
-					// 3. Small exhaustion sigh puff near mouth
-					girlCtx.strokeStyle = "rgba(255, 255, 255, 0.55)";
-					girlCtx.fillStyle = "rgba(255, 255, 255, 0.18)";
-					girlCtx.lineWidth = 1.2;
-					girlCtx.beginPath();
-					girlCtx.ellipse(164, 146, 8, 4.5, -0.2, 0, Math.PI * 2);
-					girlCtx.fill();
-					girlCtx.stroke();
-				}
-
-				// VIBRATION & BLUSH (Pink cheek blush & concentric waves)
-				if (vibeLevel > 0 && !isLosing) {
-					const blushAlpha = Math.min(0.68, 0.28 + vibeLevel * 0.12);
-					const drawBlushSpot = (cx, cy) => {
-						const grad = girlCtx.createRadialGradient(cx, cy, 2, cx, cy, 18);
-						grad.addColorStop(0, `rgba(244, 63, 110, ${blushAlpha})`);
-						grad.addColorStop(1, "rgba(244, 63, 110, 0)");
-						girlCtx.fillStyle = grad;
-						girlCtx.beginPath();
-						girlCtx.arc(cx, cy, 18, 0, Math.PI * 2);
-						girlCtx.fill();
-					};
-					drawBlushSpot(154, 110);
-					drawBlushSpot(216, 108);
-				}
-
-				// STRAP TENSION GLINT (When pulling, the current buckle glints under tension)
-				if (pullDurationTimer > 0 && !isLosing) {
-					const pt = strapAnchors[currentStrap % strapAnchors.length];
-					girlCtx.fillStyle = "rgba(255, 255, 255, 0.85)";
-					girlCtx.beginPath();
-					girlCtx.arc(pt.x + 3, pt.y - 2, 3.5, 0, Math.PI * 2);
-					girlCtx.fill();
-				}
-
+				girlCtx.drawImage(damselImg, sx, sy, sw, sh, -W / 2, -H / 2, W, H);
 				girlCtx.restore();
 
 				// Ambient vibration pulse rings
-				if (vibeLevel > 0 && !isLosing) {
+				if (vibeLevel > 0) {
 					const pulseR = 16 + ((t * 45) % 46);
 					const pulseAlpha = Math.max(0, 0.75 - pulseR / 62);
 					girlCtx.save();
@@ -1074,14 +1035,13 @@
 				}
 
 				// Buckle status badges (Arms, Waist, Thighs)
-				if (!isLosing) {
-					for (let bIdx = 0; bIdx < 3; bIdx++) {
-						const pt = strapAnchors[bIdx];
-						const mappedStrap = Math.floor((bIdx / 3) * totalStraps);
-						const isUnlocked = currentStrap > mappedStrap;
-						const isCurrent = currentStrap === mappedStrap;
-						const bx = pt.x + (isCurrent && pullDurationTimer > 0 ? Math.sin(t * 30) * 1.5 : 0);
-						const by = pt.y + offsetY;
+				for (let bIdx = 0; bIdx < 3; bIdx++) {
+					const pt = strapAnchors[bIdx];
+					const mappedStrap = Math.floor((bIdx / 3) * totalStraps);
+					const isUnlocked = currentStrap > mappedStrap;
+					const isCurrent = currentStrap === mappedStrap;
+					const bx = pt.x + (isCurrent && pullDurationTimer > 0 ? Math.sin(t * 28) * 3.5 : 0);
+					const by = pt.y + offsetY;
 
 						girlCtx.save();
 						girlCtx.beginPath();
@@ -1117,7 +1077,6 @@
 						girlCtx.fillText(isUnlocked ? "🔓" : "🔒", bx, by);
 						girlCtx.restore();
 					}
-				}
 
 				// Particle sparks
 				for (let s = sparks.length - 1; s >= 0; s--) {
