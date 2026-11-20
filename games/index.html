@@ -3,6 +3,9 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+	<meta http-equiv="Pragma" content="no-cache">
+	<meta http-equiv="Expires" content="0">
 	<title>BC Lock Recovery &amp; Minigames</title>
 	<style>
 		:root {
@@ -547,6 +550,15 @@
 			transform-origin: 120px 80px;
 			animation: girlHeadStruggle 1.25s ease-in-out infinite;
 		}
+		@keyframes stagePullJolt {
+			0% { transform: scale(1); }
+			25% { transform: scale(1.025) translateY(-5px); }
+			65% { transform: scale(0.99) translateY(2px); }
+			100% { transform: scale(1) translateY(0); }
+		}
+		.strug-girl-stage.pull-jolt {
+			animation: stagePullJolt 0.32s ease-out;
+		}
 		.strug-girl-stage.pull-hit .girl-body-group {
 			animation: girlPullBurst 0.42s ease-out;
 		}
@@ -832,7 +844,7 @@
 	<div class="container">
 		<!-- Minimal Header -->
 		<header class="top-header">
-			<h1 class="brand-title">🎮 BC Lock Recovery <span class="badge">v2.0</span></h1>
+			<h1 class="brand-title">🎮 BC Lock Recovery <span class="badge">v2.3</span></h1>
 			<div class="top-actions">
 				<button type="button" id="btn-toggle-audio" class="btn btn-sm">🔊 Audio</button>
 				<button type="button" id="btn-toggle-admin" class="btn btn-sm" title="Admin Panel">🛡️ Admin</button>
@@ -998,6 +1010,6 @@
 		</section>
 	</div>
 
-	<script src="games-engine.js"></script>
+	<script src="games-engine.js?v=2.3"></script>
 </body>
 </html>

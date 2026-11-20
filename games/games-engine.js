@@ -886,17 +886,23 @@
 			const damselImg = new Image();
 			let damselLoaded = false;
 			damselImg.onload = () => { damselLoaded = true; };
-			damselImg.src = "damsel.jpg";
+			damselImg.src = "damsel.jpg?v=2.3";
 
 			const loseImg = new Image();
 			let loseLoaded = false;
-			loseImg.onload = () => { loseLoaded = true; };
-			loseImg.src = "frame_lose.jpg";
+			loseImg.onload = () => {
+				loseLoaded = true;
+				if (gameOutcomeState === "lose") renderDamselCanvas(performance.now());
+			};
+			loseImg.src = "frame_lose.jpg?v=2.3";
 
 			const winImg = new Image();
 			let winLoaded = false;
-			winImg.onload = () => { winLoaded = true; };
-			winImg.src = "frame_win.jpg";
+			winImg.onload = () => {
+				winLoaded = true;
+				if (gameOutcomeState === "win") renderDamselCanvas(performance.now());
+			};
+			winImg.src = "frame_win.jpg?v=2.3";
 
 			let pullImpulse = 0;
 			let failImpulse = 0;
@@ -1173,13 +1179,18 @@
 
 				renderDamselCanvas(currentMs);
 
-				if (!gameOver || pullDurationTimer > 0) {
+				if (!gameOver || pullDurationTimer > 0 || gameOutcomeState) {
 					animId = requestAnimationFrame(step);
 				}
 			}
 
 			function triggerPull() {
 				if (gameOver) return;
+				if (girlStageEl) {
+					girlStageEl.classList.remove("pull-jolt");
+					void girlStageEl.offsetWidth;
+					girlStageEl.classList.add("pull-jolt");
+				}
 				const hit = cursorPos >= targetStart - 1.5 && cursorPos <= targetStart + spotWidth + 1.5;
 
 				if (hit) {
