@@ -1,11 +1,9 @@
 === BONDAGE CLUB ARCADE & LOCK RECOVERY — DIAGNOSTIC LOG ===
-Exported At: 2026-11-20T00:25:23.980Z
-Total Entries: 7
+Exported At: 2026-11-20T00:36:50.233Z
+Total Entries: 5
 ============================================================
-001. [2026-11-20T00:24:48.880Z] [SYSTEM] Registered minigame module: crack (Crack the Padlock)
-002. [2026-11-20T00:24:48.880Z] [SYSTEM] Registered minigame module: struggle (Struggle & Escape)
-003. [2026-11-20T00:24:48.880Z] [SYSTEM] Registered minigame module: gagspeak (Gag Speak Hangman)
-004. [2026-11-20T00:24:48.881Z] [SYSTEM] BC Arcade Engine v1.4 initialized | DATA: {"url":"https://jojo-bc.github.io/JoJo-Mod/games/"}
-005. [2026-11-20T00:24:49.007Z] [SYSTEM] Configuration loaded | DATA: {"enabledGames":["crack","struggle","gagspeak"],"registeredPlayers":0}
-006. [2026-11-20T00:24:51.737Z] [GAME] Started Struggle & Escape | DATA: {"totalStraps":3,"baseSpeed":1.35,"spotWidth":22,"difficulty":2}
-007. [2026-11-20T00:25:19.966Z] [GAME] Struggle & Escape LOST (Max Fatigue) | DATA: {"currentStrap":1}
+001. [2026-11-20T00:36:46.092Z] [SYSTEM] Registered minigame module: crack (Crack the Padlock)
+002. [2026-11-20T00:36:46.092Z] [SYSTEM] Registered minigame module: struggle (Struggle & Escape)
+003. [2026-11-20T00:36:46.092Z] [SYSTEM] Registered minigame module: gagspeak (Gag Speak Hangman)
+004. [2026-11-20T00:36:46.094Z] [SYSTEM] BC Arcade Engine v1.4 initialized | DATA: {"url":"https://jojo-bc.github.io/JoJo-Mod/games/index.html"}
+005. [2026-11-20T00:36:46.226Z] [SYSTEM] Configuration loaded | DATA: {"enabledGames":["crack","struggle","gagspeak"],"registeredPlayers":0}
